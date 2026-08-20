@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Trader">
+<meta name="theme-color" content="#f6f7f9">
+<title>Trader Dashboard</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f6f7f9; --card:#ffffff; --line:#e7e9ee; --line2:#eef0f4;
+  --ink:#0f1522; --sub:#5b6472; --faint:#98a1b0;
+  --accent:#0d9488; --accent2:#10b981;
+  --green:#059669; --greenbg:#e9f8f1; --red:#e11d48; --redbg:#fdecef;
+  --amber:#b45309; --amberbg:#fdf3e3; --slate:#64748b; --slatebg:#f1f4f8; --blue:#2563eb;
+  --mono:ui-monospace,"SF Mono",Menlo,"Cascadia Code",monospace;
+  --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+  color:var(--ink); line-height:1.45; padding:16px 14px 44px; max-width:840px; margin:0 auto; min-height:100vh;}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.4px;}
+
+.hdr{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; animation:fade .5s ease both;}
+.brand{display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;}
+.live{width:7px; height:7px; border-radius:50%; background:var(--accent2); box-shadow:0 0 0 0 rgba(16,185,129,.5); animation:pulse 2.4s infinite;}
+.stamp{font-size:10.5px; color:var(--faint); font-family:var(--mono); text-align:right;}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:13px; box-shadow:var(--shadow); animation:rise .55s cubic-bezier(.2,.7,.2,1) both;}
+.card.d1{animation-delay:.06s;} .card.d1b{animation-delay:.09s;} .card.d2{animation-delay:.12s;} .card.d3{animation-delay:.18s;}
+.eyebrow{font-size:10.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--faint); margin-bottom:15px; display:flex; align-items:center; gap:8px;}
+.eyebrow .k{color:var(--accent);}
+
+.acct{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+.balance{font-size:33px; font-weight:800; line-height:1;}
+.delta{font-size:12.5px; font-weight:700; margin-top:7px; font-family:var(--mono);}
+.delta.up{color:var(--green);} .delta.down{color:var(--red);}
+.chal{text-align:right; font-size:11px; color:var(--sub);}
+.chal b{display:block; font-size:15px; color:var(--ink); font-family:var(--mono);}
+
+.gauge{margin-top:18px;}
+.gtrack{position:relative; height:14px; border-radius:9px; overflow:hidden;
+  background:linear-gradient(90deg,#fbdce3 0%,#fbe9d6 32%,#eef1f5 48%,#eef1f5 52%,#e2f4ec 68%,#cdeede 100%); border:1px solid var(--line);}
+.gmid{position:absolute; left:50%; top:-3px; bottom:-3px; width:2px; background:var(--slate); opacity:.5; transform:translateX(-1px);}
+.gmark{position:absolute; top:-4px; width:4px; height:22px; border-radius:3px; background:var(--ink); box-shadow:0 0 0 3px rgba(255,255,255,.9); transition:left 1.1s cubic-bezier(.2,.7,.2,1);}
+.gscale{display:flex; justify-content:space-between; margin-top:8px; font-size:9.5px; color:var(--faint); font-family:var(--mono);}
+.gscale b{color:var(--sub);}
+.gnow{display:flex; align-items:baseline; gap:8px; margin-top:11px;}
+.gnow .p{font-size:19px; font-weight:800; font-family:var(--mono);}
+.gnow .t{font-size:11px; color:var(--sub);}
+
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:18px; background:var(--line); border:1px solid var(--line); border-radius:13px; overflow:hidden;}
+.stat{background:var(--card); padding:13px 8px; text-align:center;}
+.stat .n{font-size:21px; font-weight:800; font-family:var(--mono);}
+.stat .l{font-size:9.5px; color:var(--faint); margin-top:4px; letter-spacing:.4px; text-transform:uppercase; line-height:1.3;}
+.stat .sm{font-size:8px;}
+
+.focus{margin-top:15px; display:flex; gap:10px; align-items:flex-start; background:#f4f6ff; border:1px solid #dfe4ff; border-left:3px solid var(--blue); border-radius:11px; padding:11px 13px; font-size:12.5px; color:#33407a;}
+.focus b{color:#1e2a6e;}
+
+.streak{margin-top:11px; border:1px solid var(--line); border-radius:12px; padding:11px 13px; background:#fcfdfe;}
+.streak .sk{display:flex; align-items:baseline; gap:9px;}
+.streak .skn{font-size:24px; font-weight:800; color:var(--accent);}
+.streak .skl{font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:.6px; font-weight:700;}
+.streak .skr{font-size:11.5px; color:var(--sub); margin-top:3px;}
+.streak .skr b{color:var(--ink);}
+.streak .sknote{color:var(--faint); font-size:10.5px;}
+.streak .sklg{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-top:8px; border-top:1px solid var(--line2); font-size:10.5px; color:var(--faint); font-family:var(--mono);}
+
+/* collapsible */
+.acc{border:1px solid var(--line); border-radius:13px; margin-top:12px; overflow:hidden; background:#fcfdfe;}
+.acc:first-child{margin-top:0;}
+.acc>summary{list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--sub);}
+.acc>summary::-webkit-details-marker{display:none;}
+.acc>summary .chev{color:var(--faint); transition:transform .2s; font-size:11px;}
+.acc[open]>summary .chev{transform:rotate(90deg);}
+.acc>summary .hint{margin-left:auto; font-weight:600; text-transform:none; letter-spacing:0; color:var(--faint); font-size:11px; font-family:var(--mono);}
+.acc .body{padding:2px 14px 14px;}
+
+.gate{border:1px solid #f6c9d3; background:var(--redbg); border-radius:12px; padding:13px 14px; margin-bottom:14px;}
+.gate .gt{font-size:11px; font-weight:800; letter-spacing:.8px; text-transform:uppercase; color:#a10e33; margin-bottom:3px;}
+.gate .gsub{font-size:11px; color:#a10e33; opacity:.85; margin-bottom:10px; line-height:1.4;}
+.grow{display:flex; gap:9px; align-items:flex-start; padding:8px 0; border-top:1px solid #f6c9d3; font-size:12.5px; color:#7d0b26;}
+.grow .gn{flex:0 0 auto; width:19px; height:19px; border-radius:6px; background:#fff; color:#a10e33; font-family:var(--mono); font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px;}
+.grow b{color:#5e0819;}
+.gfoot{margin-top:10px; padding-top:9px; border-top:1px solid #f6c9d3; font-size:11.5px; color:#7d0b26; line-height:1.45;}
+.gfoot b{color:#5e0819;}
+
+.trow{display:grid; grid-template-columns:1fr auto auto auto; gap:10px; align-items:center; padding:10px 2px; border-bottom:1px solid var(--line2); font-size:13px;}
+.trow:last-child{border-bottom:none;}
+.trow .pr{font-weight:700;}
+.trow .conf{font-size:9.5px; color:var(--faint); font-family:var(--mono); font-weight:500;}
+.trow .dt{font-family:var(--mono); font-size:11px; color:var(--sub);}
+.trow .rr{font-family:var(--mono); font-size:12px; text-align:right; min-width:44px;}
+.pill{font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px;}
+.pill.w{background:var(--greenbg); color:var(--green);} .pill.l{background:var(--redbg); color:var(--red);} .pill.b{background:var(--slatebg); color:var(--slate);}
+
+.banner{border-radius:12px; padding:11px 13px; font-size:12.5px; margin-bottom:14px; border:1px solid;}
+.banner.ok{background:var(--greenbg); border-color:#bfe9d6; color:#0b6b4f;}
+.banner.no{background:var(--redbg); border-color:#f6c9d3; color:#a10e33; font-weight:700;}
+.edge{display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:13px; margin-bottom:14px; background:linear-gradient(90deg,#f0fdfa,#fff);}
+.edge .score{font-size:26px; font-weight:800; font-family:var(--mono); color:var(--accent);}
+.edge .ek{font-size:9.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--faint);}
+.edge .ev{font-size:12px; color:var(--sub); margin-top:2px;}
+.sb{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:13px; overflow:hidden; margin-bottom:14px;}
+.sbc{background:var(--card); padding:12px 13px;}
+.sbc .k{font-size:9.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--faint); margin-bottom:4px;}
+.sbc .v{font-size:12.5px; font-weight:600; line-height:1.35;}
+.sbc.watch .v{color:var(--amber);} .sbc.avoid .v{color:var(--red);}
+
+.strength{display:flex; flex-wrap:wrap; gap:6px;}
+.cur{font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; font-family:var(--mono); border:1px solid transparent;}
+.s-strong{background:var(--greenbg); color:var(--green); border-color:#bfe9d6;}
+.s-weak{background:var(--redbg); color:var(--red); border-color:#f6c9d3;}
+.s-neut{background:var(--slatebg); color:var(--slate); border-color:var(--line);}
+.bias{display:grid; grid-template-columns:repeat(2,1fr); gap:9px;}
+.pair{position:relative; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:11px 12px 11px 15px; overflow:hidden;}
+.pair::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px;}
+.pair .top{display:flex; justify-content:space-between; align-items:center;}
+.pair .name{font-weight:800; font-size:13px;}
+.pair .tg{font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:6px; letter-spacing:.3px; text-transform:uppercase;}
+.pair .why{font-size:11px; color:var(--sub); margin-top:5px; line-height:1.35;}
+.pair .cf{display:flex; align-items:center; gap:6px; margin-top:8px;}
+.pair .cfbar{flex:1; height:4px; border-radius:3px; background:var(--line); overflow:hidden;}
+.pair .cfbar>i{display:block; height:100%; border-radius:3px;}
+.pair .cfn{font-size:9.5px; font-family:var(--mono); color:var(--faint); min-width:52px; text-align:right;}
+.bull::before{background:var(--green);} .bull .tg{background:var(--greenbg); color:var(--green);} .bull .cfbar>i{background:var(--green);}
+.bear::before{background:var(--red);} .bear .tg{background:var(--redbg); color:var(--red);} .bear .cfbar>i{background:var(--red);}
+.frag::before{background:var(--amber);} .frag .tg{background:var(--amberbg); color:var(--amber);} .frag .cfbar>i{background:var(--amber);}
+.neut::before{background:var(--slate);} .neut .tg{background:var(--slatebg); color:var(--slate);} .neut .cfbar>i{background:var(--slate);}
+.newsitem{display:flex; gap:10px; align-items:flex-start; font-size:12px; padding:9px 0; border-bottom:1px solid var(--line2); color:var(--sub);}
+.newsitem:last-child{border-bottom:none;}
+.imp{width:7px; height:7px; border-radius:2px; flex:0 0 auto; margin-top:5px;}
+.imp-red{background:var(--red);} .imp-orange{background:var(--amber);} .imp-yellow{background:#d4a017;}
+.aifocus{margin-top:14px; background:#f0fdfa; border:1px solid #cbeee6; border-left:3px solid var(--accent); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#134e48;}
+.aifocus b{color:#0b6b57;}
+
+/* checklist */
+.ckrow{display:flex; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line2); font-size:12.5px; align-items:flex-start;}
+.ckrow:last-child{border-bottom:none;}
+.ckn{flex:0 0 auto; width:20px; height:20px; border-radius:6px; background:var(--slatebg); color:var(--sub);
+  font-family:var(--mono); font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:1px;}
+.ckn.hi{background:var(--redbg); color:var(--red);}
+.ckn.mid{background:var(--amberbg); color:var(--amber);}
+.cktxt{flex:1; color:var(--sub); line-height:1.4;}
+.cktxt b{color:var(--ink);}
+
+/* journal */
+textarea{width:100%; min-height:72px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:11px 12px; font-family:inherit; font-size:16px; color:var(--ink); background:#fbfcfd; outline:none;}
+textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,.12);}
+.jbtns{display:flex; gap:8px; margin-top:10px; align-items:center;}
+.mic{width:48px; height:48px; flex:0 0 auto; border-radius:12px; border:1px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s;}
+.mic svg{width:21px; height:21px; stroke:var(--sub);}
+.mic:active{transform:scale(.95);}
+.mic.on{background:var(--red); border-color:var(--red); animation:rec 1.2s infinite;}
+.mic.on svg{stroke:#fff;}
+.save{flex:1; height:48px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-weight:700; font-size:14px; cursor:pointer; transition:.15s;}
+.save:active{transform:scale(.99);} .save:disabled{opacity:.5;}
+.reclbl{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--red); font-weight:600; margin-top:9px; min-height:16px;}
+.recdot{width:8px; height:8px; border-radius:50%; background:var(--red); animation:rec 1s infinite;}
+.jstat{font-size:11.5px; color:var(--sub); margin-top:8px; min-height:15px; font-family:var(--mono);}
+.jstat.ok{color:var(--green);} .jstat.err{color:var(--red);}
+.jhint{font-size:10.5px; color:var(--faint); margin-top:5px; line-height:1.4;}
+.foot{text-align:center; color:var(--faint); font-size:10px; margin-top:6px; font-family:var(--mono);}
+
+@keyframes fade{from{opacity:0;} to{opacity:1;}}
+@keyframes rise{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5);}70%{box-shadow:0 0 0 8px rgba(16,185,129,0);}100%{box-shadow:0 0 0 0 rgba(16,185,129,0);}}
+@keyframes rec{0%,100%{box-shadow:0 0 0 0 rgba(225,29,72,.5);}50%{box-shadow:0 0 0 6px rgba(225,29,72,0);}}
+@media (max-width:520px){
+  body{padding:14px 12px 40px;}
+  .bias{grid-template-columns:1fr;}
+  .sb{grid-template-columns:1fr;}
+  .balance{font-size:29px;}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="brand"><span class="live"></span>Trader Dashboard</div>
+  <div class="stamp" id="updated"></div>
+</div>
+
+<!-- PANEL 1 -->
+<div class="card d1">
+  <div class="eyebrow"><span class="k">◧</span> Account &amp; Challenge</div>
+  <div class="acct">
+    <div>
+      <div class="balance num" id="balance"></div>
+      <div class="delta" id="delta"></div>
+    </div>
+    <div class="chal"><span>Cél / bukás</span><b id="chal-goal"></b><b id="chal-floor" style="color:var(--red);"></b></div>
+  </div>
+  <div class="gauge">
+    <div class="gtrack"><div class="gmid"></div><div class="gmark" id="gmark"></div></div>
+    <div class="gscale">
+      <span><b id="sc-lo"></b><br>−100% · bukás</span>
+      <span style="text-align:center;"><b id="sc-mid"></b><br>0% · start</span>
+      <span style="text-align:right;"><b id="sc-hi"></b><br>+100% · cél</span>
+    </div>
+    <div class="gnow"><span class="p num" id="bipct"></span><span class="t" id="bitxt"></span></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="wr">0%</div><div class="l" id="wr-l">Win rate</div></div>
+    <div class="stat"><div class="n" id="rr">0</div><div class="l">Átlag RR-cél</div></div>
+    <div class="stat"><div class="n" id="tot">0</div><div class="l">Trade · 3 hó</div></div>
+  </div>
+  <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
+  <div class="streak">
+    <div class="sk"><span class="skn num" id="streak-n">1</span><span class="skl">tiszta trade sorozat</span></div>
+    <div class="skr">rekord <b class="num">2*</b> — <span class="sknote">*a júl. 21. GBPCAD ❓ ismeretlen, ezért csillagos; az első 3 elemű IGAZOLT sorozat lesz az új rekord</span></div>
+    <div class="sklg"><span>✅ tiszta</span><span>❌ szabályszegés</span><span>❓ nincs dokumentálva</span></div>
+  </div>
+
+  <details class="acc">
+    <summary><span class="chev">▸</span> Utolsó trade-ek <span class="hint" id="trades-hint"></span></summary>
+    <div class="body"><div id="trades"></div></div>
+  </details>
+</div>
+
+<!-- PANEL 1b: TRADE CHECKLIST -->
+<div class="card d1b">
+  <details class="acc" style="margin-top:0;" open>
+    <summary><span class="chev">▸</span> ⚠️ Trade Checklist — belépés előtt / közben <span class="hint" id="chk-hint"></span></summary>
+    <div class="body">
+
+      <div class="gate">
+        <div class="gt">⏱ 10 másodperces döntési kártya</div>
+        <div class="gsub">Nyitott pozíció alatt, ha külső input jön (csoport, hír, „szarakodik az ár"). Ne mérlegelj — futtasd le.</div>
+        <div class="grow"><span class="gn">1</span><div>Zárt-e egy <b>TELJES gyertya</b> vissza az OB-omba ellenem? &nbsp;→ &nbsp;<b>NEM = kéz le.</b></div></div>
+        <div class="grow"><span class="gn">2</span><div><b>Naptári, high-impact</b> esemény, ami a <b>belépésem UTÁN</b> jött ki? Ha nincs a naptárban, nincs miről dönteni. &nbsp;→ &nbsp;<b>NEM = kéz le.</b></div></div>
+        <div class="grow"><span class="gn">3</span><div>Ha <b>mindkettő IGEN</b> → a <b>belépés előtt megírt terv</b> szerint cselekszem, nem improvizálok.</div></div>
+        <div class="gfoot">
+          <b>Bármilyen bizonytalanság → kéz le.</b> Az alapértelmezés a nem-cselekvés: a pozíciónak már van SL-je és TP-je.<br>
+          <b>A leírás a döntés UTÁN jön</b> — nulla késleltetés. A kártya dönt, nem a mentor és nem a csoport. A dokumentáció nem engedély, hanem bizonyíték.<br>
+          <span style="opacity:.8">Emlékeztető: a júl. 23-i döntés is nyugodt és végiggondolt volt. A félelem gyors — a felmentés lassú, nyugodt és indoklással érkezik.</span>
+        </div>
+      </div>
+
+      <div id="checklist"></div>
+    </div>
+  </details>
+</div>
+
+<!-- PANEL 2 -->
+<div class="card d2">
+  <div class="eyebrow"><span class="k">☾</span> Session Brief — <span id="today-label" style="color:var(--sub);"></span></div>
+  <div id="tradestatus-wrap"></div>
+  <div class="edge" id="edge"></div>
+  <div class="sb" id="sb"></div>
+  <div class="aifocus" id="aifocus"></div>
+
+  <details class="acc" open>
+    <summary><span class="chev">▸</span> Instrument bias <span class="hint">8 pár</span></summary>
+    <div class="body"><div class="bias" id="bias"></div></div>
+  </details>
+  <details class="acc">
+    <summary><span class="chev">▸</span> Deviza-erő</summary>
+    <div class="body"><div class="strength" id="strength"></div></div>
+  </details>
+  <details class="acc">
+    <summary><span class="chev">▸</span> Hír-ablakok <span class="hint" id="news-hint"></span></summary>
+    <div class="body"><div id="news"></div></div>
+  </details>
+</div>
+
+<!-- PANEL 3: JOURNAL -->
+<div class="card d3">
+  <div class="eyebrow"><span class="k">✎</span> Gyorsjegyzet → Daily Notes</div>
+  <textarea id="note" placeholder="Írj ide, vagy nyomd meg a mikrofont és beszélj (magyarul). Csend alatt is figyel — te állítod le."></textarea>
+  <div class="jbtns">
+    <button class="mic" id="mic" title="Diktálás indítása/leállítása">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+    </button>
+    <button class="save" id="save">Mentés a Daily Notesba</button>
+  </div>
+  <div class="reclbl" id="reclbl" style="display:none;"><span class="recdot"></span><span id="rectxt">Hallgatlak… beszélj nyugodtan, csend alatt is figyelek.</span></div>
+  <div class="jstat" id="jstat"></div>
+  <div class="jhint">A mikrofon csak diktál — <b>nem ment magától</b>. Amikor kész vagy, nyomd meg a <b>Mentés</b> gombot; az leállítja a diktálást (ha megy) és időbélyeggel a Daily Notes végére írja.</div>
+</div>
+
+<div class="foot" id="foot"></div>
+
+<script>
+/* =====================================================================
+   ADAT — a reggeli ütemezett task frissíti naponta. (Notion ingyenes
+   SQL-limit miatt naponta egyszer égetjük be, nem minden megnyitáskor.)
+   Eredmény (res) a Profit/Loss előjeléből; Status = hangulat-tag, RR = TP-cél.
+   A streak + a döntési kártya + a checklist forrása a Mentor Log Élő állapota.
+   ===================================================================== */
+const DATA = {
+  updated: "2026-08-20",
+  syncNote: "reggeli auto-sync · Notion + friss hír-naptár",
+  streak: { current: 0, record: "2*" },
+  account: { current: 99500, goal: 110000, initial: 100000, floor: 90000 },
+  stats3m: { wins: 3, losses: 10, be: 2, total: 15, avgRR: 2.79 },
+  trades: [
+    { pair:"NAS100",  date:"2026-08-03", res:"win",  pnl:"+$1800", conf:"B+ 9" },
+    { pair:"XAUUSD",  date:"2026-07-27", res:"loss", pnl:"−$500",  conf:"B+ 8.5" },
+    { pair:"NAS100",  date:"2026-07-23", res:"be",   pnl:"BE",     conf:"B+ 8.5" },
+    { pair:"NAS100",  date:"2026-07-21", res:"win",  pnl:"+$1000", conf:"B+ 9" },
+    { pair:"GBPCAD",  date:"2026-07-21", res:"loss", pnl:"−$600",  conf:"A 10" },
+    { pair:"SPX500",  date:"2026-07-17", res:"loss", pnl:"−$300",  conf:"A 10" },
+    { pair:"CRUDE",   date:"2026-07-13", res:"loss", pnl:"−$450",  conf:"B 7" },
+    { pair:"SPX500",  date:"2026-07-09", res:"win",  pnl:"+$600",  conf:"B+ 8.5" }
+  ],
+  /* Trade Checklist — a Mentor Log "Hibapont-bank" trade-idejű alszelete.
+     Sorrend = költség szerint (2026. júliusi havi retró, B/C fázis).
+     tier: "hi" = piros (legköltségesebb minta), "mid" = borostyán, "" = semleges.
+     A teljes, bővülő lista (+ általános trader-pszichológia tételek) a Mentor Logban él. */
+  checklist: [
+    { tier:"hi",  t:"<b>SL — belépés után nem nyúlok hozzá.</b> Korai BE, fél-SL, félelem-alapú zárás: mind ugyanaz. Júliusban ez volt a hiba-költség 58%-a (−2 900)." },
+    { tier:"hi",  t:"<b>TP — a módosítás csak belépés ELŐTTI döntés lehet.</b> Ha trade közben jön a késztetés („szarakodik az ár”, „most már kéne az a win”): kéz le. Ellenirányú zóna / key level a target előtt → a TP a belépés előtt kerül közelebb, vagy részleges TP." },
+    { tier:"hi",  t:"<b>LOT — ha belépéskor elcsúszott, NEM javítom utólag.</b> Vagy újraszámolás belépés előtt, vagy skip. A „majd profitban rendezem” eddig egyszer sem történt meg — júliusban +1,5R = 750 $ többletveszteség ment el így." },
+    { tier:"hi",  t:"<b>News-ürügy + Mango-engedély = fear-exit álruhában.</b> A hír-kivétel csak akkor él, ha naptári + high-impact + a belépés UTÁN jött + tényleg kijött. Mind a négy, vagy nincs kivétel." },
+    { tier:"mid", t:"Necc magabiztosság erőltetése — 8–8,49 = <b>skip</b>, nem kisebb lot. Belépés 8,5-től." },
+    { tier:"mid", t:"Spread-kezelés — GBPJPY/CRUDE-nál a spread a lotba/managementbe megy, sosem a TP-be." },
+    { tier:"mid", t:"Rizikó-plafon: <b>alap 0,5%, max 0,8%</b> — a tényleges %, nem a szándék. Futuresön 1% = 4 full SL az MLL-ig, a júliusi túllépéssel ~3." },
+    { tier:"",    t:"Double bottom/top csak akkor óvatossági jel, ha az irány ELLEN van — ha veled, megerősítés." },
+    { tier:"",    t:"Key level TP kihagyása — negatív key levelnél a TP a level ELÉ kerül, nem mögé." },
+    { tier:"",    t:"Mangoe-horgony — te pontozol előbb; 8,5 alatt skip; olaj tiltólistán." },
+    { tier:"",    t:"Reggeli brief ellened szól → vonj le egy pontot." },
+    { tier:"",    t:"Trend hiányában lefelé kerekíts a pontszámban, ne felfelé (30m + HTF trend a fő szűrő)." },
+    { tier:"",    t:"Egymás ellen fogadás korreláló párokban — nézd meg belépés előtt." },
+    { tier:"",    t:"4H nyitás + 30m entry — várd meg az 5m close-t. A 25. és az 50–55. percben nem nyitunk." }
+  ],
+  setup: {
+    dateLabel: "Csütörtök, 2026. augusztus 20.",
+    noTrade: false,
+    tradeStatusText: "<b>TRADING NAP — egy kemény ablakkal.</b> Nincs kamatdöntés, nincs CPI/NFP; a Riksbank ma dönt, de az SEK nincs a pároid között. Az egyetlen valódi tiltás: <b>14:30 — US munkanélküli kérelmek + Philly Fed</b> (ugyanabban a percben kanadai PPI) → <b>tiltott ablak 14:00–15:00</b>. <b>Ez a hét utolsó éles napja: holnaptól aug. 29-ig utazás, előre kimondott NO-TRADE. Utolsó trade: aug. 3. — 17 napja.</b>",
+    edge: { score: 58, label: "Közepes — tiszta a reggel, egy ablak 14:30-kor" },
+    brief: {
+      riskTone: "Közepes. Adat-szegény nap két erős esemény között (tegnapi FOMC-jegyzőkönyv, holnapi flash PMI-k) — a London-délelőtt tisztán trendelhet, de a napi irány nem ma dől el. A holnaptól kezdődő utazás miatt ma a legnagyobb kockázat nem a piac, hanem te.",
+      keyDriver: "USD gyenge oldalon: a DXY a 2 havi mélye közelében (~99,3–99,5), a szeptemberi tartás esélye ~67%, a hosszú hozamok estek a Treasury visszavásárlási terv után. A JPY a legerősebb major, a GBP-t a szerda 2,9%-os CPI (mag 2,6%, a várt fölött) tartja. FIGYELEM: ez fordulat a tegnapi briefhez képest, ahol USD-erőt írtam — ma a friss adat mást mutat.",
+      watch: "14:30 US Initial Jobless Claims + Philly Fed (Aug) + kanadai PPI → tiltott ablak 14:00–15:00. 08:00 német PPI (halk). ~13:00 Walmart-gyorsjelentés az indexek nyitása elé. Holnap: globális flash PMI-k.",
+      avoid: "CRUDE tiltólistán marad (3 hóban 2/2 vesztes) + iráni headline-kockázat rangebound piacon. GBPCAD-nél a kanadai PPI a második hír-láb. XAUUSD a 4 313–4 441 sávban konszolidál — sáv közepén nincs setup."
+    },
+    strength: [
+      { t:"USD ↓", c:"s-weak" }, { t:"JPY ↑", c:"s-strong" },
+      { t:"GBP ↑", c:"s-strong" }, { t:"EUR →", c:"s-neut" }, { t:"CAD →", c:"s-neut" }
+    ],
+    bias: [
+      { p:"NAS100", c:"bull", t:"Bullish", conf:62, why:"A legtisztább kép: eső hosszú hozamok + dovish árazás (szept. tartás ~67%). A két legutóbbi nyertesed is innen jött. Wildcard: Walmart-gyorsjelentés a nyitás elé." },
+      { p:"USDJPY", c:"bear", t:"Bearish", conf:60, why:"Gyenge USD + a JPY a legerősebb major — a devizaerő és az irány egybeesik. Fordulat a tegnapi bullish jelzéshez képest, ezért csak tiszta 30m szerkezetről." },
+      { p:"EURUSD", c:"bull", t:"Bullish", conf:54, why:"Az USD-gyengeség viszi, saját katalizátor nélkül (08:00 német PPI halk). Az irány rendben, a lendület kérdéses — csak érintetlen zónáról." },
+      { p:"SPX500", c:"bull", t:"Bullish", conf:50, why:"Ugyanaz a hajtóerő, mint a NAS100-on, szűkebb tartománnyal. A 15:30-as nyitás a 14:30-as adat UTÁN van — ne előlegezd meg az irányt." },
+      { p:"GBPCAD", c:"neut", t:"Semleges", conf:38, why:"GBP szilárd a CPI után, de a CAD a rangebound olajon lóg, és 14:30-kor kanadai PPI jön. Két oldal, kevés meggyőződés." },
+      { p:"XAUUSD", c:"frag", t:"Fragile", conf:36, why:"A gyenge USD támogatja, de a 4 313–4 441 sávban konszolidál. Csak a sáv széléről van itt keresnivalód — középről nem." },
+      { p:"GBPJPY", c:"frag", t:"Fragile", conf:30, why:"Két erős deviza egymás ellen, nagy spreaddel. Ez a párod, ahol a vegyes jel a legdrágább — félreállás, nem kisebb lot." },
+      { p:"CRUDE",  c:"frag", t:"Tiltólista", conf:0,  why:"Tiltólistán marad (3 hóban 2/2 vesztes, −950 $). Rangebound piac iráni headline-kockázattal — pont a legrosszabb kombináció. Nincs mérlegelés." }
+    ],
+    news: [
+      { imp:"imp-yellow", txt:"<b>08:00</b> — német PPI (júl.) → EURUSD, halk hatás" },
+      { imp:"imp-orange", txt:"<b>~13:00</b> — Walmart (és Alibaba) gyorsjelentés a US nyitás elé → NAS100, SPX500 hangulat" },
+      { imp:"imp-red",    txt:"<b>14:30</b> — US Initial Jobless Claims + Philly Fed (aug.) → USD, XAUUSD, NAS100, SPX500, USDJPY, EURUSD. Tiltott ablak: <b>14:00–15:00</b>" },
+      { imp:"imp-orange", txt:"<b>14:30</b> — kanadai PPI (júl.) → CAD → GBPCAD, áttételesen CRUDE (ugyanaz az ablak)" },
+      { imp:"imp-yellow", txt:"<b>Aug. 21. (P)</b> — globális flash PMI-k: az indexeket és az EUR-t is mozgatják" },
+      { imp:"imp-red",    txt:"<b>Aug. 21–29.</b> — utazás: előre kimondott NO-TRADE blokk. A skip nem nulláz, a padló akkor is megy" }
+    ],
+    aiFocus: "Az irány ma egy szálon lóg: gyenge dollár. Ez a NAS100-at (és mögötte az SPX500-at) felfelé, az USDJPY-t lefelé teszi tisztává — a devizaerő és a szerkezet ugyanoda mutat, ez a nap két nézhető párja. A 14:00–15:00 ablak zárva; előtte a London-délelőtt, utána a US nyitás szabad. Ami viszont ma tényleg számít: 17 napja nem kereskedtél, és holnaptól kilenc napig nem is fogsz — ez pontosan az a helyzet, amiben a „még egy trade a szünet előtt” érzés belebeszél egy 8-asba. A küszöb ma is 8,5, és a nulla trade tiszta kimenet, nem elszalasztott lehetőség. <b>Fő fék: belépés után nem nyúlsz az SL-hez.</b>"
+    }
+};
+
+const DAILY_NOTES_PAGE = "36eac560704880469890e907b6f383d9";
+const $ = id => document.getElementById(id);
+function money(n){ return "$" + Math.round(n).toLocaleString('hu-HU').replace(/,/g,' '); }
+function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf=o.suf||"",pre=o.pre||"";
+  (function s(t){const k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3),v=to*e;
+   el.textContent=pre+(dec?v.toFixed(dec):Math.round(v).toLocaleString('hu-HU').replace(/,/g,' '))+suf;
+   if(k<1)requestAnimationFrame(s);})(t0);}
+
+/* ---- Panel 1 ---- */
+(function(){
+  const a=DATA.account, s=DATA.stats3m;
+  countUp($('balance'),a.current,{pre:"$"});
+  const d=a.current-a.initial;
+  $('delta').className="delta "+(d>=0?"up":"down");
+  $('delta').textContent=(d>=0?"▲ +":"▼ ")+money(Math.abs(d))+" vs. induló "+money(a.initial);
+  $('chal-goal').textContent="▲ "+money(a.goal); $('chal-floor').textContent="▼ "+money(a.floor);
+  $('sc-lo').textContent=money(a.floor); $('sc-mid').textContent=money(a.initial); $('sc-hi').textContent=money(a.goal);
+  const span=a.goal-a.initial; let bip=(a.current-a.initial)/span*100;
+  const clamped=Math.max(-100,Math.min(100,bip)); const pos=(clamped+100)/200*100;
+  setTimeout(()=>{ $('gmark').style.left="calc("+pos+"% - 2px)"; },60);
+  $('bipct').textContent=(bip>=0?"+":"")+bip.toFixed(0)+"%";
+  $('bipct').style.color=bip>=0?"var(--green)":"var(--red)";
+  $('bitxt').textContent=bip>=0?"a cél felé ("+money(a.current)+")":"a bukási szint felé ("+money(a.current)+")";
+  const decided=s.wins+s.losses, wr=decided?Math.round(s.wins/decided*100):0;
+  countUp($('wr'),wr,{suf:"%"});
+  $('wr-l').innerHTML=`Win rate<br><span class="sm">${s.wins}W · ${s.losses}L · ${s.be}BE</span>`;
+  countUp($('rr'),s.avgRR,{dec:2}); countUp($('tot'),s.total);
+  $('streak-n').textContent=DATA.streak.current;
+  $('trades-hint').textContent=`${s.wins}W · ${s.losses}L`;
+  const pill=r=>r==="win"?'<span class="pill w">Nyert</span>':r==="loss"?'<span class="pill l">Vesztett</span>':'<span class="pill b">BE</span>';
+  const pcol=r=>r==="win"?"var(--green)":r==="loss"?"var(--red)":"var(--sub)";
+  $('trades').innerHTML=DATA.trades.map(t=>
+    `<div class="trow"><span class="pr">${t.pair} <span class="conf">${t.conf||""}</span></span>
+     <span class="dt">${t.date.slice(5)}</span>${pill(t.res)}<span class="rr" style="color:${pcol(t.res)}">${t.pnl||"—"}</span></div>`).join('');
+})();
+
+/* ---- Panel 1b: Trade Checklist ---- */
+(function(){
+  const c=DATA.checklist||[];
+  $('chk-hint').textContent="kártya + "+c.length+" tétel";
+  $('checklist').innerHTML=c.map((x,i)=>
+    `<div class="ckrow"><span class="ckn ${x.tier}">${i+1}</span><span class="cktxt">${x.t}</span></div>`).join('');
+})();
+
+/* ---- Panel 2 ---- */
+(function(){
+  const su=DATA.setup;
+  $('today-label').textContent=su.dateLabel;
+  $('tradestatus-wrap').innerHTML=`<div class="banner ${su.noTrade?'no':'ok'}">${su.noTrade?'⛔ ':'✅ '}${su.tradeStatusText}</div>`;
+  $('edge').innerHTML=`<div class="score">${su.edge.score}</div><div><div class="ek">Edge Factor</div><div class="ev">${su.edge.label}</div></div>`;
+  const b=su.brief;
+  $('sb').innerHTML=`
+    <div class="sbc"><div class="k">Risk tone</div><div class="v">${b.riskTone}</div></div>
+    <div class="sbc"><div class="k">Key driver</div><div class="v">${b.keyDriver}</div></div>
+    <div class="sbc watch"><div class="k">Watch</div><div class="v">${b.watch}</div></div>
+    <div class="sbc avoid"><div class="k">Avoid</div><div class="v">${b.avoid}</div></div>`;
+  $('aifocus').innerHTML=`<b>◇ AI napi fókusz —</b> ${su.aiFocus}`;
+  $('strength').innerHTML=su.strength.map(x=>`<span class="cur ${x.c}">${x.t}</span>`).join('');
+  $('bias').innerHTML=su.bias.map(x=>
+    `<div class="pair ${x.c}"><div class="top"><span class="name">${x.p}</span><span class="tg">${x.t}</span></div>
+     <div class="why">${x.why}</div>
+     <div class="cf"><span class="cfbar"><i style="width:${x.conf}%"></i></span><span class="cfn">conf ${x.conf}%</span></div></div>`).join('');
+  $('news').innerHTML=su.news.map(n=>`<div class="newsitem"><span class="imp ${n.imp}"></span><div>${n.txt}</div></div>`).join('');
+  $('news-hint').textContent=su.news.length+" db";
+})();
+
+$('updated').textContent="SYNC "+DATA.updated+" · 07:00 · "+DATA.syncNote;
+$('foot').textContent="napi frissítés a Notionből · session brief a reggeli tasktól · checklist a Mentor Log Élő állapotából";
+
+/* ---- Panel 3: robusztus diktálás + mentés ---- */
+(function(){
+  const ta=$('note'), micBtn=$('mic'), saveBtn=$('save'), stat=$('jstat'), reclbl=$('reclbl'), rectxt=$('rectxt');
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let rec=null, listening=false, committed="";
+
+  if(!SR){ micBtn.style.display="none"; }
+  else{
+    rec=new SR(); rec.lang="hu-HU"; rec.continuous=true; rec.interimResults=true;
+    rec.onresult=e=>{
+      let interim="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const r=e.results[i];
+        if(r.isFinal) committed+=r[0].transcript.trim()+" ";
+        else interim+=r[0].transcript;
+      }
+      ta.value=(committed+interim).replace(/\s+/g," ").trimStart();
+    };
+    // Csend alatt a böngésző leállítja — újraindítjuk, amíg a user nem állította le.
+    rec.onend=()=>{ if(listening){ try{rec.start();}catch(_){ setTimeout(()=>{if(listening)try{rec.start()}catch(_){}} ,300);} } };
+    rec.onerror=e=>{
+      if(e.error==="no-speech"||e.error==="aborted") return; // csend/újraindítás — nem baj
+      stat.className="jstat err"; stat.textContent="Mikrofon hiba: "+e.error+" (engedélyezd a mikrofont)"; setListening(false);
+    };
+  }
+  // Kézi gépelés is frissítse a bázist, hogy diktálás után se vesszen el
+  ta.addEventListener('input',()=>{ if(!listening) committed = ta.value?ta.value.replace(/\s+$/,"")+" ":""; });
+
+  function setListening(on){
+    listening=on; micBtn.classList.toggle('on',on); reclbl.style.display=on?'flex':'none';
+    if(on){ stat.textContent=""; stat.className="jstat"; }
+  }
+  function start(){ if(!rec)return; committed=ta.value?ta.value.replace(/\s+$/,"")+" ":""; setListening(true); try{rec.start();}catch(_){}}
+  function stop(){ setListening(false); if(rec){try{rec.stop();}catch(_){}} }
+  micBtn.onclick=()=> listening?stop():start();
+
+  saveBtn.onclick=async()=>{
+    if(listening) stop();
+    const txt=ta.value.trim();
+    if(!txt){ stat.className="jstat err"; stat.textContent="Üres a jegyzet."; return; }
+    saveBtn.disabled=true; stat.className="jstat"; stat.textContent="Vágólapra másolás…";
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(_){ ta.select(); try{ document.execCommand('copy'); }catch(_){} }
+    stat.className="jstat ok"; stat.textContent="✓ Vágólapra másolva — nyisd meg a Daily Notest és illeszd be";
+    window.open("https://www.notion.so/"+DAILY_NOTES_PAGE,"_blank");
+    saveBtn.disabled=false;
+  };
+})();
+</script>
+</body>
+</html>
