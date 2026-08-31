@@ -211,9 +211,9 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
     <div class="stat"><div class="n" id="rr">0</div><div class="l">Átlag RR-cél</div></div>
     <div class="stat"><div class="n" id="tot">0</div><div class="l">Trade · 3 hó</div></div>
   </div>
-  <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
+  <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 (28 napja) — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
   <div class="streak">
-    <div class="sk"><span class="skn num" id="streak-n">1</span><span class="skl">tiszta trade sorozat</span></div>
+    <div class="sk"><span class="skn num" id="streak-n">0</span><span class="skl">tiszta trade sorozat</span></div>
     <div class="skr">rekord <b class="num">2*</b> — <span class="sknote">*a júl. 21. GBPCAD ❓ ismeretlen, ezért csillagos; az első 3 elemű IGAZOLT sorozat lesz az új rekord</span></div>
     <div class="sklg"><span>✅ tiszta</span><span>❌ szabályszegés</span><span>❓ nincs dokumentálva</span></div>
   </div>
@@ -296,8 +296,8 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
    A streak + a döntési kártya + a checklist forrása a Mentor Log Élő állapota.
    ===================================================================== */
 const DATA = {
-  updated: "2026-08-20",
-  syncNote: "reggeli auto-sync · Notion + friss hír-naptár",
+  updated: "2026-08-31",
+  syncNote: "kézi frissítés (a reggeli auto-sync NEM fut) · naptár ellenőrizve",
   streak: { current: 0, record: "2*" },
   account: { current: 99500, goal: 110000, initial: 100000, floor: 90000 },
   stats3m: { wins: 3, losses: 10, be: 2, total: 15, avgRR: 2.79 },
@@ -317,7 +317,7 @@ const DATA = {
      A teljes, bővülő lista (+ általános trader-pszichológia tételek) a Mentor Logban él. */
   checklist: [
     { tier:"hi",  t:"<b>SL — belépés után nem nyúlok hozzá.</b> Korai BE, fél-SL, félelem-alapú zárás: mind ugyanaz. Júliusban ez volt a hiba-költség 58%-a (−2 900)." },
-    { tier:"hi",  t:"<b>TP — a módosítás csak belépés ELŐTTI döntés lehet.</b> Ha trade közben jön a késztetés („szarakodik az ár”, „most már kéne az a win”): kéz le. Ellenirányú zóna / key level a target előtt → a TP a belépés előtt kerül közelebb, vagy részleges TP." },
+    { tier:"hi",  t:"<b>TP/SL menet közbeni mozgatása — KIFELÉ (runner) VAGY BEFELÉ (részleges TP1 + SL breakevenre) — kizárólag akkor megengedett, ha a trigger BELÉPÉS ELŐTT, mechanikusan, tesztelhető feltételként le van írva a Notes-ba. Ha nincs előre leírva: a TP és az SL marad, ahol van. (Egységesítve 2026-08-19.)</b> Ha trade közben jön a késztetés („szarakodik az ár”, „most már kéne az a win”): kéz le. Ellenirányú zóna / key level a target előtt → a TP a belépés előtt kerül közelebb, vagy részleges TP." },
     { tier:"hi",  t:"<b>LOT — ha belépéskor elcsúszott, NEM javítom utólag.</b> Vagy újraszámolás belépés előtt, vagy skip. A „majd profitban rendezem” eddig egyszer sem történt meg — júliusban +1,5R = 750 $ többletveszteség ment el így." },
     { tier:"hi",  t:"<b>News-ürügy + Mango-engedély = fear-exit álruhában.</b> A hír-kivétel csak akkor él, ha naptári + high-impact + a belépés UTÁN jött + tényleg kijött. Mind a négy, vagy nincs kivétel." },
     { tier:"mid", t:"Necc magabiztosság erőltetése — 8–8,49 = <b>skip</b>, nem kisebb lot. Belépés 8,5-től." },
@@ -332,40 +332,38 @@ const DATA = {
     { tier:"",    t:"4H nyitás + 30m entry — várd meg az 5m close-t. A 25. és az 50–55. percben nem nyitunk." }
   ],
   setup: {
-    dateLabel: "Csütörtök, 2026. augusztus 20.",
-    noTrade: false,
-    tradeStatusText: "<b>TRADING NAP — egy kemény ablakkal.</b> Nincs kamatdöntés, nincs CPI/NFP; a Riksbank ma dönt, de az SEK nincs a pároid között. Az egyetlen valódi tiltás: <b>14:30 — US munkanélküli kérelmek + Philly Fed</b> (ugyanabban a percben kanadai PPI) → <b>tiltott ablak 14:00–15:00</b>. <b>Ez a hét utolsó éles napja: holnaptól aug. 29-ig utazás, előre kimondott NO-TRADE. Utolsó trade: aug. 3. — 17 napja.</b>",
-    edge: { score: 58, label: "Közepes — tiszta a reggel, egy ablak 14:30-kor" },
-    brief: {
-      riskTone: "Közepes. Adat-szegény nap két erős esemény között (tegnapi FOMC-jegyzőkönyv, holnapi flash PMI-k) — a London-délelőtt tisztán trendelhet, de a napi irány nem ma dől el. A holnaptól kezdődő utazás miatt ma a legnagyobb kockázat nem a piac, hanem te.",
-      keyDriver: "USD gyenge oldalon: a DXY a 2 havi mélye közelében (~99,3–99,5), a szeptemberi tartás esélye ~67%, a hosszú hozamok estek a Treasury visszavásárlási terv után. A JPY a legerősebb major, a GBP-t a szerda 2,9%-os CPI (mag 2,6%, a várt fölött) tartja. FIGYELEM: ez fordulat a tegnapi briefhez képest, ahol USD-erőt írtam — ma a friss adat mást mutat.",
-      watch: "14:30 US Initial Jobless Claims + Philly Fed (Aug) + kanadai PPI → tiltott ablak 14:00–15:00. 08:00 német PPI (halk). ~13:00 Walmart-gyorsjelentés az indexek nyitása elé. Holnap: globális flash PMI-k.",
-      avoid: "CRUDE tiltólistán marad (3 hóban 2/2 vesztes) + iráni headline-kockázat rangebound piacon. GBPCAD-nél a kanadai PPI a második hír-láb. XAUUSD a 4 313–4 441 sávban konszolidál — sáv közepén nincs setup."
-    },
-    strength: [
-      { t:"USD ↓", c:"s-weak" }, { t:"JPY ↑", c:"s-strong" },
-      { t:"GBP ↑", c:"s-strong" }, { t:"EUR →", c:"s-neut" }, { t:"CAD →", c:"s-neut" }
-    ],
-    bias: [
-      { p:"NAS100", c:"bull", t:"Bullish", conf:62, why:"A legtisztább kép: eső hosszú hozamok + dovish árazás (szept. tartás ~67%). A két legutóbbi nyertesed is innen jött. Wildcard: Walmart-gyorsjelentés a nyitás elé." },
-      { p:"USDJPY", c:"bear", t:"Bearish", conf:60, why:"Gyenge USD + a JPY a legerősebb major — a devizaerő és az irány egybeesik. Fordulat a tegnapi bullish jelzéshez képest, ezért csak tiszta 30m szerkezetről." },
-      { p:"EURUSD", c:"bull", t:"Bullish", conf:54, why:"Az USD-gyengeség viszi, saját katalizátor nélkül (08:00 német PPI halk). Az irány rendben, a lendület kérdéses — csak érintetlen zónáról." },
-      { p:"SPX500", c:"bull", t:"Bullish", conf:50, why:"Ugyanaz a hajtóerő, mint a NAS100-on, szűkebb tartománnyal. A 15:30-as nyitás a 14:30-as adat UTÁN van — ne előlegezd meg az irányt." },
-      { p:"GBPCAD", c:"neut", t:"Semleges", conf:38, why:"GBP szilárd a CPI után, de a CAD a rangebound olajon lóg, és 14:30-kor kanadai PPI jön. Két oldal, kevés meggyőződés." },
-      { p:"XAUUSD", c:"frag", t:"Fragile", conf:36, why:"A gyenge USD támogatja, de a 4 313–4 441 sávban konszolidál. Csak a sáv széléről van itt keresnivalód — középről nem." },
-      { p:"GBPJPY", c:"frag", t:"Fragile", conf:30, why:"Két erős deviza egymás ellen, nagy spreaddel. Ez a párod, ahol a vegyes jel a legdrágább — félreállás, nem kisebb lot." },
-      { p:"CRUDE",  c:"frag", t:"Tiltólista", conf:0,  why:"Tiltólistán marad (3 hóban 2/2 vesztes, −950 $). Rangebound piac iráni headline-kockázattal — pont a legrosszabb kombináció. Nincs mérlegelés." }
-    ],
-    news: [
-      { imp:"imp-yellow", txt:"<b>08:00</b> — német PPI (júl.) → EURUSD, halk hatás" },
-      { imp:"imp-orange", txt:"<b>~13:00</b> — Walmart (és Alibaba) gyorsjelentés a US nyitás elé → NAS100, SPX500 hangulat" },
-      { imp:"imp-red",    txt:"<b>14:30</b> — US Initial Jobless Claims + Philly Fed (aug.) → USD, XAUUSD, NAS100, SPX500, USDJPY, EURUSD. Tiltott ablak: <b>14:00–15:00</b>" },
-      { imp:"imp-orange", txt:"<b>14:30</b> — kanadai PPI (júl.) → CAD → GBPCAD, áttételesen CRUDE (ugyanaz az ablak)" },
-      { imp:"imp-yellow", txt:"<b>Aug. 21. (P)</b> — globális flash PMI-k: az indexeket és az EUR-t is mozgatják" },
-      { imp:"imp-red",    txt:"<b>Aug. 21–29.</b> — utazás: előre kimondott NO-TRADE blokk. A skip nem nulláz, a padló akkor is megy" }
-    ],
-    aiFocus: "Az irány ma egy szálon lóg: gyenge dollár. Ez a NAS100-at (és mögötte az SPX500-at) felfelé, az USDJPY-t lefelé teszi tisztává — a devizaerő és a szerkezet ugyanoda mutat, ez a nap két nézhető párja. A 14:00–15:00 ablak zárva; előtte a London-délelőtt, utána a US nyitás szabad. Ami viszont ma tényleg számít: 17 napja nem kereskedtél, és holnaptól kilenc napig nem is fogsz — ez pontosan az a helyzet, amiben a „még egy trade a szünet előtt” érzés belebeszél egy 8-asba. A küszöb ma is 8,5, és a nulla trade tiszta kimenet, nem elszalasztott lehetőség. <b>Fő fék: belépés után nem nyúlsz az SL-hez.</b>"
-    }
+dateLabel: "Hétfő, 2026. augusztus 31.",
+noTrade: false,
+tradeStatusText: "<b>TRADING NAP.</b> Nincs NFP, CPI, FOMC vagy kamatdöntés. Egyetlen közepes esemény: <b>15:45 Chicago PMI</b> → óvatosság 15:15–16:15, <b>nem tiltás</b>. <b>Hónap utolsó napja:</b> a 17:00-s londoni fix körül month-end rebalancing flow — nem naptári esemény, tehát nem tiltott ablak, de érv a kisebb méret vagy a skip mellett. <b>Utolsó éles trade: 2026-08-03 — 28 napja.</b>",
+edge: { score: 45, label: "Naptár tiszta — de a pár-bias NEM frissült aug. 20. óta" },
+brief: {
+riskTone: "Az augusztus 1 éles trade-del zárult, és 28 napja nem volt belépés. Ma nem a piac a fő kockázat, hanem a szünet utáni első nap: hosszú kihagyás után a küszöb szokott puhulni. A skip ma is tiszta kimenet, nem elszalasztott lehetőség.",
+keyDriver: "SZEPTEMBERI KERET: szept. 1–18. között napi 9:00–16:00 gépközelben, minden hétköznap — 14 munkanap, és lefedi a dokumentált setupjaid 100%-át (mind a 36 setup 15:20 CEST előtt van). Augusztusban a naptár zárta le a hónapot; szeptemberre ilyen mentség nincs.",
+watch: "MA: 15:45 Chicago PMI (óvatosság 15:15–16:15) · 16:30 Dallas Fed (halk) · kb. 17:00 month-end flow. A HÉT: K 16:00 ISM Manufacturing → tiltott 15:30–16:30 · SZE 14:15 ADP → óvatosság 13:45–14:45 · CS 16:00 ISM Services → tiltott 15:30–16:30.",
+avoid: "PÉNTEK SZEPT. 4. = NFP → EGÉSZ NAPOS NO-TRADE, megsértése streak-reset. CRUDE tiltólistán marad. A pár-bias ezen az oldalon NEM friss (utolsó frissítés aug. 20.) — belépés előtt kérj reggeli briefet, ne ebből dolgozz."
+},
+strength: [ { t:"nincs friss adat", c:"s-neut" } ],
+bias: [
+{ p:"NAS100", c:"neut", t:"Nincs friss bias", conf:0, why:"Az ISM (K, CS) és az NFP (P) USD-hírek ide is átgyűrűznek. Bias nem frissítve aug. 20. óta — kérj briefet." },
+{ p:"SPX500", c:"neut", t:"Nincs friss bias", conf:0, why:"Ugyanaz az USD-kitettség, mint a NAS100-on. Bias nem frissítve aug. 20. óta." },
+{ p:"XAUUSD", c:"neut", t:"Nincs friss bias", conf:0, why:"USD-hírre a legérzékenyebb a nyolcból. Aug. 19-én hat hete tartó range volt — oldalazás = no trade. Nem frissítve." },
+{ p:"EURUSD", c:"neut", t:"Nincs friss bias", conf:0, why:"Aug. 20-án ez volt a legtisztább pár. Azóta nem frissítve — nem hordozható át." },
+{ p:"USDJPY", c:"neut", t:"Nincs friss bias", conf:0, why:"BoJ-kitettség és USD-hírek mindkét oldalról. Nem frissítve aug. 20. óta." },
+{ p:"GBPJPY", c:"neut", t:"Nincs friss bias", conf:0, why:"Két erős deviza egymás ellen, nagy spread — a te legdrágább vegyes-jel párod. Nem frissítve." },
+{ p:"GBPCAD", c:"neut", t:"Nincs friss bias", conf:0, why:"A CAD az olajon lóg (SZE 16:30 EIA). Korreláció: CRUDE long + GBPCAD long = egymás ellen fogadás. Nem frissítve." },
+{ p:"CRUDE", c:"frag", t:"Tiltólista", conf:0, why:"Tiltólistán marad (3 hóban 2/2 vesztes). Headline-vezérelt, gap-kockázat. Nincs mérlegelés." }
+],
+news: [
+{ imp:"imp-orange", txt:"<b>MA 15:45</b> — Chicago PMI (aug.) → SPX500, NAS100, XAUUSD, EURUSD. Óvatosság: <b>15:15–16:15</b>" },
+{ imp:"imp-yellow", txt:"<b>MA 16:30</b> — Dallas Fed Manufacturing (aug.) → halk hatás" },
+{ imp:"imp-yellow", txt:"<b>MA kb. 17:00</b> — hónap végi londoni fix, month-end rebalancing flow. Nem naptári esemény, nem tiltás — de szerkezet nélküli mozgás" },
+{ imp:"imp-red", txt:"<b>K szept. 1. 16:00</b> — ISM Manufacturing + JOLTS → USD, XAUUSD, NAS100, SPX500. Tiltott: <b>15:30–16:30</b>" },
+{ imp:"imp-orange", txt:"<b>SZE szept. 2. 14:15</b> — ADP → óvatosság 13:45–14:45 · <b>16:30</b> EIA → CRUDE, áttételesen CAD és GBPCAD" },
+{ imp:"imp-red", txt:"<b>CS szept. 3. 16:00</b> — ISM Services → tiltott <b>15:30–16:30</b> · 14:30 jobless claims → óvatosság 14:00–15:00" },
+{ imp:"imp-red", txt:"<b>P SZEPT. 4. 14:30 — NFP</b> → EGÉSZ NAPOS NO-TRADE. Megsértése streak-reset, köztes fokozat nincs" }
+],
+aiFocus: "AZ EGY DOLOG (aug. 31. – szept. 6.): <b>a TP számmal, ÉS a TP/SL-mozgatás triggere mechanikusan, tesztelhetően leírva a Notes-ba BELÉPÉS ELŐTT.</b> Ha nincs leírva: a TP és az SL marad, ahol van. Ez nem új cél — aug. 19-re fogadtad el, és nulla trade miatt sosem lett tesztelve. A fő fék 28 napja EGY adatponton áll (aug. 3., elhasalt): a következő három tiszta végrehajtás zárja le, nem a P&L. <b>Figyelmeztetés a hosszú szünet után:</b> napi 7 óra chart előtt + 28 nap kihagyás = az év legnagyobb over-trading kockázata. Szám-korlátot nem vezettünk be — vagyis a 8,5-ös küszöb az EGYETLEN fék. Ha az puhul, nincs mögötte semmi."
+}
 };
 
 const DAILY_NOTES_PAGE = "36eac560704880469890e907b6f383d9";
