@@ -270,6 +270,73 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
   </details>
 </div>
 
+<style>
+.lgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+.lg input[type=number], .lg input[type=text], .lg input[type=password], .lg select, .lg textarea{
+width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 11px; font-family:inherit; font-size:16px;
+color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
+.lg input:focus, .lg select:focus, .lg textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,.12);}
+.lg textarea{min-height:64px; resize:vertical;}
+.lg .save{width:100%; height:44px; margin-top:2px;}
+.chips{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:9px;}
+.chips label{font-size:11.5px; font-weight:600; padding:6px 11px; border-radius:9px; border:1px solid var(--line); background:#fff; color:var(--sub); cursor:pointer;}
+.chips input{display:none;}
+.chips input:checked + span{color:var(--accent); font-weight:800;}
+</style>
+
+<!-- PANEL 2c: BEADAS -->
+<div class="card d2 lg">
+<div class="eyebrow"><span class="k">⊕</span> Beadás — telefonról egyenesen a Notionbe</div>
+<div class="jstat" id="logstat" style="margin-bottom:10px; min-height:15px;"></div>
+
+<details class="acc" style="margin-top:0;">
+<summary><span class="chev">▸</span> Munka <span class="hint">óra + órabér</span></summary>
+<div class="body">
+<div class="lgrid"><input id="m-ora" type="number" step="0.5" inputmode="decimal" placeholder="ledolgozott óra"><input id="m-ber" type="number" step="50" inputmode="numeric" placeholder="órabér (Ft)"></div>
+<input id="m-megj" type="text" placeholder="megjegyzés (nem kötelező)">
+<button class="save" data-kind="munka">Munka mentése</button>
+<div class="jhint">A keresetet a Notion számolja (óra × órabér) — neked nem kell összeadnod.</div>
+</div>
+</details>
+
+<details class="acc">
+<summary><span class="chev">▸</span> Testsúly <span class="hint">kg</span></summary>
+<div class="body">
+<input id="s-kg" type="number" step="0.1" inputmode="decimal" placeholder="súly (kg)">
+<input id="s-megj" type="text" placeholder="megjegyzés (nem kötelező)">
+<button class="save" data-kind="suly">Súly mentése</button>
+</div>
+</details>
+
+<details class="acc">
+<summary><span class="chev">▸</span> Life check-in <span class="hint">alvás · hangulat · energia</span></summary>
+<div class="body">
+<div class="lgrid">
+<input id="c-alvas" type="number" step="0.5" inputmode="decimal" placeholder="alvás (óra)">
+<select id="c-hangulat"><option value="">hangulat…</option><option>jó</option><option>közepes</option><option>rossz</option></select>
+</div>
+<select id="c-energia"><option value="">energia 1-5…</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+<div class="chips">
+<label><input type="checkbox" class="c-ter" value="tőzsde"><span>tőzsde</span></label>
+<label><input type="checkbox" class="c-ter" value="iskola"><span>iskola</span></label>
+<label><input type="checkbox" class="c-ter" value="egészség"><span>egészség</span></label>
+<label><input type="checkbox" class="c-ter" value="munka"><span>munka</span></label>
+<label><input type="checkbox" class="c-ter" value="egyéb"><span>egyéb</span></label>
+</div>
+<textarea id="c-jegyzet" placeholder="mi történt ma? (tőzsde, iskola, egészség)"></textarea>
+<button class="save" data-kind="checkin">Check-in mentése</button>
+</div>
+</details>
+
+<details class="acc">
+<summary><span class="chev">▸</span> Beállítás <span class="hint">jelszó</span></summary>
+<div class="body">
+<input id="l-secret" type="password" placeholder="jelszó (LOG_SECRET)">
+<div class="jhint">Egyszer kell beírni, a böngésződ megjegyzi. Ugyanaz, amit a Vercelben <b>LOG_SECRET</b> néven állítasz be. Amíg ez és a <b>NOTION_TOKEN</b> nincs beállítva, a mentés hibát fog dobni — ez várható.</div>
+</div>
+</details>
+</div>
+
 <!-- PANEL 3: JOURNAL -->
 <div class="card d3">
   <div class="eyebrow"><span class="k">✎</span> Gyorsjegyzet → Daily Notes</div>
@@ -435,6 +502,52 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
 $('updated').textContent="SYNC "+DATA.updated+" · 07:00 · "+DATA.syncNote;
 $('foot').textContent="napi frissítés a Notionből · session brief a reggeli tasktól · checklist a Mentor Log Élő állapotából";
 
+/* ---- Panel 2c: Beadas -> /api/log ---- */
+(function(){
+const $l = id => document.getElementById(id);
+const st = $l('logstat');
+const SKEY = 'mdash_secret';
+try{ const s = localStorage.getItem(SKEY); if(s) $l('l-secret').value = s; }catch(_){}
+$l('l-secret').addEventListener('change', ()=>{ try{ localStorage.setItem(SKEY, $l('l-secret').value.trim()); }catch(_){} });
+
+window.__log = async (kind, data) => {
+let secret = '';
+try{ secret = (localStorage.getItem(SKEY) || $l('l-secret').value || '').trim(); }catch(_){ secret = ($l('l-secret').value||'').trim(); }
+if(!secret) return 'nincs jelszo beallitva (Beallitas ful)';
+try{
+const r = await fetch('/api/log', { method:'POST', headers:{'Content-Type':'application/json'},
+body: JSON.stringify({ kind: kind, secret: secret, data: data }) });
+let j = {}; try{ j = await r.json(); }catch(_){}
+return r.ok ? true : (j.error || ('HTTP ' + r.status));
+}catch(e){ return String((e && e.message) || e); }
+};
+
+document.querySelectorAll('button[data-kind]').forEach(function(b){
+b.onclick = async function(){
+const k = b.dataset.kind;
+b.disabled = true; st.className = 'jstat'; st.textContent = 'Kuldes...';
+let data = {};
+if(k === 'munka')   data = { ora: $l('m-ora').value, orabar: $l('m-ber').value, megj: $l('m-megj').value };
+if(k === 'suly')    data = { suly: $l('s-kg').value, megj: $l('s-megj').value };
+if(k === 'checkin') data = { alvas: $l('c-alvas').value, hangulat: $l('c-hangulat').value,
+energia: $l('c-energia').value, jegyzet: $l('c-jegyzet').value,
+terulet: Array.prototype.slice.call(document.querySelectorAll('.c-ter:checked')).map(function(x){ return x.value; }) };
+const ok = await window.__log(k, data);
+if(ok === true){
+st.className = 'jstat ok'; st.textContent = '\u2713 Elmentve a Notionbe';
+const body = b.closest('.body');
+body.querySelectorAll('input, textarea, select').forEach(function(i){
+if(i.type === 'password') return;
+if(i.type === 'checkbox'){ i.checked = false; } else { i.value = ''; }
+});
+} else {
+st.className = 'jstat err'; st.textContent = 'Nem ment: ' + ok;
+}
+b.disabled = false;
+};
+});
+})();
+
 /* ---- Panel 3: robusztus diktálás + mentés ---- */
 (function(){
   const ta=$('note'), micBtn=$('mic'), saveBtn=$('save'), stat=$('jstat'), reclbl=$('reclbl'), rectxt=$('rectxt');
@@ -475,11 +588,13 @@ $('foot').textContent="napi frissítés a Notionből · session brief a reggeli 
     if(listening) stop();
     const txt=ta.value.trim();
     if(!txt){ stat.className="jstat err"; stat.textContent="Üres a jegyzet."; return; }
-    saveBtn.disabled=true; stat.className="jstat"; stat.textContent="Vágólapra másolás…";
+    saveBtn.disabled=true; stat.className="jstat"; stat.textContent="Küldés…";
     try{ await navigator.clipboard.writeText(txt); }
     catch(_){ ta.select(); try{ document.execCommand('copy'); }catch(_){} }
-    stat.className="jstat ok"; stat.textContent="✓ Vágólapra másolva — nyisd meg a Daily Notest és illeszd be";
-    window.open("https://www.notion.so/"+DAILY_NOTES_PAGE,"_blank");
+    
+    const sent = await window.__log("note", { szoveg: txt });
+if(sent === true){ stat.className="jstat ok"; stat.textContent="✓ Beirva a Daily Notesba"; ta.value=""; committed=""; }
+else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — a szoveg a vagolapon van"; window.open("https://www.notion.so/"+DAILY_NOTES_PAGE,"_blank"); }
     saveBtn.disabled=false;
   };
 })();
