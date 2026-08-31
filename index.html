@@ -187,89 +187,80 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
   <div class="stamp" id="updated"></div>
 </div>
 
-<!-- PANEL 1 -->
-<div class="card d1">
-  <div class="eyebrow"><span class="k">◧</span> Account &amp; Challenge</div>
-  <div class="acct">
-    <div>
-      <div class="balance num" id="balance"></div>
-      <div class="delta" id="delta"></div>
-    </div>
-    <div class="chal"><span>Cél / bukás</span><b id="chal-goal"></b><b id="chal-floor" style="color:var(--red);"></b></div>
-  </div>
-  <div class="gauge">
-    <div class="gtrack"><div class="gmid"></div><div class="gmark" id="gmark"></div></div>
-    <div class="gscale">
-      <span><b id="sc-lo"></b><br>−100% · bukás</span>
-      <span style="text-align:center;"><b id="sc-mid"></b><br>0% · start</span>
-      <span style="text-align:right;"><b id="sc-hi"></b><br>+100% · cél</span>
-    </div>
-    <div class="gnow"><span class="p num" id="bipct"></span><span class="t" id="bitxt"></span></div>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="n" id="wr">0%</div><div class="l" id="wr-l">Win rate</div></div>
-    <div class="stat"><div class="n" id="rr">0</div><div class="l">Átlag RR-cél</div></div>
-    <div class="stat"><div class="n" id="tot">0</div><div class="l">Trade · 3 hó</div></div>
-  </div>
-  <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 (28 napja) — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
-  <div class="streak">
-    <div class="sk"><span class="skn num" id="streak-n">0</span><span class="skl">tiszta trade sorozat</span></div>
-    <div class="skr">rekord <b class="num">2*</b> — <span class="sknote">*a júl. 21. GBPCAD ❓ ismeretlen, ezért csillagos; az első 3 elemű IGAZOLT sorozat lesz az új rekord</span></div>
-    <div class="sklg"><span>✅ tiszta</span><span>❌ szabályszegés</span><span>❓ nincs dokumentálva</span></div>
-  </div>
-
-  <details class="acc">
-    <summary><span class="chev">▸</span> Utolsó trade-ek <span class="hint" id="trades-hint"></span></summary>
-    <div class="body"><div id="trades"></div></div>
-  </details>
+<style>
+.tabnav{display:flex; gap:7px; overflow-x:auto; padding:2px 0 13px; scrollbar-width:none;}
+.tabnav::-webkit-scrollbar{display:none;}
+.tabnav button{flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--sub); font:inherit;
+font-size:12.5px; font-weight:700; padding:11px 16px; border-radius:12px; cursor:pointer; display:flex; align-items:center; gap:7px;
+transition:background .15s,color .15s,border-color .15s; box-shadow:var(--shadow);}
+.tabnav button .ic{font-size:13px; line-height:1;}
+.tabnav button[aria-selected="true"]{background:var(--ink); border-color:var(--ink); color:#fff;}
+.pane{display:none;} .pane.on{display:block;}
+.today{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line);
+border-radius:14px; overflow:hidden; margin-bottom:13px; box-shadow:var(--shadow);}
+.today .c{background:var(--card); padding:14px 8px; text-align:center;}
+.today .n{font-size:19px; font-weight:800; line-height:1.1;}
+.today .n .u{font-size:11px; font-weight:600; color:var(--sub);}
+.today .l{font-size:8.8px; color:var(--faint); margin-top:5px; text-transform:uppercase; letter-spacing:.4px; line-height:1.3;}
+.empty{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:38px 20px; text-align:center;
+box-shadow:var(--shadow); color:var(--sub); font-size:13px; line-height:1.6;}
+.empty .big{font-size:30px; margin-bottom:12px; opacity:.45;}
+.empty b{color:var(--ink);}
+.demo{background:#fff4e5; border:1px solid #f5c882; border-left:3px solid var(--amber); border-radius:12px;
+padding:12px 14px; margin-bottom:13px; font-size:12.5px; color:#6b3a02;}
+.demo b{color:#4a2800;}
+.tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);
+border-radius:13px; overflow:hidden; margin-bottom:16px;}
+.tl{background:var(--card); padding:14px 9px; text-align:center;}
+.tl .n{font-size:22px; font-weight:800; line-height:1.1;}
+.tl .u{font-size:11.5px; font-weight:600; color:var(--sub); margin-left:1px;}
+.tl .l{font-size:9.2px; color:var(--faint); margin-top:5px; letter-spacing:.4px; text-transform:uppercase; line-height:1.3;}
+.tl .d{font-size:10.5px; font-weight:600; margin-top:3px;}
+.tl .d.num{font-family:var(--mono); font-weight:700;}
+.d.dn{color:var(--red);} .d.flat{color:var(--faint);}
+.ch-h{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:2px;}
+.ch-t{font-size:13.5px; font-weight:700;}
+.ch-s{font-size:11.5px; color:var(--sub); margin-bottom:10px;}
+.lgd{display:flex; flex-wrap:wrap; gap:12px; margin:8px 0 2px; font-size:11px; color:var(--sub);}
+.lgd i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px;}
+.lgd .ln{width:14px; height:2px; border-radius:2px; vertical-align:3px;}
+.tbtn{border:1px solid var(--line); background:#fbfcfd; color:var(--sub); font:inherit; font-size:10.5px; font-weight:700;
+letter-spacing:.4px; text-transform:uppercase; padding:5px 10px; border-radius:8px; cursor:pointer; white-space:nowrap;}
+.viz{position:relative;} .viz svg{display:block; width:100%;}
+table.tv{width:100%; border-collapse:collapse; font-size:11.5px; margin-top:10px; display:none;}
+table.tv.on{display:table;}
+table.tv th,table.tv td{text-align:right; padding:5px 7px; border-bottom:1px solid var(--line2); font-family:var(--mono); font-variant-numeric:tabular-nums;}
+table.tv th{color:var(--faint); font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.4px; font-family:inherit;}
+table.tv td:first-child,table.tv th:first-child{text-align:left;}
+.tvw{max-height:230px; overflow:auto;}
+.tip{position:absolute; pointer-events:none; opacity:0; transition:opacity .1s; background:#0f1522; color:#fff;
+font-size:11.5px; line-height:1.5; padding:8px 10px; border-radius:9px; white-space:nowrap; z-index:5;
+box-shadow:0 6px 20px rgba(16,24,40,.22); transform:translate(-50%,-115%);}
+.tip.on{opacity:1;} .tip b{font-family:var(--mono);} .tip .r{color:#9aa4b5;}
+.calrow{display:grid; grid-template-columns:56px 1fr; align-items:center; gap:8px; margin-bottom:5px;}
+.callab{font-size:10.5px; color:var(--sub); font-weight:600; text-align:right;}
+.calcells{display:grid; gap:2px;} .cal{aspect-ratio:1; border-radius:2.5px; background:var(--line2);}
+.calsc{display:flex; align-items:center; gap:6px; margin-top:10px; font-size:10px; color:var(--faint); flex-wrap:wrap;}
+.calsc i{width:13px; height:9px; border-radius:2px; display:inline-block;}
+.nt{font-size:11.5px; color:var(--sub); margin-top:12px; padding-top:11px; border-top:1px solid var(--line2); line-height:1.5;}
+.nt b{color:var(--ink);}
+:root{--series-1:#2563eb; --series-2:#b45309; --series-3:#0d9488; --series-4:#e11d48;
+--grid:#e7e9ee; --axis:#c8cdd6; --muted:#8b93a1;
+--seq-100:#dbe6fd; --seq-250:#a9c3f7; --seq-400:#5b8bef; --seq-550:#2563eb; --seq-700:#173da1;}
+</style>
+<nav class="tabnav" role="tablist">
+<button role="tab" data-pane="home" aria-selected="true"><span class="ic">◉</span>Áttekintés</button>
+<button role="tab" data-pane="trading" aria-selected="false"><span class="ic">◧</span>Tőzsde</button>
+<button role="tab" data-pane="health" aria-selected="false"><span class="ic">☾</span>Egészség</button>
+<button role="tab" data-pane="school" aria-selected="false"><span class="ic">△</span>Iskola</button>
+<button role="tab" data-pane="work" aria-selected="false"><span class="ic">◆</span>Munka</button>
+</nav>
+<section class="pane on" id="pane-home">\n<div class="today">
+<div class="c"><div class="n num" id="h-bal">–</div><div class="l">Egyenleg</div></div>
+<div class="c"><div class="n num" id="h-streak">–</div><div class="l">Tiszta sorozat</div></div>
+<div class="c"><div class="n num" id="h-fek">–</div><div class="l">Fő fék</div></div>
+<div class="c"><div class="n num" id="h-sleep">–</div><div class="l">Alvás átlag</div></div>
 </div>
-
-<!-- PANEL 1b: TRADE CHECKLIST -->
-<div class="card d1b">
-  <details class="acc" style="margin-top:0;" open>
-    <summary><span class="chev">▸</span> ⚠️ Trade Checklist — belépés előtt / közben <span class="hint" id="chk-hint"></span></summary>
-    <div class="body">
-
-      <div class="gate">
-        <div class="gt">⏱ 10 másodperces döntési kártya</div>
-        <div class="gsub">Nyitott pozíció alatt, ha külső input jön (csoport, hír, „szarakodik az ár"). Ne mérlegelj — futtasd le.</div>
-        <div class="grow"><span class="gn">1</span><div>Zárt-e egy <b>TELJES gyertya</b> vissza az OB-omba ellenem? &nbsp;→ &nbsp;<b>NEM = kéz le.</b></div></div>
-        <div class="grow"><span class="gn">2</span><div><b>Naptári, high-impact</b> esemény, ami a <b>belépésem UTÁN</b> jött ki? Ha nincs a naptárban, nincs miről dönteni. &nbsp;→ &nbsp;<b>NEM = kéz le.</b></div></div>
-        <div class="grow"><span class="gn">3</span><div>Ha <b>mindkettő IGEN</b> → a <b>belépés előtt megírt terv</b> szerint cselekszem, nem improvizálok.</div></div>
-        <div class="gfoot">
-          <b>Bármilyen bizonytalanság → kéz le.</b> Az alapértelmezés a nem-cselekvés: a pozíciónak már van SL-je és TP-je.<br>
-          <b>A leírás a döntés UTÁN jön</b> — nulla késleltetés. A kártya dönt, nem a mentor és nem a csoport. A dokumentáció nem engedély, hanem bizonyíték.<br>
-          <span style="opacity:.8">Emlékeztető: a júl. 23-i döntés is nyugodt és végiggondolt volt. A félelem gyors — a felmentés lassú, nyugodt és indoklással érkezik.</span>
-        </div>
-      </div>
-
-      <div id="checklist"></div>
-    </div>
-  </details>
-</div>
-
-<!-- PANEL 2 -->
-<div class="card d2">
-  <div class="eyebrow"><span class="k">☾</span> Session Brief — <span id="today-label" style="color:var(--sub);"></span></div>
-  <div id="tradestatus-wrap"></div>
-  <div class="edge" id="edge"></div>
-  <div class="sb" id="sb"></div>
-  <div class="aifocus" id="aifocus"></div>
-
-  <details class="acc" open>
-    <summary><span class="chev">▸</span> Instrument bias <span class="hint">8 pár</span></summary>
-    <div class="body"><div class="bias" id="bias"></div></div>
-  </details>
-  <details class="acc">
-    <summary><span class="chev">▸</span> Deviza-erő</summary>
-    <div class="body"><div class="strength" id="strength"></div></div>
-  </details>
-  <details class="acc">
-    <summary><span class="chev">▸</span> Hír-ablakok <span class="hint" id="news-hint"></span></summary>
-    <div class="body"><div id="news"></div></div>
-  </details>
-</div>
-
 <style>
 .lgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
 .lg input[type=number], .lg input[type=text], .lg input[type=password], .lg select, .lg textarea{
@@ -353,6 +344,314 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
   <div class="jhint">A mikrofon csak diktál — <b>nem ment magától</b>. Amikor kész vagy, nyomd meg a <b>Mentés</b> gombot; az leállítja a diktálást (ha megy) és időbélyeggel a Daily Notes végére írja.</div>
 </div>
 
+</section>\n<section class="pane" id="pane-trading">\n<!-- PANEL 1 -->
+<div class="card d1">
+  <div class="eyebrow"><span class="k">◧</span> Account &amp; Challenge</div>
+  <div class="acct">
+    <div>
+      <div class="balance num" id="balance"></div>
+      <div class="delta" id="delta"></div>
+    </div>
+    <div class="chal"><span>Cél / bukás</span><b id="chal-goal"></b><b id="chal-floor" style="color:var(--red);"></b></div>
+  </div>
+  <div class="gauge">
+    <div class="gtrack"><div class="gmid"></div><div class="gmark" id="gmark"></div></div>
+    <div class="gscale">
+      <span><b id="sc-lo"></b><br>−100% · bukás</span>
+      <span style="text-align:center;"><b id="sc-mid"></b><br>0% · start</span>
+      <span style="text-align:right;"><b id="sc-hi"></b><br>+100% · cél</span>
+    </div>
+    <div class="gnow"><span class="p num" id="bipct"></span><span class="t" id="bitxt"></span></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="wr">0%</div><div class="l" id="wr-l">Win rate</div></div>
+    <div class="stat"><div class="n" id="rr">0</div><div class="l">Átlag RR-cél</div></div>
+    <div class="stat"><div class="n" id="tot">0</div><div class="l">Trade · 3 hó</div></div>
+  </div>
+  <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 (28 napja) — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
+  <div class="streak">
+    <div class="sk"><span class="skn num" id="streak-n">0</span><span class="skl">tiszta trade sorozat</span></div>
+    <div class="skr">rekord <b class="num">2*</b> — <span class="sknote">*a júl. 21. GBPCAD ❓ ismeretlen, ezért csillagos; az első 3 elemű IGAZOLT sorozat lesz az új rekord</span></div>
+    <div class="sklg"><span>✅ tiszta</span><span>❌ szabályszegés</span><span>❓ nincs dokumentálva</span></div>
+  </div>
+
+  <details class="acc">
+    <summary><span class="chev">▸</span> Utolsó trade-ek <span class="hint" id="trades-hint"></span></summary>
+    <div class="body"><div id="trades"></div></div>
+  </details>
+</div>
+
+<!-- PANEL 1b: TRADE CHECKLIST -->
+<div class="card d1b">
+  <details class="acc" style="margin-top:0;" open>
+    <summary><span class="chev">▸</span> ⚠️ Trade Checklist — belépés előtt / közben <span class="hint" id="chk-hint"></span></summary>
+    <div class="body">
+
+      <div class="gate">
+        <div class="gt">⏱ 10 másodperces döntési kártya</div>
+        <div class="gsub">Nyitott pozíció alatt, ha külső input jön (csoport, hír, „szarakodik az ár"). Ne mérlegelj — futtasd le.</div>
+        <div class="grow"><span class="gn">1</span><div>Zárt-e egy <b>TELJES gyertya</b> vissza az OB-omba ellenem? &nbsp;→ &nbsp;<b>NEM = kéz le.</b></div></div>
+        <div class="grow"><span class="gn">2</span><div><b>Naptári, high-impact</b> esemény, ami a <b>belépésem UTÁN</b> jött ki? Ha nincs a naptárban, nincs miről dönteni. &nbsp;→ &nbsp;<b>NEM = kéz le.</b></div></div>
+        <div class="grow"><span class="gn">3</span><div>Ha <b>mindkettő IGEN</b> → a <b>belépés előtt megírt terv</b> szerint cselekszem, nem improvizálok.</div></div>
+        <div class="gfoot">
+          <b>Bármilyen bizonytalanság → kéz le.</b> Az alapértelmezés a nem-cselekvés: a pozíciónak már van SL-je és TP-je.<br>
+          <b>A leírás a döntés UTÁN jön</b> — nulla késleltetés. A kártya dönt, nem a mentor és nem a csoport. A dokumentáció nem engedély, hanem bizonyíték.<br>
+          <span style="opacity:.8">Emlékeztető: a júl. 23-i döntés is nyugodt és végiggondolt volt. A félelem gyors — a felmentés lassú, nyugodt és indoklással érkezik.</span>
+        </div>
+      </div>
+
+      <div id="checklist"></div>
+    </div>
+  </details>
+</div>
+
+<!-- PANEL 2 -->
+<div class="card d2">
+  <div class="eyebrow"><span class="k">☾</span> Session Brief — <span id="today-label" style="color:var(--sub);"></span></div>
+  <div id="tradestatus-wrap"></div>
+  <div class="edge" id="edge"></div>
+  <div class="sb" id="sb"></div>
+  <div class="aifocus" id="aifocus"></div>
+
+  <details class="acc" open>
+    <summary><span class="chev">▸</span> Instrument bias <span class="hint">8 pár</span></summary>
+    <div class="body"><div class="bias" id="bias"></div></div>
+  </details>
+  <details class="acc">
+    <summary><span class="chev">▸</span> Deviza-erő</summary>
+    <div class="body"><div class="strength" id="strength"></div></div>
+  </details>
+  <details class="acc">
+    <summary><span class="chev">▸</span> Hír-ablakok <span class="hint" id="news-hint"></span></summary>
+    <div class="body"><div id="news"></div></div>
+  </details>
+</div>
+
+</section>\n<section class="pane" id="pane-health">
+<div class="demo">⚠️ <b>DEMO ADAT — EGYIK SZÁM SEM A TIÉD.</b> Kitalált értékek, csak a kinézet miatt.
+A Sleep Cycle, a Strong és az Apple Health lépés-exportod ezt egy az egyben lecseréli.</div>
+
+<div class="card">
+<div class="eyebrow"><span class="k">☾</span> Alvás</div>
+<div class="tiles">
+<div class="tl"><div class="n num" id="t-avg">–</div><div class="l">Átlag alvás</div><div class="d num flat" id="t-avg-d">–</div></div>
+<div class="tl"><div class="n num" id="t-cons">–</div><div class="l">Ingadozás (szórás)</div><div class="d flat">minél kisebb, annál jobb</div></div>
+<div class="tl"><div class="n num" id="t-short">–</div><div class="l">6 óra alatti éjszaka</div><div class="d num flat" id="t-short-d">–</div></div>
+</div>
+<div class="ch-h"><span class="ch-t">Napi alvás</span><button class="tbtn" data-tv="tv-sleep">Táblázat</button></div>
+<div class="ch-s">Utolsó 30 éjszaka · a vízszintes vonal a 7 órás küszöb</div>
+<div class="viz" id="viz-sleep"><div class="tip" id="tip-sleep"></div></div>
+<div class="lgd"><span><i style="background:var(--series-1)"></i>napi alvás</span>
+<span><i class="ln" style="background:var(--series-2)"></i>7 napos átlag</span>
+<span><i class="ln" style="background:var(--axis)"></i>7 órás küszöb</span></div>
+<div class="tvw"><table class="tv" id="tv-sleep"></table></div>
+<div class="nt"><b>Amit ez el fog árulni:</b> nálad valószínűleg nem az átlag a probléma, hanem az <b>ingadozás</b> — műszak után hajnali fekvés, utána hosszú alvás.</div>
+</div>
+
+<div class="card">
+<div class="eyebrow"><span class="k">↗</span> Lépés</div>
+<div class="tiles">
+<div class="tl"><div class="n num" id="t-st">–</div><div class="l">Napi átlag</div><div class="d flat">lépés</div></div>
+<div class="tl"><div class="n num" id="t-st-max">–</div><div class="l">Legaktívabb nap</div><div class="d num flat" id="t-st-max-d">–</div></div>
+<div class="tl"><div class="n num" id="t-st-low">–</div><div class="l">5000 alatti nap</div><div class="d flat">a 30-ból</div></div>
+</div>
+<div class="ch-h"><span class="ch-t">Napi lépésszám</span><button class="tbtn" data-tv="tv-st">Táblázat</button></div>
+<div class="ch-s">Apple Health · utolsó 30 nap</div>
+<div class="viz" id="viz-st"><div class="tip" id="tip-st"></div></div>
+<div class="tvw"><table class="tv" id="tv-st"></table></div>
+</div>
+
+<div class="card">
+<div class="eyebrow"><span class="k">◆</span> Edzés</div>
+<div class="tiles">
+<div class="tl"><div class="n num" id="t-wk">–</div><div class="l">Edzés / hét</div><div class="d flat">9 hét átlaga</div></div>
+<div class="tl"><div class="n num" id="t-gap">–</div><div class="l">Leghosszabb kihagyás</div><div class="d flat">nap</div></div>
+<div class="tl"><div class="n num" id="t-vol">–</div><div class="l">Heti volumen</div><div class="d flat">heti átlag</div></div>
+</div>
+<div class="ch-h"><span class="ch-t">Edzések hetente</span><button class="tbtn" data-tv="tv-gym">Táblázat</button></div>
+<div class="ch-s">Hány alkalommal edzettél az adott héten</div>
+<div class="viz" id="viz-gym"><div class="tip" id="tip-gym"></div></div>
+<div class="tvw"><table class="tv" id="tv-gym"></table></div>
+<div class="ch-h" style="margin-top:20px"><span class="ch-t">Heti összvolumen</span><button class="tbtn" data-tv="tv-vol">Táblázat</button></div>
+<div class="ch-s">Súly × ismétlés összege, kg — külön grafikonon, mert más a mértékegység</div>
+<div class="viz" id="viz-vol"><div class="tip" id="tip-vol"></div></div>
+<div class="tvw"><table class="tv" id="tv-vol"></table></div>
+</div>
+
+<div class="card">
+<div class="eyebrow"><span class="k">⚖</span> Testsúly</div>
+<div class="ch-h"><span class="ch-t">Súly alakulása</span><button class="tbtn" data-tv="tv-w">Táblázat</button></div>
+<div class="ch-s">Kézzel felvitt mérések</div>
+<div class="viz" id="viz-w"><div class="tip" id="tip-w"></div></div>
+<div class="tvw"><table class="tv" id="tv-w"></table></div>
+</div>
+
+<div class="card">
+<div class="eyebrow"><span class="k">⊞</span> Összefüggés-nézet</div>
+<div class="ch-s" style="margin-bottom:14px">Ugyanaz a 30 nap, öt sávban egymás alatt. <b>Nem a számokat kell olvasni, hanem azt, mi esik egybe.</b></div>
+<div id="cal"></div>
+<div class="calsc"><span>alvás:</span><i style="background:var(--seq-100)"></i><i style="background:var(--seq-250)"></i><i style="background:var(--seq-400)"></i><i style="background:var(--seq-550)"></i><i style="background:var(--seq-700)"></i><span>&lt;5 ó → 9 ó+</span><span style="margin-left:auto">üres = nincs adat</span></div>
+<div class="nt"><b>Ez a kártya a lényeg.</b> Nem statisztikát mutat, hanem együttállást.<br><br>
+<b>És amit előre kimondok:</b> ebből <b>következtetést 30–40 adatpont alatt nem vonok</b>. Az „alvás → leültem-e pontozni" összefüggéshez 6–8 hét kell; az „alvás → win rate"-hez a jelenlegi trade-sűrűséggel egy év.</div>
+</div>
+</section>
+
+<script>
+(function(){
+let sd=20260831; const rnd=()=>{ sd=(sd*1103515245+12345)%2147483648; return sd/2147483648; };
+const DAYS=30, END=new Date(2026,7,31);
+const sleep=[], wpts=[], steps=[];
+for(let i=DAYS-1;i>=0;i--){ const d=new Date(END); d.setDate(END.getDate()-i);
+ const wd=d.getDay(), we=(wd===0||wd===6), sh=(wd===4||wd===5||wd===6)&&rnd()<0.55;
+ let h=sh?4.4+rnd()*1.9:(we?8.1+rnd()*1.5:6.5+rnd()*1.8); if(i>=15&&i<=20) h=3.6+rnd()*1.6;
+ sleep.push({d:new Date(d),h:Math.round(h*10)/10,q:Math.round(52+rnd()*38),we,sh});
+ steps.push({d:new Date(d), s: Math.round((sh?9500+rnd()*6000:(we?4200+rnd()*5200:5600+rnd()*5000)))});
+}
+const gym=new Set(), work=new Set(), trade=new Set([3,22]);
+sleep.forEach((s,i)=>{ if(!s.sh&&s.h>5.5&&rnd()<0.42) gym.add(i); if(s.sh||(i>=15&&i<=20)) work.add(i); });
+for(let i=0;i<10;i++){ const d=new Date(END); d.setDate(END.getDate()-(63-i*7));
+ wpts.push({d,kg:Math.round((77.4-i*0.18+(rnd()-0.5)*0.6)*10)/10}); }
+const weeks=[]; for(let w=0;w<9;w++) weeks.push({label:"H"+(w+1),n:Math.max(0,Math.round(1.5+rnd()*2.4)),vol:Math.round(7200+rnd()*5200)});
+
+const $=s=>document.querySelector(s), SVG="http://www.w3.org/2000/svg";
+const fmtD=d=>d.getDate()+"."+["v","h","k","sze","cs","p","szo"][d.getDay()];
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length, std=a=>{const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)));};
+const nf=n=>Math.round(n).toLocaleString("hu-HU").replace(/,/g," ");
+function el(n,at){const e=document.createElementNS(SVG,n);for(const k in at)e.setAttribute(k,at[k]);return e;}
+function base(host,h){host.querySelectorAll('svg').forEach(s=>s.remove());
+ const w=Math.max(280,host.clientWidth||340); const svg=el("svg",{viewBox:"0 0 "+w+" "+h,height:h,role:"img"});
+ host.appendChild(svg); return {svg,w};}
+function gl(svg,w,pad,yFor,ticks,fmt){ticks.forEach(t=>{
+ svg.appendChild(el("line",{x1:pad.l,x2:w-pad.r,y1:yFor(t),y2:yFor(t),stroke:"var(--grid)","stroke-width":1}));
+ const x=el("text",{x:pad.l-6,y:yFor(t)+3.5,"text-anchor":"end","font-size":9.5,fill:"var(--muted)"});
+ x.textContent=fmt?fmt(t):t; svg.appendChild(x);});}
+function ton(tp,ho,x,y,html){tp.innerHTML=html;tp.style.left=x+"px";tp.style.top=y+"px";tp.classList.add("on");}
+function toff(tp){tp.classList.remove("on");}
+function tbl(id,head,rows){const t=document.getElementById(id);if(!t)return;
+ t.innerHTML="<thead><tr>"+head.map(h=>"<th>"+h+"</th>").join("")+"</tr></thead><tbody>"+
+ rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</tbody>";}
+
+function dailyBars(hostId,tipId,arr,key,color,unit,hiFn,thresh){
+ const host=$("#"+hostId),tp=$("#"+tipId); const H=190,pad={l:34,r:8,t:12,b:26}; const {svg,w}=base(host,H);
+ const max=Math.max(...arr.map(a=>a[key]))*1.12||1, yFor=v=>pad.t+(1-v/max)*(H-pad.t-pad.b);
+ gl(svg,w,pad,yFor,[0,max/2,max].map(v=>v),v=>unit==="lépés"?Math.round(v/1000)+"k":Math.round(v));
+ if(thresh) svg.appendChild(el("line",{x1:pad.l,x2:w-pad.r,y1:yFor(thresh),y2:yFor(thresh),stroke:"var(--axis)","stroke-width":1.5}));
+ const n=arr.length,band=(w-pad.l-pad.r)/n,bw=Math.max(4,band-2);
+ arr.forEach((a,i)=>{const x=pad.l+i*band+(band-bw)/2,y=yFor(a[key]);
+  svg.appendChild(el("rect",{x,y,width:bw,height:Math.max(2,yFor(0)-y),rx:2,fill:color,opacity:hiFn&&hiFn(a)?0.55:1}));
+  const hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
+  hit.addEventListener("pointerenter",()=>ton(tp,host,x+bw/2,y,"<b>"+(unit==="lépés"?nf(a[key]):a[key])+" "+unit+"</b><br><span class='r'>"+fmtD(a.d)+(a.sh?" · műszak":"")+"</span>"));
+  hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);});
+ arr.forEach((a,i)=>{if(i%6)return; const t=el("text",{x:pad.l+i*band+band/2,y:H-8,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
+  t.textContent=fmtD(a.d); svg.appendChild(t);});
+ return {svg,w,pad,band,yFor,H};
+}
+function drawSleep(){
+ const r=dailyBars("viz-sleep","tip-sleep",sleep,"h","var(--series-1)","óra",a=>a.h<6,7);
+ let d=""; sleep.forEach((s,i)=>{ if(i<6)return; const av=mean(sleep.slice(i-6,i+1).map(x=>x.h));
+  d+=(d?" L":"M")+(r.pad.l+i*r.band+r.band/2).toFixed(1)+" "+r.yFor(av).toFixed(1); });
+ r.svg.appendChild(el("path",{d,fill:"none",stroke:"var(--series-2)","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"}));
+ const hs=sleep.map(s=>s.h);
+ $("#t-avg").innerHTML=mean(hs).toFixed(1)+'<span class="u">ó</span>';
+ const diff=mean(sleep.filter(s=>s.we).map(s=>s.h))-mean(sleep.filter(s=>!s.we).map(s=>s.h));
+ $("#t-avg-d").className="d num "+(Math.abs(diff)<0.3?"flat":"dn");
+ $("#t-avg-d").textContent="hétvégén "+(diff>=0?"+":"")+diff.toFixed(1)+" ó";
+ $("#t-cons").innerHTML=std(hs).toFixed(1)+'<span class="u">ó</span>';
+ const sh=hs.filter(h=>h<6).length; $("#t-short").innerHTML=sh+'<span class="u">/'+DAYS+'</span>';
+ $("#t-short-d").className="d num "+(sh>DAYS*0.3?"dn":"flat"); $("#t-short-d").textContent=Math.round(sh/DAYS*100)+"% az éjszakákból";
+ window.__avgSleep=mean(hs);
+ tbl("tv-sleep",["Nap","Alvás (ó)","Minőség"],sleep.map(s=>[fmtD(s.d),s.h.toFixed(1),s.q+"%"]));
+}
+function drawSteps(){
+ dailyBars("viz-st","tip-st",steps,"s","var(--series-2)","lépés",null,null);
+ const v=steps.map(s=>s.s), mx=steps.reduce((a,b)=>b.s>a.s?b:a);
+ $("#t-st").textContent=nf(mean(v)); $("#t-st-max").textContent=nf(mx.s);
+ $("#t-st-max-d").textContent=fmtD(mx.d);
+ $("#t-st-low").innerHTML=v.filter(x=>x<5000).length+'<span class="u">/'+DAYS+'</span>';
+ tbl("tv-st",["Nap","Lépés"],steps.map(s=>[fmtD(s.d),nf(s.s)]));
+}
+function wbars(hostId,tipId,data,key,color,unit,fmt){
+ const host=$("#"+hostId),tp=$("#"+tipId); const H=150,pad={l:34,r:8,t:12,b:24}; const {svg,w}=base(host,H);
+ const max=Math.max(...data.map(d=>d[key]))*1.15||1, yFor=v=>pad.t+(1-v/max)*(H-pad.t-pad.b);
+ gl(svg,w,pad,yFor,[0,max/2,max],fmt);
+ const n=data.length,band=(w-pad.l-pad.r)/n,bw=Math.min(30,Math.max(6,band-6));
+ data.forEach((d,i)=>{const x=pad.l+i*band+(band-bw)/2,y=yFor(d[key]);
+  svg.appendChild(el("rect",{x,y,width:bw,height:Math.max(2,yFor(0)-y),rx:3,fill:color}));
+  const hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
+  hit.addEventListener("pointerenter",()=>ton(tp,host,x+bw/2,y,"<b>"+(fmt?fmt(d[key]):d[key])+" "+unit+"</b><br><span class='r'>"+d.label+"</span>"));
+  hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);
+  const t=el("text",{x:pad.l+i*band+band/2,y:H-7,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
+  t.textContent=d.label; svg.appendChild(t);});
+}
+function drawGym(){
+ wbars("viz-gym","tip-gym",weeks,"n","var(--series-3)","alkalom",v=>Math.round(v));
+ wbars("viz-vol","tip-vol",weeks,"vol","var(--series-2)","kg",v=>Math.round(v/1000)+"k");
+ $("#t-wk").innerHTML=mean(weeks.map(w=>w.n)).toFixed(1)+'<span class="u">×</span>';
+ let g=0,c=0; for(let i=0;i<DAYS;i++){ if(gym.has(i))c=0; else {c++;g=Math.max(g,c);} }
+ $("#t-gap").textContent=g;
+ $("#t-vol").innerHTML=(mean(weeks.map(w=>w.vol))/1000).toFixed(1).replace(".",",")+'<span class="u">e kg</span>';
+ tbl("tv-gym",["Hét","Edzés"],weeks.map(w=>[w.label,w.n]));
+ tbl("tv-vol",["Hét","Volumen (kg)"],weeks.map(w=>[w.label,nf(w.vol)]));
+}
+function drawW(){
+ const host=$("#viz-w"),tp=$("#tip-w"); const H=150,pad={l:34,r:12,t:14,b:24}; const {svg,w}=base(host,H);
+ const vs=wpts.map(p=>p.kg), lo=Math.floor(Math.min(...vs)-1), hi=Math.ceil(Math.max(...vs)+1);
+ const yFor=v=>pad.t+(1-(v-lo)/(hi-lo))*(H-pad.t-pad.b), xFor=i=>pad.l+i*(w-pad.l-pad.r)/(wpts.length-1);
+ gl(svg,w,pad,yFor,[lo,Math.round((lo+hi)/2),hi]);
+ let d=""; wpts.forEach((p,i)=>{d+=(i?" L":"M")+xFor(i).toFixed(1)+" "+yFor(p.kg).toFixed(1);});
+ svg.appendChild(el("path",{d,fill:"none",stroke:"var(--series-3)","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"}));
+ wpts.forEach((p,i)=>{svg.appendChild(el("circle",{cx:xFor(i),cy:yFor(p.kg),r:4.5,fill:"var(--series-3)",stroke:"#fff","stroke-width":2}));
+  const hit=el("circle",{cx:xFor(i),cy:yFor(p.kg),r:14,fill:"transparent"});
+  hit.addEventListener("pointerenter",()=>ton(tp,host,xFor(i),yFor(p.kg),"<b>"+p.kg+" kg</b><br><span class='r'>"+(p.d.getMonth()+1)+". "+p.d.getDate()+".</span>"));
+  hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);});
+ const last=wpts[wpts.length-1];
+ const lb=el("text",{x:xFor(wpts.length-1),y:yFor(last.kg)-11,"text-anchor":"end","font-size":11,"font-weight":700,fill:"var(--ink)"});
+ lb.textContent=last.kg+" kg"; svg.appendChild(lb);
+ tbl("tv-w",["Dátum","Súly (kg)","Változás"],wpts.map((p,i)=>[(p.d.getMonth()+1)+". "+p.d.getDate()+".",p.kg.toFixed(1),i?((p.kg-wpts[i-1].kg>=0?"+":"")+(p.kg-wpts[i-1].kg).toFixed(1)):"–"]));
+}
+function seqC(h){ if(h==null)return "var(--line2)"; if(h<5)return "var(--seq-100)"; if(h<6.5)return "var(--seq-250)";
+ if(h<7.5)return "var(--seq-400)"; if(h<8.5)return "var(--seq-550)"; return "var(--seq-700)"; }
+function drawCal(){
+ const rows=[{lab:"alvás",g:i=>({c:seqC(sleep[i].h),t:sleep[i].h+" óra"})},
+ {lab:"lépés",g:i=>({c:steps[i].s>8000?"var(--series-2)":steps[i].s>5000?"#e0a86b":"var(--line2)",t:nf(steps[i].s)+" lépés"})},
+ {lab:"edzés",g:i=>({c:gym.has(i)?"var(--series-3)":"var(--line2)",t:gym.has(i)?"edzés":"nincs"})},
+ {lab:"munka",g:i=>({c:work.has(i)?"var(--series-2)":"var(--line2)",t:work.has(i)?"műszak":"nincs"})},
+ {lab:"trade",g:i=>({c:trade.has(i)?"var(--series-4)":"var(--line2)",t:trade.has(i)?"éles trade":"nincs"})}];
+ const host=$("#cal"); host.innerHTML="";
+ rows.forEach(r=>{const row=document.createElement("div"); row.className="calrow";
+  const lb=document.createElement("div"); lb.className="callab"; lb.textContent=r.lab;
+  const cs=document.createElement("div"); cs.className="calcells"; cs.style.gridTemplateColumns="repeat("+DAYS+",1fr)";
+  for(let i=0;i<DAYS;i++){const c=document.createElement("div"); c.className="cal"; const v=r.g(i);
+   c.style.background=v.c; c.title=fmtD(sleep[i].d)+" — "+r.lab+": "+v.t; cs.appendChild(c);}
+  row.appendChild(lb); row.appendChild(cs); host.appendChild(row);});
+}
+document.querySelectorAll("[data-tv]").forEach(b=>{b.onclick=()=>{const t=document.getElementById(b.dataset.tv);
+ t.classList.toggle("on"); b.textContent=t.classList.contains("on")?"Grafikon":"Táblázat";};});
+window.__renderHealth=function(){ drawSleep(); drawSteps(); drawGym(); drawW(); drawCal(); };
+window.__renderHealth();
+let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>window.__renderHealth(),150);});
+})();
+</script>
+<section class="pane" id="pane-school">
+<div class="empty">
+<div class="big">△</div>
+<b>Az iskola-domain még nem él.</b><br>
+Ide fog kerülni: az IBS-ről kiszedett órarend, a beadandók határidővel és követelménnyel,
+és hogy melyik mennyire sürgős.<br><br>
+<b>Ami hiányzik hozzá:</b> az IBS-portál címe — anélkül nem tudom nézni.<br>
+Az első tanítási nap reálisan <b>szept. 21. (hétfő)</b>.
+</div>
+</section>
+<section class="pane" id="pane-work">
+<div class="empty">
+<div class="big">◆</div>
+<b>A munka-domain adatra vár.</b><br>
+Az adatbázis és a beadás már áll: az <b>Áttekintés</b> fülön a Munka szekcióban viszed fel az órát és az órabért,
+a keresetet a Notion számolja.<br><br>
+Amint van pár hét adat, ide kerül: heti ledolgozott óra, kereset, és hogy a műszakok
+hogyan esnek egybe az alvásoddal és a kereskedési napjaiddal.
+</div>
+</section>
 <div class="foot" id="foot"></div>
 
 <script>
@@ -597,6 +896,29 @@ if(sent === true){ stat.className="jstat ok"; stat.textContent="✓ Beirva a Dai
 else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — a szoveg a vagolapon van"; window.open("https://www.notion.so/"+DAILY_NOTES_PAGE,"_blank"); }
     saveBtn.disabled=false;
   };
+})();
+</script>
+<script>
+(function(){
+ const nav=document.querySelector('.tabnav');
+ function show(name){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on', p.id==='pane-'+name));
+  nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.pane===name)));
+  try{ localStorage.setItem('mdash_tab', name); }catch(_){}
+  if(name==='health' && window.__renderHealth) window.__renderHealth();
+  window.scrollTo({top:0,behavior:'instant'});
+ }
+ nav.addEventListener('click',e=>{ const b=e.target.closest('button[data-pane]'); if(b) show(b.dataset.pane); });
+ let start='home'; try{ const s=localStorage.getItem('mdash_tab'); if(s && document.getElementById('pane-'+s)) start=s; }catch(_){}
+ show(start);
+ // Attekintes osszefoglalo
+ try{
+  const a=DATA.account;
+  document.getElementById('h-bal').textContent='$'+Math.round(a.current).toLocaleString('hu-HU').replace(/,/g,' ');
+  document.getElementById('h-streak').textContent=DATA.streak.current+' / '+DATA.streak.record;
+  document.getElementById('h-fek').textContent='0/3';
+  document.getElementById('h-sleep').innerHTML=(window.__avgSleep?window.__avgSleep.toFixed(1):'–')+'<span class="u">ó</span>';
+ }catch(e){}
 })();
 </script>
 </body>
