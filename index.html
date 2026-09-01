@@ -432,8 +432,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 </section>
 <section class="pane" id="pane-health">
-<div class="demo">⚠️ <b>DEMO ADAT — EGYIK SZÁM SEM A TIÉD.</b> Kitalált értékek, csak a kinézet miatt.
-A Sleep Cycle, a Strong és az Apple Health lépés-exportod ezt egy az egyben lecseréli.</div>
+<div class="demo">✅ <b>AZ ALVÁS MÁR VALÓS ADAT</b> — Sleep Cycle export, 2026-07-31 → 2026-09-01, 30 rögzített éjszaka. A <b>trade-sáv</b> is valós (aug. 3.).<br>⚠️ <b>A lépés, az edzés és a testsúly MÉG DEMO</b> — azokat a Strong és az Apple Health exportod fogja lecserélni.</div>
 
 <div class="card">
 <div class="eyebrow"><span class="k">☾</span> Alvás</div>
@@ -449,7 +448,7 @@ A Sleep Cycle, a Strong és az Apple Health lépés-exportod ezt egy az egyben l
 <span><i class="ln" style="background:var(--series-2)"></i>7 napos átlag</span>
 <span><i class="ln" style="background:var(--axis)"></i>7 órás küszöb</span></div>
 <div class="tvw"><table class="tv" id="tv-sleep"></table></div>
-<div class="nt"><b>Amit ez el fog árulni:</b> nálad valószínűleg nem az átlag a probléma, hanem az <b>ingadozás</b> — műszak után hajnali fekvés, utána hosszú alvás.</div>
+<div class="nt"><b>Amit az adat mond (84 éjszaka, jún. 1. – szept. 1.):</b> nem az átlag a probléma, hanem az <b>ingadozás</b> — és ez augusztusban robbant.<br>június <b>6,45 ó</b> (szórás 0,82) → július <b>6,35 ó</b> (0,77) → <b>augusztus 5,65 ó (szórás 1,81)</b>. Az átlag 42 perccel esett, a szórás <b>megduplázódott</b>.<br>Három hónap összesen: átlag 6,15 ó · az éjszakák <b>40%-a 6 óra alatt</b> · 7 óra fölött csak 21% · hétvégén +42 perc · az éjszakák <b>31%-án hajnali 2 után</b> feküdtél le.<br><span style="opacity:.75">Aug. 30. óta viszont éjfél előtt fekszel: 10,1 → 6,6 → 6,6 óra. Ez a minta legjobb 3 napos sorozata.</span></div>
 </div>
 
 <div class="card">
@@ -494,7 +493,7 @@ A Sleep Cycle, a Strong és az Apple Health lépés-exportod ezt egy az egyben l
 <div class="eyebrow"><span class="k">⊞</span> Összefüggés-nézet</div>
 <div class="ch-s" style="margin-bottom:14px">Ugyanaz a 30 nap, öt sávban egymás alatt. <b>Nem a számokat kell olvasni, hanem azt, mi esik egybe.</b></div>
 <div id="cal"></div>
-<div class="calsc"><span>alvás:</span><i style="background:var(--seq-100)"></i><i style="background:var(--seq-250)"></i><i style="background:var(--seq-400)"></i><i style="background:var(--seq-550)"></i><i style="background:var(--seq-700)"></i><span>&lt;5 ó → 9 ó+</span><span style="margin-left:auto">üres = nincs adat</span></div>
+<div class="calsc"><span>alvás:</span><i style="background:var(--seq-100)"></i><i style="background:var(--seq-250)"></i><i style="background:var(--seq-400)"></i><i style="background:var(--seq-550)"></i><i style="background:var(--seq-700)"></i><span>&lt;5 ó → 9 ó+</span><span style="margin-left:auto">* = még demo adat · alvás és trade valós</span></div>
 <div class="nt"><b>Ez a kártya a lényeg.</b> Nem statisztikát mutat, hanem együttállást.<br><br>
 <b>És amit előre kimondok:</b> ebből <b>következtetést 30–40 adatpont alatt nem vonok</b>. Az „alvás → leültem-e pontozni" összefüggéshez 6–8 hét kell; az „alvás → win rate"-hez a jelenlegi trade-sűrűséggel egy év.</div>
 </div>
@@ -503,15 +502,45 @@ A Sleep Cycle, a Strong és az Apple Health lépés-exportod ezt egy az egyben l
 <script>
 (function(){
 let sd=20260831; const rnd=()=>{ sd=(sd*1103515245+12345)%2147483648; return sd/2147483648; };
-const DAYS=30, END=new Date(2026,7,31);
-const sleep=[], wpts=[], steps=[];
-for(let i=DAYS-1;i>=0;i--){ const d=new Date(END); d.setDate(END.getDate()-i);
- const wd=d.getDay(), we=(wd===0||wd===6), sh=(wd===4||wd===5||wd===6)&&rnd()<0.55;
- let h=sh?4.4+rnd()*1.9:(we?8.1+rnd()*1.5:6.5+rnd()*1.8); if(i>=15&&i<=20) h=3.6+rnd()*1.6;
- sleep.push({d:new Date(d),h:Math.round(h*10)/10,q:Math.round(52+rnd()*38),we,sh});
- steps.push({d:new Date(d), s: Math.round((sh?9500+rnd()*6000:(we?4200+rnd()*5200:5600+rnd()*5000)))});
-}
-const gym=new Set(), work=new Set(), trade=new Set([3,22]);
+const SLEEP=[
+{d:"2026-07-31",h:5.34,b:6.00,q:67,bed:"01:21",up:"07:21",we:false},
+{d:"2026-08-01",h:6.59,b:8.62,q:79,bed:"00:11",up:"08:49",we:true},
+{d:"2026-08-02",h:7.38,b:8.13,q:85,bed:"00:03",up:"08:10",we:true},
+{d:"2026-08-03",h:5.72,b:7.14,q:69,bed:"00:14",up:"07:22",we:false},
+{d:"2026-08-04",h:5.62,b:6.50,q:67,bed:"00:53",up:"07:24",we:false},
+{d:"2026-08-05",h:1.12,b:1.97,q:8,bed:"08:27",up:"10:25",we:false},
+{d:"2026-08-06",h:5.18,b:6.05,q:66,bed:"00:28",up:"06:31",we:false},
+{d:"2026-08-07",h:6.92,b:7.57,q:83,bed:"22:46",up:"06:20",we:false},
+{d:"2026-08-08",h:6.81,b:8.47,q:84,bed:"22:46",up:"07:14",we:true},
+{d:"2026-08-09",h:7.55,b:8.00,q:94,bed:"05:27",up:"13:27",we:true},
+{d:"2026-08-10",h:5.14,b:6.51,q:63,bed:"01:01",up:"07:31",we:false},
+{d:"2026-08-11",h:6.64,b:8.14,q:84,bed:"04:13",up:"12:21",we:false},
+{d:"2026-08-13",h:4.68,b:5.50,q:39,bed:"07:45",up:"13:15",we:false},
+{d:"2026-08-14",h:4.40,b:6.89,q:35,bed:"06:33",up:"13:26",we:false},
+{d:"2026-08-16",h:5.79,b:6.20,q:73,bed:"07:53",up:"14:05",we:true},
+{d:"2026-08-17",h:5.72,b:7.75,q:56,bed:"23:20",up:"07:05",we:false},
+{d:"2026-08-18",h:6.38,b:8.03,q:59,bed:"02:05",up:"10:07",we:false},
+{d:"2026-08-19",h:7.17,b:8.03,q:83,bed:"23:12",up:"07:13",we:false},
+{d:"2026-08-20",h:6.87,b:8.16,q:79,bed:"23:37",up:"07:47",we:false},
+{d:"2026-08-21",h:3.83,b:4.27,q:45,bed:"00:37",up:"04:53",we:false},
+{d:"2026-08-22",h:5.49,b:6.35,q:42,bed:"03:36",up:"09:58",we:true},
+{d:"2026-08-23",h:5.05,b:6.15,q:45,bed:"03:49",up:"09:58",we:true},
+{d:"2026-08-24",h:4.38,b:5.01,q:43,bed:"04:21",up:"09:21",we:false},
+{d:"2026-08-25",h:7.07,b:7.93,q:72,bed:"00:54",up:"08:50",we:false},
+{d:"2026-08-26",h:4.47,b:5.25,q:40,bed:"02:57",up:"08:12",we:false},
+{d:"2026-08-27",h:0.96,b:1.20,q:15,bed:"03:42",up:"04:54",we:false},
+{d:"2026-08-28",h:4.62,b:5.29,q:55,bed:"04:58",up:"10:15",we:false},
+{d:"2026-08-30",h:10.11,b:11.07,q:100,bed:"23:55",up:"10:59",we:true},
+{d:"2026-08-31",h:6.62,b:7.75,q:78,bed:"23:57",up:"07:42",we:false},
+{d:"2026-09-01",h:6.55,b:8.23,q:82,bed:"23:23",up:"07:36",we:false}
+];
+const DAYS=SLEEP.length;
+const sleep=SLEEP.map(function(x){var p=x.d.split("-");
+ return {d:new Date(+p[0],+p[1]-1,+p[2]),h:x.h,b:x.b,q:x.q,bed:x.bed,up:x.up,we:x.we,sh:false};});
+const END=sleep[sleep.length-1].d;
+const steps=sleep.map(function(x){return {d:x.d,s:Math.round(x.we?4200+rnd()*5200:5600+rnd()*5000)};});
+const wpts=[];
+const gym=new Set(), work=new Set(), trade=new Set([3]); /* 2026-08-03 = a valodi egyetlen eles trade */
 sleep.forEach((s,i)=>{ if(!s.sh&&s.h>5.5&&rnd()<0.42) gym.add(i); if(s.sh||(i>=15&&i<=20)) work.add(i); });
 for(let i=0;i<10;i++){ const d=new Date(END); d.setDate(END.getDate()-(63-i*7));
  wpts.push({d,kg:Math.round((77.4-i*0.18+(rnd()-0.5)*0.6)*10)/10}); }
@@ -544,7 +573,7 @@ function dailyBars(hostId,tipId,arr,key,color,unit,hiFn,thresh){
  arr.forEach((a,i)=>{const x=pad.l+i*band+(band-bw)/2,y=yFor(a[key]);
   svg.appendChild(el("rect",{x,y,width:bw,height:Math.max(2,yFor(0)-y),rx:2,fill:color,opacity:hiFn&&hiFn(a)?0.55:1}));
   const hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
-  hit.addEventListener("pointerenter",()=>ton(tp,host,x+bw/2,y,"<b>"+(unit==="lépés"?nf(a[key]):a[key])+" "+unit+"</b><br><span class='r'>"+fmtD(a.d)+(a.sh?" · műszak":"")+"</span>"));
+  hit.addEventListener("pointerenter",()=>ton(tp,host,x+bw/2,y,"<b>"+(unit==="lépés"?nf(a[key]):a[key])+" "+unit+"</b><br><span class='r'>"+fmtD(a.d)+(a.bed?" · "+a.bed+" → "+a.up:"")+"</span>"));
   hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);});
  arr.forEach((a,i)=>{if(i%6)return; const t=el("text",{x:pad.l+i*band+band/2,y:H-8,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
   t.textContent=fmtD(a.d); svg.appendChild(t);});
@@ -617,9 +646,9 @@ function seqC(h){ if(h==null)return "var(--line2)"; if(h<5)return "var(--seq-100
  if(h<7.5)return "var(--seq-400)"; if(h<8.5)return "var(--seq-550)"; return "var(--seq-700)"; }
 function drawCal(){
  const rows=[{lab:"alvás",g:i=>({c:seqC(sleep[i].h),t:sleep[i].h+" óra"})},
- {lab:"lépés",g:i=>({c:steps[i].s>8000?"var(--series-2)":steps[i].s>5000?"#e0a86b":"var(--line2)",t:nf(steps[i].s)+" lépés"})},
- {lab:"edzés",g:i=>({c:gym.has(i)?"var(--series-3)":"var(--line2)",t:gym.has(i)?"edzés":"nincs"})},
- {lab:"munka",g:i=>({c:work.has(i)?"var(--series-2)":"var(--line2)",t:work.has(i)?"műszak":"nincs"})},
+ {lab:"lépés*",g:i=>({c:steps[i].s>8000?"var(--series-2)":steps[i].s>5000?"#e0a86b":"var(--line2)",t:nf(steps[i].s)+" lépés"})},
+ {lab:"edzés*",g:i=>({c:gym.has(i)?"var(--series-3)":"var(--line2)",t:gym.has(i)?"edzés":"nincs"})},
+ {lab:"munka*",g:i=>({c:work.has(i)?"var(--series-2)":"var(--line2)",t:work.has(i)?"műszak":"nincs"})},
  {lab:"trade",g:i=>({c:trade.has(i)?"var(--series-4)":"var(--line2)",t:trade.has(i)?"éles trade":"nincs"})}];
  const host=$("#cal"); host.innerHTML="";
  rows.forEach(r=>{const row=document.createElement("div"); row.className="calrow";
