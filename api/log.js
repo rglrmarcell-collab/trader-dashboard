@@ -26,6 +26,48 @@ const num = (v) => (v === undefined || v === null || v === "" || isNaN(Number(v)
 const sel = (v) => v ? { select: { name: String(v) } } : undefined;
 const today = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Budapest" });
 
+// "2026-09-01" (vagy ma) -> "Tuesday, 1 September 2026" — pontosan ez all a Daily Notes napi calloutjaban.
+function dayHeader(iso) {
+  const dt = iso ? new Date(String(iso) + "T12:00:00Z") : new Date();
+  if (isNaN(dt.getTime())) throw new Error("Ervenytelen datum: " + iso);
+  const p = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Budapest", weekday: "long", day: "numeric", month: "long", year: "numeric"
+  }).formatToParts(dt);
+  const g = (t) => (p.find((x) => x.type === t) || {}).value || "";
+  return g("weekday") + ", " + g("day") + " " + g("month") + " " + g("year");
+}
+
+const clock = () => new Intl.DateTimeFormat("hu-HU", {
+  timeZone: "Europe/Budapest", hour: "2-digit", minute: "2-digit", hour12: false
+}).format(new Date());
+
+const para = (s) => ({ object: "block", type: "paragraph", paragraph: { rich_text: txt(s) } });
+
+const plain = (rt) => (Array.isArray(rt) ? rt : []).map((x) => (x && x.plain_text) || "").join("").trim();
+
+// Vegigjarja a Daily Notes lap blokkjait, es megkeresi azt a calloutot,
+// aminek az elso sora a keresett nappal kezdodik. Hatulrol elore keres:
+// a mai nap a lap vegen van, igy altalaban az elso talalat.
+async function findDayCallout(target) {
+  const blocks = [];
+  let cursor = null;
+  for (let i = 0; i < 25; i++) {
+    const url = NOTION + "/blocks/" + DAILY_NOTES + "/children?page_size=100" + (cursor ? "&start_cursor=" + cursor : "");
+    const r = await fetch(url, { headers: hdr() });
+    const j = await r.json();
+    if (!r.ok) return { error: j.message || "Notion hiba a lap olvasasakor" };
+    blocks.push.apply(blocks, j.results || []);
+    if (!j.has_more) break;
+    cursor = j.next_cursor;
+  }
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b = blocks[i];
+    if (b.type !== "callout") continue;
+    if (plain(b.callout && b.callout.rich_text).indexOf(target) === 0) return { id: b.id };
+  }
+  return { id: null };
+}
+
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Csak POST" });
@@ -43,19 +85,41 @@ export default async function handler(req, res) {
   const date = d.datum || today();
 
   try {
-    // --- Gyorsjegyzet -> Daily Notes vegere ---
+    // --- Gyorsjegyzet -> a Daily Notes ADOTT NAPI blokkjaba ---
+    // A nap fejlece angolul all a callout elso soraban: "Tuesday, 1 September 2026".
+    // Napkozben barmennyi jegyzet mehet: mind ugyanabba a napi calloutba kerul, idobelyeggel.
     if (body.kind === "note") {
-      const stamp = new Date().toLocaleString("hu-HU", { timeZone: "Europe/Budapest" });
-      const r = await fetch(NOTION + "/blocks/" + DAILY_NOTES + "/children", {
+      const szoveg = String(d.szoveg || "").trim();
+      if (!szoveg) return res.status(400).json({ error: "Ures jegyzet" });
+
+      const target = dayHeader(d.datum);              // pl. "Tuesday, 1 September 2026"
+      const ido = clock();                            // pl. "14:32"
+      const sor = "📥 [" + ido + "] " + szoveg;
+
+      const hit = await findDayCallout(target);
+      if (hit.error) return res.status(502).json({ error: hit.error });
+
+      if (hit.id) {
+        const r = await fetch(NOTION + "/blocks/" + hit.id + "/children", {
+          method: "PATCH",
+          headers: hdr(),
+          body: JSON.stringify({ children: [para(sor)] })
+        });
+        const j = await r.json();
+        if (!r.ok) return res.status(502).json({ error: j.message || "Notion hiba" });
+        return res.status(200).json({ ok: true, hova: target, mod: "napi-blokk" });
+      }
+
+      // Nem talaltam a napi blokkot. NEM hozunk letre uj napot (duplikatum-veszely),
+      // hanem a lap vegere irjuk, es ezt meg is mondjuk - sosem tunhet el csendben.
+      const r2 = await fetch(NOTION + "/blocks/" + DAILY_NOTES + "/children", {
         method: "PATCH",
         headers: hdr(),
-        body: JSON.stringify({
-          children: [{ object: "block", type: "paragraph", paragraph: { rich_text: txt("[" + stamp + "] " + (d.szoveg || "")) } }]
-        })
+        body: JSON.stringify({ children: [para(sor + "  — (nem talaltam a napi blokkot: " + target + ")")] })
       });
-      const j = await r.json();
-      if (!r.ok) return res.status(502).json({ error: j.message || "Notion hiba" });
-      return res.status(200).json({ ok: true, hova: "Daily Notes" });
+      const j2 = await r2.json();
+      if (!r2.ok) return res.status(502).json({ error: j2.message || "Notion hiba" });
+      return res.status(200).json({ ok: true, hova: target, mod: "lap-vege", figyelmeztetes: "A " + target + " napi blokkot nem talaltam, a lap vegere irtam." });
     }
 
     // --- Adatbazis sorok ---
