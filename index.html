@@ -25,10 +25,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-s
   color:var(--ink); line-height:1.45; padding:16px 14px 44px; max-width:840px; margin:0 auto; min-height:100vh;}
 .num{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.4px;}
 
-.hdr{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; animation:fade .5s ease both;}
+.hdr{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:16px; animation:fade .5s ease both;}
+.brand{flex:0 0 auto;}
 .brand{display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;}
 .live{width:7px; height:7px; border-radius:50%; background:var(--accent2); box-shadow:0 0 0 0 rgba(16,185,129,.5); animation:pulse 2.4s infinite;}
-.stamp{font-size:10.5px; color:var(--faint); font-family:var(--mono); text-align:right;}
+.stamp{font-size:10.5px; color:var(--faint); font-family:var(--mono); text-align:right; max-width:58%; line-height:1.35;}
 
 .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:13px; box-shadow:var(--shadow); animation:rise .55s cubic-bezier(.2,.7,.2,1) both;}
 .card.d1{animation-delay:.06s;} .card.d1b{animation-delay:.09s;} .card.d2{animation-delay:.12s;} .card.d3{animation-delay:.18s;}
@@ -342,7 +343,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
   </div>
   <div class="reclbl" id="reclbl" style="display:none;"><span class="recdot"></span><span id="rectxt">Hallgatlak… beszélj nyugodtan, csend alatt is figyelek.</span></div>
   <div class="jstat" id="jstat"></div>
-  <div class="jhint">A mikrofon csak diktál — <b>nem ment magától</b>. Amikor kész vagy, nyomd meg a <b>Mentés</b> gombot; az leállítja a diktálást (ha megy) és időbélyeggel a Daily Notes végére írja.</div>
+  <div class="jhint">A mikrofon csak diktál — <b>nem ment magától</b>. Amikor kész vagy, nyomd meg a <b>Mentés</b> gombot; az leállítja a diktálást (ha megy) és időbélyeggel <b>a mai napi blokkba</b> írja a Daily Notesban. Napközben akárhányszor írhatsz — mind egy helyre, a mai naphoz kerül.</div>
 </div>
 
 </section>
@@ -744,8 +745,8 @@ hogyan esnek egybe az alvásoddal és a kereskedési napjaiddal.
    A streak + a döntési kártya + a checklist forrása a Mentor Log Élő állapota.
    ===================================================================== */
 const DATA = {
-  updated: "2026-08-31",
-  syncNote: "kézi frissítés (a reggeli auto-sync NEM fut) · naptár ellenőrizve",
+  updated: "2026-09-01",
+  syncNote: "kézi frissítés · napi adat élőben a Notionből",
   streak: { current: 0, record: "2*" },
   account: { current: 99500, goal: 110000, initial: 100000, floor: 90000 },
   stats3m: { wins: 3, losses: 10, be: 2, total: 15, avgRR: 2.79 },
@@ -880,7 +881,7 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
   $('news-hint').textContent=su.news.length+" db";
 })();
 
-$('updated').textContent="SYNC "+DATA.updated+" · 07:00 · "+DATA.syncNote;
+$('updated').textContent=DATA.updated+" · "+DATA.syncNote;
 $('foot').textContent="napi frissítés a Notionből · session brief a reggeli tasktól · checklist a Mentor Log Élő állapotából";
 
 /* ---- Panel 2c: Beadas -> /api/log ---- */
@@ -899,6 +900,7 @@ try{
 const r = await fetch('/api/log', { method:'POST', headers:{'Content-Type':'application/json'},
 body: JSON.stringify({ kind: kind, secret: secret, data: data }) });
 let j = {}; try{ j = await r.json(); }catch(_){}
+window.__lastLog = j;
 return r.ok ? true : (j.error || ('HTTP ' + r.status));
 }catch(e){ return String((e && e.message) || e); }
 };
@@ -974,7 +976,12 @@ b.disabled = false;
     catch(_){ ta.select(); try{ document.execCommand('copy'); }catch(_){} }
     
     const sent = await window.__log("note", { szoveg: txt });
-if(sent === true){ stat.className="jstat ok"; stat.textContent="✓ Beirva a Daily Notesba"; ta.value=""; committed=""; }
+if(sent === true){
+  var L = window.__lastLog || {};
+  if(L.mod === "lap-vege"){ stat.className="jstat err"; stat.textContent="⚠ Elmentve, DE a lap végére: nem találtam a(z) " + (L.hova||"mai") + " napi blokkot."; }
+  else { stat.className="jstat ok"; stat.textContent="✓ Beírva ide: " + (L.hova || "a mai nap"); }
+  ta.value=""; committed="";
+}
 else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — a szoveg a vagolapon van"; window.open("https://www.notion.so/"+DAILY_NOTES_PAGE,"_blank"); }
     saveBtn.disabled=false;
   };
@@ -1001,6 +1008,185 @@ else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — 
   document.getElementById('h-fek').textContent='0/3';
   document.getElementById('h-sleep').innerHTML=(window.__avgSleep?window.__avgSleep.toFixed(1):'–')+'<span class="u">ó</span>';
  }catch(e){}
+})();
+</script>
+<style>
+/* ============ SZÍN-RÉTEG: minden fülnek saját identitás-színe ============
+   A szín itt jelent valamit (melyik területen vagy), nem dísz.
+   Mind a validált diagram-palettából jön, így nem ütközik a grafikonokkal. */
+:root{
+  --dom:#334155;                 /* semleges alap (Áttekintés) */
+  --dom-soft:rgba(51,65,85,.10);
+  --dom-ink:#0f172a;
+}
+#pane-trading{--dom:#2563eb; --dom-soft:rgba(37,99,235,.10); --dom-ink:#1d4ed8;}
+#pane-health {--dom:#0d9488; --dom-soft:rgba(13,148,136,.11); --dom-ink:#0f766e;}
+#pane-school {--dom:#6d28d9; --dom-soft:rgba(109,40,217,.10); --dom-ink:#5b21b6;}
+#pane-work   {--dom:#b45309; --dom-soft:rgba(180,83,9,.11);  --dom-ink:#92400e;}
+
+/* Kártyák: vékony színes fejsáv, a terület színében */
+.pane .card{position:relative; overflow:hidden;}
+.pane .card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, var(--dom), transparent 70%);
+  opacity:.9;
+}
+.pane .eyebrow .k{color:var(--dom);}
+.pane .eyebrow{color:var(--dom-ink); opacity:.75;}
+
+/* Fülek: a kiválasztott a saját színét viszi, nem tompa feketét */
+.tabnav button{position:relative; transition:background .18s, color .18s, border-color .18s, transform .12s, box-shadow .18s;}
+.tabnav button .ic{transition:color .18s, transform .25s cubic-bezier(.2,.7,.2,1);}
+.tabnav button:active{transform:scale(.96);}
+.tabnav button[data-pane="home"]    .ic{color:#334155;}
+.tabnav button[data-pane="trading"] .ic{color:#2563eb;}
+.tabnav button[data-pane="health"]  .ic{color:#0d9488;}
+.tabnav button[data-pane="school"]  .ic{color:#6d28d9;}
+.tabnav button[data-pane="work"]    .ic{color:#b45309;}
+.tabnav button[aria-selected="true"]{color:#fff; transform:translateY(-1px);}
+.tabnav button[aria-selected="true"] .ic{color:#fff; transform:scale(1.15);}
+.tabnav button[data-pane="home"][aria-selected="true"]   {background:#334155; border-color:#334155; box-shadow:0 4px 14px rgba(51,65,85,.28);}
+.tabnav button[data-pane="trading"][aria-selected="true"]{background:#2563eb; border-color:#2563eb; box-shadow:0 4px 14px rgba(37,99,235,.30);}
+.tabnav button[data-pane="health"][aria-selected="true"] {background:#0d9488; border-color:#0d9488; box-shadow:0 4px 14px rgba(13,148,136,.30);}
+.tabnav button[data-pane="school"][aria-selected="true"] {background:#6d28d9; border-color:#6d28d9; box-shadow:0 4px 14px rgba(109,40,217,.30);}
+.tabnav button[data-pane="work"][aria-selected="true"]   {background:#b45309; border-color:#b45309; box-shadow:0 4px 14px rgba(180,83,9,.30);}
+
+/* Áttekintés csempéi: a szám a saját területe színét kapja */
+.today .c{position:relative; transition:background .2s;}
+.today .c::after{content:""; position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--tc,transparent); opacity:.55;}
+.today .c:nth-child(1){--tc:#2563eb;} .today .c:nth-child(1) .n{color:#1d4ed8;}
+.today .c:nth-child(2){--tc:#2563eb;} .today .c:nth-child(2) .n{color:#1d4ed8;}
+.today .c:nth-child(3){--tc:#2563eb;} .today .c:nth-child(3) .n{color:#1d4ed8;}
+.today .c:nth-child(4){--tc:#0d9488;} .today .c:nth-child(4) .n{color:#0f766e;}
+.today .c .l{transition:color .2s;}
+
+/* Beviteli mezők és gombok: a terület színe a fókuszban is */
+.pane .lg input:focus, .pane .lg select:focus, .pane .lg textarea:focus{
+  border-color:var(--dom); box-shadow:0 0 0 3px var(--dom-soft);
+}
+.pane .save{transition:transform .12s, box-shadow .2s, filter .2s;}
+.pane .save:active{transform:scale(.985);}
+.pane .save:not(:disabled):hover{filter:saturate(1.08) brightness(1.03); box-shadow:0 4px 16px var(--dom-soft);}
+
+/* Accordion: a nyíl elfordul, a tartalom lecsúszik */
+.acc > summary{transition:color .15s;}
+.acc > summary .chev{display:inline-block; transition:transform .22s cubic-bezier(.2,.7,.2,1);}
+.acc[open] > summary .chev{transform:rotate(90deg);}
+.acc[open] > summary{color:var(--dom-ink);}
+.acc[open] > .body{animation:slidein .28s cubic-bezier(.2,.7,.2,1) both;}
+@keyframes slidein{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:none;}}
+
+/* Fülváltáskor a kártyák újra beúsznak, lépcsőzetesen */
+.pane.on > .card, .pane.on > .today, .pane.on > .empty, .pane.on > .demo, .pane.on > .tiles{
+  animation:rise .5s cubic-bezier(.2,.7,.2,1) both;
+}
+.pane.on > *:nth-child(1){animation-delay:.02s;}
+.pane.on > *:nth-child(2){animation-delay:.07s;}
+.pane.on > *:nth-child(3){animation-delay:.12s;}
+.pane.on > *:nth-child(4){animation-delay:.17s;}
+.pane.on > *:nth-child(5){animation-delay:.22s;}
+.pane.on > *:nth-child(n+6){animation-delay:.26s;}
+
+/* Diagram-vonalak berajzolódnak */
+@keyframes draw{from{stroke-dashoffset:var(--len);} to{stroke-dashoffset:0;}}
+.drawin{animation:draw 1s cubic-bezier(.3,.7,.2,1) both;}
+
+/* Szám-számláló közben halványabb, hogy ne olvasson félre */
+.counting{opacity:.85;}
+
+/* Fejléc-pont: lélegzik */
+.live{animation:pulse 2.4s infinite, breathe 4s ease-in-out infinite;}
+@keyframes breathe{0%,100%{transform:scale(1);} 50%{transform:scale(1.25);}}
+
+@media (prefers-reduced-motion:reduce){
+  .pane.on > *, .acc[open] > .body, .drawin, .live{animation:none!important;}
+  .tabnav button, .tabnav button .ic, .pane .save{transition:none!important; transform:none!important;}
+}
+</style>
+<script>
+(function(){
+  var reduce = false;
+  try{ reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){}
+
+  /* ---- Szám-felszámlálás: a kirajzolt szövegből dolgozik, formátumot megtart ---- */
+  function countUp(node){
+    if(reduce || !node) return;
+    var raw = node.textContent || '';
+    var m = raw.match(/^([^\d-]*)(-?[\d  .,]*\d)(.*)$/);
+    if(!m) return;
+    var pre = m[1], mid = m[2], post = m[3];
+    var sep = /[  ]/.test(mid) ? (mid.match(/[  ]/) || [' '])[0] : '';
+    var dec = /,\d{1,2}$/.test(mid) ? ',' : (/\.\d{1,2}$/.test(mid) ? '.' : '');
+    var decN = dec ? (mid.split(dec)[1] || '').length : 0;
+    var target = parseFloat(mid.replace(/[  ]/g,'').replace(',', '.'));
+    if(!isFinite(target)) return;
+    var dur = 850, t0 = 0;
+    node.classList.add('counting');
+    function fmt(v){
+      var s = decN ? v.toFixed(decN) : String(Math.round(v));
+      if(dec === ',') s = s.replace('.', ',');
+      if(sep){
+        var parts = s.split(dec || '.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+        s = parts.join(dec || '.');
+      }
+      return s;
+    }
+    function step(ts){
+      if(!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      node.textContent = pre + fmt(target * e) + post;
+      if(p < 1) requestAnimationFrame(step);
+      else { node.textContent = raw; node.classList.remove('counting'); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function animateNumbers(pane){
+    if(!pane) return;
+    pane.querySelectorAll('.today .n, .tl .n, .stat .n, .balance').forEach(function(n){
+      if(n.querySelector('*')) return;          /* csak sima szöveget bántunk */
+      countUp(n);
+    });
+  }
+
+  /* ---- SVG vonalak berajzolása ---- */
+  function drawLines(root){
+    if(reduce || !root) return;
+    root.querySelectorAll('svg path').forEach(function(p){
+      var f = (p.getAttribute('fill') || 'none');
+      if(f !== 'none' && f !== 'transparent') return;   /* kitöltött területet nem rajzolunk */
+      var len;
+      try{ len = p.getTotalLength(); }catch(_){ return; }
+      if(!len || len < 24) return;
+      p.style.setProperty('--len', len);
+      p.style.strokeDasharray = len;
+      p.classList.remove('drawin');
+      void p.getBoundingClientRect();
+      p.classList.add('drawin');
+    });
+  }
+
+  function refresh(name){
+    var pane = document.getElementById('pane-' + name);
+    if(!pane) return;
+    animateNumbers(pane);
+    setTimeout(function(){ drawLines(pane); }, 60);
+  }
+
+  /* Fülváltás: a meglévő kezelő után futunk */
+  var nav = document.querySelector('.tabnav');
+  if(nav) nav.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-pane]');
+    if(b) setTimeout(function(){ refresh(b.dataset.pane); }, 20);
+  });
+
+  /* Induláskor az épp látható fülre */
+  setTimeout(function(){
+    var on = document.querySelector('.pane.on');
+    if(on) refresh(on.id.replace('pane-',''));
+  }, 260);
 })();
 </script>
 </body>
