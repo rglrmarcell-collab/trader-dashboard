@@ -818,10 +818,26 @@ aiFocus: "AZ EGY DOLOG (aug. 31. – szept. 6.): <b>a TP számmal, ÉS a TP/SL-m
 const DAILY_NOTES_PAGE = "36eac560704880469890e907b6f383d9";
 const $ = id => document.getElementById(id);
 function money(n){ return "$" + Math.round(n).toLocaleString('hu-HU').replace(/,/g,' '); }
+function fmtCU(v,dec,pre,suf){return pre+(dec?v.toFixed(dec):Math.round(v).toLocaleString('hu-HU').replace(/,/g,' '))+suf;}
+/* A vegso ertek MINDIG a valodi szambol (`to`) all elo, sosem a kirajzolt szovegbol,
+   es akkor is megerkezik, ha a requestAnimationFrame megall (lezart telefon,
+   hatterbe kerult ful). 2026-09-01-i hiba javitasa. */
 function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf=o.suf||"",pre=o.pre||"";
-  (function s(t){const k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3),v=to*e;
-   el.textContent=pre+(dec?v.toFixed(dec):Math.round(v).toLocaleString('hu-HU').replace(/,/g,' '))+suf;
-   if(k<1)requestAnimationFrame(s);})(t0);}
+  if(!el) return;
+  let done=false, guard=null;
+  const onHide=function(){ if(document.hidden) fin(); };
+  function fin(){ if(done) return; done=true; if(guard) clearTimeout(guard);
+    try{ document.removeEventListener('visibilitychange',onHide); window.removeEventListener('pagehide',fin); }catch(_){}
+    el.textContent=fmtCU(to,dec,pre,suf); }
+  let reduce=false; try{ reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){}
+  if(reduce){ el.textContent=fmtCU(to,dec,pre,suf); return; }
+  try{ document.addEventListener('visibilitychange',onHide); window.addEventListener('pagehide',fin); }catch(_){}
+  guard=setTimeout(fin,dur+500);
+  (function s(){ if(done) return;
+   const k=Math.min((performance.now()-t0)/dur,1);
+   if(k>=1){ fin(); return; }
+   el.textContent=fmtCU(to*(1-Math.pow(1-k,3)),dec,pre,suf);
+   requestAnimationFrame(s);})();}
 
 /* ---- Panel 1 ---- */
 (function(){
@@ -1109,47 +1125,12 @@ else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — 
   try{ reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){}
 
   /* ---- Szám-felszámlálás: a kirajzolt szövegből dolgozik, formátumot megtart ---- */
-  function countUp(node){
-    if(reduce || !node) return;
-    var raw = node.textContent || '';
-    var m = raw.match(/^([^\d-]*)(-?[\d  .,]*\d)(.*)$/);
-    if(!m) return;
-    var pre = m[1], mid = m[2], post = m[3];
-    var sep = /[  ]/.test(mid) ? (mid.match(/[  ]/) || [' '])[0] : '';
-    var dec = /,\d{1,2}$/.test(mid) ? ',' : (/\.\d{1,2}$/.test(mid) ? '.' : '');
-    var decN = dec ? (mid.split(dec)[1] || '').length : 0;
-    var target = parseFloat(mid.replace(/[  ]/g,'').replace(',', '.'));
-    if(!isFinite(target)) return;
-    var dur = 850, t0 = 0;
-    node.classList.add('counting');
-    function fmt(v){
-      var s = decN ? v.toFixed(decN) : String(Math.round(v));
-      if(dec === ',') s = s.replace('.', ',');
-      if(sep){
-        var parts = s.split(dec || '.');
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, sep);
-        s = parts.join(dec || '.');
-      }
-      return s;
-    }
-    function step(ts){
-      if(!t0) t0 = ts;
-      var p = Math.min(1, (ts - t0) / dur);
-      var e = 1 - Math.pow(1 - p, 3);
-      node.textContent = pre + fmt(target * e) + post;
-      if(p < 1) requestAnimationFrame(step);
-      else { node.textContent = raw; node.classList.remove('counting'); }
-    }
-    requestAnimationFrame(step);
-  }
-
-  function animateNumbers(pane){
-    if(!pane) return;
-    pane.querySelectorAll('.today .n, .tl .n, .stat .n, .balance').forEach(function(n){
-      if(n.querySelector('*')) return;          /* csak sima szöveget bántunk */
-      countUp(n);
-    });
-  }
+  /* Szam-felszamlalas: SZANDEKOSAN NINCS ITT.
+     A dashboardnak mar van sajat countUp()-ja (lasd fentebb), ami a VALODI
+     szambol animal. Egy masodik animacio a DOM szoveget olvasta volna
+     igazsagnak, es 2026-09-01-en pont ezert fagyott be az egyenleg
+     $63 443-on $99 500 helyett. Szabaly: az igazsag az ADAT, sosem a
+     kirajzolt szoveg. */
 
   /* ---- SVG vonalak berajzolása ---- */
   function drawLines(root){
@@ -1171,7 +1152,6 @@ else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — 
   function refresh(name){
     var pane = document.getElementById('pane-' + name);
     if(!pane) return;
-    animateNumbers(pane);
     setTimeout(function(){ drawLines(pane); }, 60);
   }
 
