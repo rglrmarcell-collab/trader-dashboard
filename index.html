@@ -501,7 +501,6 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 <script>
 (function(){
-let sd=20260831; const rnd=()=>{ sd=(sd*1103515245+12345)%2147483648; return sd/2147483648; };
 const SLEEP=[
 {d:"2026-07-31",h:5.34,b:6.00,q:67,bed:"01:21",up:"07:21",we:false},
 {d:"2026-08-01",h:6.59,b:8.62,q:79,bed:"00:11",up:"08:49",we:true},
@@ -534,135 +533,185 @@ const SLEEP=[
 {d:"2026-08-31",h:6.62,b:7.75,q:78,bed:"23:57",up:"07:42",we:false},
 {d:"2026-09-01",h:6.55,b:8.23,q:82,bed:"23:23",up:"07:36",we:false}
 ];
-const DAYS=SLEEP.length;
-const sleep=SLEEP.map(function(x){var p=x.d.split("-");
- return {d:new Date(+p[0],+p[1]-1,+p[2]),h:x.h,b:x.b,q:x.q,bed:x.bed,up:x.up,we:x.we,sh:false};});
-const END=sleep[sleep.length-1].d;
+let sd=20260831; const rnd=()=>{ sd=(sd*1103515245+12345)%2147483648; return sd/2147483648; };
+const mkDate=function(s){var p=String(s).split("-");return new Date(+p[0],+p[1]-1,+p[2]);};
+const sleep=SLEEP.map(function(x){return {d:mkDate(x.d),h:x.h,b:x.b,q:x.q,bed:x.bed,up:x.up,we:x.we};});
+let DAYS=sleep.length;
 const steps=sleep.map(function(x){return {d:x.d,s:Math.round(x.we?4200+rnd()*5200:5600+rnd()*5000)};});
-const wpts=[];
-const gym=new Set(), work=new Set(), trade=new Set([3]); /* 2026-08-03 = a valodi egyetlen eles trade */
-sleep.forEach((s,i)=>{ if(!s.sh&&s.h>5.5&&rnd()<0.42) gym.add(i); if(s.sh||(i>=15&&i<=20)) work.add(i); });
-for(let i=0;i<10;i++){ const d=new Date(END); d.setDate(END.getDate()-(63-i*7));
- wpts.push({d,kg:Math.round((77.4-i*0.18+(rnd()-0.5)*0.6)*10)/10}); }
-const weeks=[]; for(let w=0;w<9;w++) weeks.push({label:"H"+(w+1),n:Math.max(0,Math.round(1.5+rnd()*2.4)),vol:Math.round(7200+rnd()*5200)});
-
-const $=s=>document.querySelector(s), SVG="http://www.w3.org/2000/svg";
-const fmtD=d=>d.getDate()+"."+["v","h","k","sze","cs","p","szo"][d.getDay()];
-const mean=a=>a.reduce((x,y)=>x+y,0)/a.length, std=a=>{const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)));};
-const nf=n=>Math.round(n).toLocaleString("hu-HU").replace(/,/g," ");
-function el(n,at){const e=document.createElementNS(SVG,n);for(const k in at)e.setAttribute(k,at[k]);return e;}
-function base(host,h){host.querySelectorAll('svg').forEach(s=>s.remove());
- const w=Math.max(280,host.clientWidth||340); const svg=el("svg",{viewBox:"0 0 "+w+" "+h,height:h,role:"img"});
- host.appendChild(svg); return {svg,w};}
-function gl(svg,w,pad,yFor,ticks,fmt){ticks.forEach(t=>{
+const wpts=[]; const weeks=[];
+const gym=new Set(), work=new Set(), trade=new Set([3]);
+sleep.forEach(function(s,i){ if(s.h>5.5&&rnd()<0.42) gym.add(i); if(i>=15&&i<=20) work.add(i); });
+(function(){var END=sleep[sleep.length-1].d;
+ for(var i=0;i<10;i++){var d=new Date(END); d.setDate(END.getDate()-(63-i*7));
+  wpts.push({d:d,kg:Math.round((77.4-i*0.18+(rnd()-0.5)*0.6)*10)/10});}
+ for(var w=0;w<9;w++) weeks.push({label:"H"+(w+1),n:Math.max(0,Math.round(1.5+rnd()*2.4)),vol:Math.round(7200+rnd()*5200)});})();
+const $=function(s){return document.querySelector(s);}, SVG="http://www.w3.org/2000/svg";
+const fmtD=function(d){return d.getDate()+"."+["v","h","k","sze","cs","p","szo"][d.getDay()];};
+const mean=function(a){return a.reduce(function(x,y){return x+y;},0)/a.length;};
+const std=function(a){var m=mean(a);return Math.sqrt(mean(a.map(function(x){return (x-m)*(x-m);})));};
+const nf=function(n){return Math.round(n).toLocaleString("hu-HU").replace(/,/g," ");};
+function el(n,at){var e=document.createElementNS(SVG,n);for(var k in at)e.setAttribute(k,at[k]);return e;}
+function base(host,h){host.querySelectorAll("svg").forEach(function(s){s.remove();});
+ var w=Math.max(280,host.clientWidth||340); var svg=el("svg",{viewBox:"0 0 "+w+" "+h,height:h,role:"img"});
+ host.appendChild(svg); return {svg:svg,w:w};}
+function gl(svg,w,pad,yFor,ticks,fmt){ticks.forEach(function(t){
  svg.appendChild(el("line",{x1:pad.l,x2:w-pad.r,y1:yFor(t),y2:yFor(t),stroke:"var(--grid)","stroke-width":1}));
- const x=el("text",{x:pad.l-6,y:yFor(t)+3.5,"text-anchor":"end","font-size":9.5,fill:"var(--muted)"});
+ var x=el("text",{x:pad.l-6,y:yFor(t)+3.5,"text-anchor":"end","font-size":9.5,fill:"var(--muted)"});
  x.textContent=fmt?fmt(t):t; svg.appendChild(x);});}
 function ton(tp,ho,x,y,html){tp.innerHTML=html;tp.style.left=x+"px";tp.style.top=y+"px";tp.classList.add("on");}
 function toff(tp){tp.classList.remove("on");}
-function tbl(id,head,rows){const t=document.getElementById(id);if(!t)return;
- t.innerHTML="<thead><tr>"+head.map(h=>"<th>"+h+"</th>").join("")+"</tr></thead><tbody>"+
- rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</tbody>";}
-
+function tbl(id,head,rows){var t=document.getElementById(id);if(!t)return;
+ t.innerHTML="<thead><tr>"+head.map(function(h){return "<th>"+h+"</th>";}).join("")+"</tr></thead><tbody>"+
+ rows.map(function(r){return "<tr>"+r.map(function(c){return "<td>"+c+"</td>";}).join("")+"</tr>";}).join("")+"</tbody>";}
 function dailyBars(hostId,tipId,arr,key,color,unit,hiFn,thresh){
- const host=$("#"+hostId),tp=$("#"+tipId); const H=190,pad={l:34,r:8,t:12,b:26}; const {svg,w}=base(host,H);
- const max=Math.max(...arr.map(a=>a[key]))*1.12||1, yFor=v=>pad.t+(1-v/max)*(H-pad.t-pad.b);
- gl(svg,w,pad,yFor,[0,max/2,max].map(v=>v),v=>unit==="lépés"?Math.round(v/1000)+"k":Math.round(v));
+ var host=$("#"+hostId),tp=$("#"+tipId); if(!host) return null;
+ var H=190,pad={l:34,r:8,t:12,b:26}; var r0=base(host,H);
+ var svg=r0.svg,w=r0.w;
+ var max=Math.max.apply(null,arr.map(function(a){return a[key];}))*1.12||1;
+ var yFor=function(v){return pad.t+(1-v/max)*(H-pad.t-pad.b);};
+ gl(svg,w,pad,yFor,[0,max/2,max],function(v){return unit==="lépés"?Math.round(v/1000)+"k":Math.round(v);});
  if(thresh) svg.appendChild(el("line",{x1:pad.l,x2:w-pad.r,y1:yFor(thresh),y2:yFor(thresh),stroke:"var(--axis)","stroke-width":1.5}));
- const n=arr.length,band=(w-pad.l-pad.r)/n,bw=Math.max(4,band-2);
- arr.forEach((a,i)=>{const x=pad.l+i*band+(band-bw)/2,y=yFor(a[key]);
-  svg.appendChild(el("rect",{x,y,width:bw,height:Math.max(2,yFor(0)-y),rx:2,fill:color,opacity:hiFn&&hiFn(a)?0.55:1}));
-  const hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
-  hit.addEventListener("pointerenter",()=>ton(tp,host,x+bw/2,y,"<b>"+(unit==="lépés"?nf(a[key]):a[key])+" "+unit+"</b><br><span class='r'>"+fmtD(a.d)+(a.bed?" · "+a.bed+" → "+a.up:"")+"</span>"));
-  hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);});
- arr.forEach((a,i)=>{if(i%6)return; const t=el("text",{x:pad.l+i*band+band/2,y:H-8,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
+ var n=arr.length,band=(w-pad.l-pad.r)/n,bw=Math.max(4,band-2);
+ arr.forEach(function(a,i){var x=pad.l+i*band+(band-bw)/2,y=yFor(a[key]);
+  svg.appendChild(el("rect",{x:x,y:y,width:bw,height:Math.max(2,yFor(0)-y),rx:2,fill:color,opacity:(hiFn&&hiFn(a))?0.55:1}));
+  var hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
+  hit.addEventListener("pointerenter",function(){ton(tp,host,x+bw/2,y,"<b>"+(unit==="lépés"?nf(a[key]):a[key])+" "+unit+"</b><br><span class=\"r\">"+fmtD(a.d)+(a.bed?" · "+a.bed+" → "+a.up:"")+"</span>");});
+  hit.addEventListener("pointerleave",function(){toff(tp);}); svg.appendChild(hit);});
+ arr.forEach(function(a,i){if(i%6)return; var t=el("text",{x:pad.l+i*band+band/2,y:H-8,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
   t.textContent=fmtD(a.d); svg.appendChild(t);});
- return {svg,w,pad,band,yFor,H};
-}
+ return {svg:svg,w:w,pad:pad,band:band,yFor:yFor,H:H};}
 function drawSleep(){
- const r=dailyBars("viz-sleep","tip-sleep",sleep,"h","var(--series-1)","óra",a=>a.h<6,7);
- let d=""; sleep.forEach((s,i)=>{ if(i<6)return; const av=mean(sleep.slice(i-6,i+1).map(x=>x.h));
-  d+=(d?" L":"M")+(r.pad.l+i*r.band+r.band/2).toFixed(1)+" "+r.yFor(av).toFixed(1); });
- r.svg.appendChild(el("path",{d,fill:"none",stroke:"var(--series-2)","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"}));
- const hs=sleep.map(s=>s.h);
- $("#t-avg").innerHTML=mean(hs).toFixed(1)+'<span class="u">ó</span>';
- const diff=mean(sleep.filter(s=>s.we).map(s=>s.h))-mean(sleep.filter(s=>!s.we).map(s=>s.h));
+ var r=dailyBars("viz-sleep","tip-sleep",sleep,"h","var(--series-1)","óra",function(a){return a.h<6;},7);
+ if(!r) return;
+ var d=""; sleep.forEach(function(s,i){ if(i<6)return; var av=mean(sleep.slice(i-6,i+1).map(function(x){return x.h;}));
+  d+=(d?" L":"M")+(r.pad.l+i*r.band+r.band/2).toFixed(1)+" "+r.yFor(av).toFixed(1);});
+ r.svg.appendChild(el("path",{d:d,fill:"none",stroke:"var(--series-2)","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"}));
+ var hs=sleep.map(function(s){return s.h;});
+ $("#t-avg").innerHTML=mean(hs).toFixed(1)+"<span class=\"u\">ó</span>";
+ var we=sleep.filter(function(s){return s.we;}).map(function(s){return s.h;});
+ var wd=sleep.filter(function(s){return !s.we;}).map(function(s){return s.h;});
+ var diff=(we.length&&wd.length)?mean(we)-mean(wd):0;
  $("#t-avg-d").className="d num "+(Math.abs(diff)<0.3?"flat":"dn");
  $("#t-avg-d").textContent="hétvégén "+(diff>=0?"+":"")+diff.toFixed(1)+" ó";
- $("#t-cons").innerHTML=std(hs).toFixed(1)+'<span class="u">ó</span>';
- const sh=hs.filter(h=>h<6).length; $("#t-short").innerHTML=sh+'<span class="u">/'+DAYS+'</span>';
- $("#t-short-d").className="d num "+(sh>DAYS*0.3?"dn":"flat"); $("#t-short-d").textContent=Math.round(sh/DAYS*100)+"% az éjszakákból";
+ $("#t-cons").innerHTML=std(hs).toFixed(1)+"<span class=\"u\">ó</span>";
+ var sh=hs.filter(function(h){return h<6;}).length;
+ $("#t-short").innerHTML=sh+"<span class=\"u\">/"+DAYS+"</span>";
+ $("#t-short-d").className="d num "+(sh>DAYS*0.3?"dn":"flat");
+ $("#t-short-d").textContent=Math.round(sh/DAYS*100)+"% az éjszakákból";
  window.__avgSleep=mean(hs);
- tbl("tv-sleep",["Nap","Alvás (ó)","Minőség"],sleep.map(s=>[fmtD(s.d),s.h.toFixed(1),s.q+"%"]));
-}
+ tbl("tv-sleep",["Nap","Alvás (ó)","Lefekvés","Minőség"],sleep.map(function(s){return [fmtD(s.d),s.h.toFixed(1),(s.bed||"–"),(s.q!=null?s.q+"%":"–")];}));}
 function drawSteps(){
- dailyBars("viz-st","tip-st",steps,"s","var(--series-2)","lépés",null,null);
- const v=steps.map(s=>s.s), mx=steps.reduce((a,b)=>b.s>a.s?b:a);
+ if(!dailyBars("viz-st","tip-st",steps,"s","var(--series-2)","lépés",null,null)) return;
+ var v=steps.map(function(s){return s.s;});
+ var mx=steps.reduce(function(a,b){return b.s>a.s?b:a;});
  $("#t-st").textContent=nf(mean(v)); $("#t-st-max").textContent=nf(mx.s);
  $("#t-st-max-d").textContent=fmtD(mx.d);
- $("#t-st-low").innerHTML=v.filter(x=>x<5000).length+'<span class="u">/'+DAYS+'</span>';
- tbl("tv-st",["Nap","Lépés"],steps.map(s=>[fmtD(s.d),nf(s.s)]));
-}
+ $("#t-st-low").innerHTML=v.filter(function(x){return x<5000;}).length+"<span class=\"u\">/"+steps.length+"</span>";
+ tbl("tv-st",["Nap","Lépés"],steps.map(function(s){return [fmtD(s.d),nf(s.s)];}));}
 function wbars(hostId,tipId,data,key,color,unit,fmt){
- const host=$("#"+hostId),tp=$("#"+tipId); const H=150,pad={l:34,r:8,t:12,b:24}; const {svg,w}=base(host,H);
- const max=Math.max(...data.map(d=>d[key]))*1.15||1, yFor=v=>pad.t+(1-v/max)*(H-pad.t-pad.b);
+ var host=$("#"+hostId),tp=$("#"+tipId); if(!host||!data.length) return;
+ var H=150,pad={l:34,r:8,t:12,b:24}; var r0=base(host,H); var svg=r0.svg,w=r0.w;
+ var max=Math.max.apply(null,data.map(function(d){return d[key];}))*1.15||1;
+ var yFor=function(v){return pad.t+(1-v/max)*(H-pad.t-pad.b);};
  gl(svg,w,pad,yFor,[0,max/2,max],fmt);
- const n=data.length,band=(w-pad.l-pad.r)/n,bw=Math.min(30,Math.max(6,band-6));
- data.forEach((d,i)=>{const x=pad.l+i*band+(band-bw)/2,y=yFor(d[key]);
-  svg.appendChild(el("rect",{x,y,width:bw,height:Math.max(2,yFor(0)-y),rx:3,fill:color}));
-  const hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
-  hit.addEventListener("pointerenter",()=>ton(tp,host,x+bw/2,y,"<b>"+(fmt?fmt(d[key]):d[key])+" "+unit+"</b><br><span class='r'>"+d.label+"</span>"));
-  hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);
-  const t=el("text",{x:pad.l+i*band+band/2,y:H-7,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
-  t.textContent=d.label; svg.appendChild(t);});
-}
+ var n=data.length,band=(w-pad.l-pad.r)/n,bw=Math.min(30,Math.max(6,band-6));
+ data.forEach(function(d,i){var x=pad.l+i*band+(band-bw)/2,y=yFor(d[key]);
+  svg.appendChild(el("rect",{x:x,y:y,width:bw,height:Math.max(2,yFor(0)-y),rx:3,fill:color}));
+  var hit=el("rect",{x:pad.l+i*band,y:pad.t,width:band,height:H-pad.t-pad.b,fill:"transparent"});
+  hit.addEventListener("pointerenter",function(){ton(tp,host,x+bw/2,y,"<b>"+(fmt?fmt(d[key]):d[key])+" "+unit+"</b><br><span class=\"r\">"+d.label+"</span>");});
+  hit.addEventListener("pointerleave",function(){toff(tp);}); svg.appendChild(hit);
+  var t=el("text",{x:pad.l+i*band+band/2,y:H-7,"text-anchor":"middle","font-size":9,fill:"var(--muted)"});
+  t.textContent=d.label; svg.appendChild(t);});}
 function drawGym(){
- wbars("viz-gym","tip-gym",weeks,"n","var(--series-3)","alkalom",v=>Math.round(v));
- wbars("viz-vol","tip-vol",weeks,"vol","var(--series-2)","kg",v=>Math.round(v/1000)+"k");
- $("#t-wk").innerHTML=mean(weeks.map(w=>w.n)).toFixed(1)+'<span class="u">×</span>';
- let g=0,c=0; for(let i=0;i<DAYS;i++){ if(gym.has(i))c=0; else {c++;g=Math.max(g,c);} }
+ wbars("viz-gym","tip-gym",weeks,"n","var(--series-3)","alkalom",function(v){return Math.round(v);});
+ wbars("viz-vol","tip-vol",weeks,"vol","var(--series-2)","kg",function(v){return Math.round(v/1000)+"k";});
+ if(weeks.length) $("#t-wk").innerHTML=mean(weeks.map(function(w){return w.n;})).toFixed(1)+"<span class=\"u\">×</span>";
+ var g=0,c=0; for(var i=0;i<DAYS;i++){ if(gym.has(i))c=0; else {c++; if(c>g)g=c;} }
  $("#t-gap").textContent=g;
- $("#t-vol").innerHTML=(mean(weeks.map(w=>w.vol))/1000).toFixed(1).replace(".",",")+'<span class="u">e kg</span>';
- tbl("tv-gym",["Hét","Edzés"],weeks.map(w=>[w.label,w.n]));
- tbl("tv-vol",["Hét","Volumen (kg)"],weeks.map(w=>[w.label,nf(w.vol)]));
-}
+ if(weeks.length) $("#t-vol").innerHTML=(mean(weeks.map(function(w){return w.vol;}))/1000).toFixed(1).replace(".",",")+"<span class=\"u\">e kg</span>";
+ tbl("tv-gym",["Hét","Edzés"],weeks.map(function(w){return [w.label,w.n];}));
+ tbl("tv-vol",["Hét","Volumen (kg)"],weeks.map(function(w){return [w.label,nf(w.vol)];}));}
 function drawW(){
- const host=$("#viz-w"),tp=$("#tip-w"); const H=150,pad={l:34,r:12,t:14,b:24}; const {svg,w}=base(host,H);
- const vs=wpts.map(p=>p.kg), lo=Math.floor(Math.min(...vs)-1), hi=Math.ceil(Math.max(...vs)+1);
- const yFor=v=>pad.t+(1-(v-lo)/(hi-lo))*(H-pad.t-pad.b), xFor=i=>pad.l+i*(w-pad.l-pad.r)/(wpts.length-1);
+ var host=$("#viz-w"),tp=$("#tip-w"); if(!host||wpts.length<2) return;
+ var H=150,pad={l:34,r:12,t:14,b:24}; var r0=base(host,H); var svg=r0.svg,w=r0.w;
+ var vs=wpts.map(function(p){return p.kg;});
+ var lo=Math.floor(Math.min.apply(null,vs)-1), hi=Math.ceil(Math.max.apply(null,vs)+1);
+ var yFor=function(v){return pad.t+(1-(v-lo)/(hi-lo))*(H-pad.t-pad.b);};
+ var xFor=function(i){return pad.l+i*(w-pad.l-pad.r)/(wpts.length-1);};
  gl(svg,w,pad,yFor,[lo,Math.round((lo+hi)/2),hi]);
- let d=""; wpts.forEach((p,i)=>{d+=(i?" L":"M")+xFor(i).toFixed(1)+" "+yFor(p.kg).toFixed(1);});
- svg.appendChild(el("path",{d,fill:"none",stroke:"var(--series-3)","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"}));
- wpts.forEach((p,i)=>{svg.appendChild(el("circle",{cx:xFor(i),cy:yFor(p.kg),r:4.5,fill:"var(--series-3)",stroke:"#fff","stroke-width":2}));
-  const hit=el("circle",{cx:xFor(i),cy:yFor(p.kg),r:14,fill:"transparent"});
-  hit.addEventListener("pointerenter",()=>ton(tp,host,xFor(i),yFor(p.kg),"<b>"+p.kg+" kg</b><br><span class='r'>"+(p.d.getMonth()+1)+". "+p.d.getDate()+".</span>"));
-  hit.addEventListener("pointerleave",()=>toff(tp)); svg.appendChild(hit);});
- const last=wpts[wpts.length-1];
- const lb=el("text",{x:xFor(wpts.length-1),y:yFor(last.kg)-11,"text-anchor":"end","font-size":11,"font-weight":700,fill:"var(--ink)"});
+ var d=""; wpts.forEach(function(p,i){d+=(i?" L":"M")+xFor(i).toFixed(1)+" "+yFor(p.kg).toFixed(1);});
+ svg.appendChild(el("path",{d:d,fill:"none",stroke:"var(--series-3)","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"}));
+ wpts.forEach(function(p,i){svg.appendChild(el("circle",{cx:xFor(i),cy:yFor(p.kg),r:4.5,fill:"var(--series-3)",stroke:"#fff","stroke-width":2}));
+  var hit=el("circle",{cx:xFor(i),cy:yFor(p.kg),r:14,fill:"transparent"});
+  hit.addEventListener("pointerenter",function(){ton(tp,host,xFor(i),yFor(p.kg),"<b>"+p.kg+" kg</b><br><span class=\"r\">"+(p.d.getMonth()+1)+". "+p.d.getDate()+".</span>");});
+  hit.addEventListener("pointerleave",function(){toff(tp);}); svg.appendChild(hit);});
+ var last=wpts[wpts.length-1];
+ var lb=el("text",{x:xFor(wpts.length-1),y:yFor(last.kg)-11,"text-anchor":"end","font-size":11,"font-weight":700,fill:"var(--ink)"});
  lb.textContent=last.kg+" kg"; svg.appendChild(lb);
- tbl("tv-w",["Dátum","Súly (kg)","Változás"],wpts.map((p,i)=>[(p.d.getMonth()+1)+". "+p.d.getDate()+".",p.kg.toFixed(1),i?((p.kg-wpts[i-1].kg>=0?"+":"")+(p.kg-wpts[i-1].kg).toFixed(1)):"–"]));
-}
+ tbl("tv-w",["Dátum","Súly (kg)","Változás"],wpts.map(function(p,i){return [(p.d.getMonth()+1)+". "+p.d.getDate()+".",p.kg.toFixed(1),i?((p.kg-wpts[i-1].kg>=0?"+":"")+(p.kg-wpts[i-1].kg).toFixed(1)):"–"];}));}
 function seqC(h){ if(h==null)return "var(--line2)"; if(h<5)return "var(--seq-100)"; if(h<6.5)return "var(--seq-250)";
  if(h<7.5)return "var(--seq-400)"; if(h<8.5)return "var(--seq-550)"; return "var(--seq-700)"; }
 function drawCal(){
- const rows=[{lab:"alvás",g:i=>({c:seqC(sleep[i].h),t:sleep[i].h+" óra"})},
- {lab:"lépés*",g:i=>({c:steps[i].s>8000?"var(--series-2)":steps[i].s>5000?"#e0a86b":"var(--line2)",t:nf(steps[i].s)+" lépés"})},
- {lab:"edzés*",g:i=>({c:gym.has(i)?"var(--series-3)":"var(--line2)",t:gym.has(i)?"edzés":"nincs"})},
- {lab:"munka*",g:i=>({c:work.has(i)?"var(--series-2)":"var(--line2)",t:work.has(i)?"műszak":"nincs"})},
- {lab:"trade",g:i=>({c:trade.has(i)?"var(--series-4)":"var(--line2)",t:trade.has(i)?"éles trade":"nincs"})}];
- const host=$("#cal"); host.innerHTML="";
- rows.forEach(r=>{const row=document.createElement("div"); row.className="calrow";
-  const lb=document.createElement("div"); lb.className="callab"; lb.textContent=r.lab;
-  const cs=document.createElement("div"); cs.className="calcells"; cs.style.gridTemplateColumns="repeat("+DAYS+",1fr)";
-  for(let i=0;i<DAYS;i++){const c=document.createElement("div"); c.className="cal"; const v=r.g(i);
+ var host=$("#cal"); if(!host) return;
+ var rows=[{lab:"alvás",g:function(i){return {c:seqC(sleep[i].h),t:sleep[i].h+" óra"};}},
+ {lab:window.__liveSteps?"lépés":"lépés*",g:function(i){var v=steps[i]?steps[i].s:null;
+   return {c:v==null?"var(--line2)":(v>8000?"var(--series-2)":v>5000?"#e0a86b":"var(--line2)"),t:v==null?"nincs":nf(v)+" lépés"};}},
+ {lab:window.__liveGym?"edzés":"edzés*",g:function(i){return {c:gym.has(i)?"var(--series-3)":"var(--line2)",t:gym.has(i)?"edzés":"nincs"};}},
+ {lab:"munka*",g:function(i){return {c:work.has(i)?"var(--series-2)":"var(--line2)",t:work.has(i)?"műszak":"nincs"};}},
+ {lab:"trade",g:function(i){return {c:trade.has(i)?"var(--series-4)":"var(--line2)",t:trade.has(i)?"éles trade":"nincs"};}}];
+ host.innerHTML="";
+ rows.forEach(function(r){var row=document.createElement("div"); row.className="calrow";
+  var lb=document.createElement("div"); lb.className="callab"; lb.textContent=r.lab;
+  var cs=document.createElement("div"); cs.className="calcells"; cs.style.gridTemplateColumns="repeat("+DAYS+",1fr)";
+  for(var i=0;i<DAYS;i++){var c=document.createElement("div"); c.className="cal"; var v=r.g(i);
    c.style.background=v.c; c.title=fmtD(sleep[i].d)+" — "+r.lab+": "+v.t; cs.appendChild(c);}
-  row.appendChild(lb); row.appendChild(cs); host.appendChild(row);});
-}
-document.querySelectorAll("[data-tv]").forEach(b=>{b.onclick=()=>{const t=document.getElementById(b.dataset.tv);
+  row.appendChild(lb); row.appendChild(cs); host.appendChild(row);});}
+document.querySelectorAll("[data-tv]").forEach(function(b){b.onclick=function(){var t=document.getElementById(b.dataset.tv);
  t.classList.toggle("on"); b.textContent=t.classList.contains("on")?"Grafikon":"Táblázat";};});
 window.__renderHealth=function(){ drawSleep(); drawSteps(); drawGym(); drawW(); drawCal(); };
 window.__renderHealth();
-let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>window.__renderHealth(),150);});
+
+/* ---- ELO ADAT a Notionbol ---- */
+(async function(){
+ var sec=""; try{ sec=(localStorage.getItem("mdash_secret")||"").trim(); }catch(_){}
+ var banner=document.querySelector("#pane-health .demo");
+ if(!sec){ if(banner) banner.insertAdjacentHTML("beforeend","<br><b>Élő Notion-adathoz add meg a jelszót</b> az Áttekintés fül Beállítás szekciójában."); return; }
+ var j=null;
+ try{ var r=await fetch("/api/data",{headers:{"x-log-secret":sec}});
+  if(!r.ok){ var t={}; try{t=await r.json();}catch(_){}
+   if(banner) banner.insertAdjacentHTML("beforeend","<br><b>Élő adat nem jött:</b> "+((t&&t.error)||("HTTP "+r.status))); return; }
+  j=await r.json(); }catch(err){ if(banner) banner.insertAdjacentHTML("beforeend","<br><b>Élő adat nem jött:</b> "+err.message); return; }
+ var mk=function(a){return a.map(function(x){var o={}; for(var k in x) o[k]=x[k]; o.d=mkDate(x.d); return o;});};
+ var used=[], errs=[];
+ if(j.errors) for(var k in j.errors) errs.push(k+": "+j.errors[k]);
+ if(j.sleep&&j.sleep.length){var S=mk(j.sleep).filter(function(x){return x.h!=null;});
+  if(S.length){sleep.length=0; S.slice(-30).forEach(function(x){sleep.push(x);}); DAYS=sleep.length; used.push("alvás");}}
+ if(j.steps&&j.steps.length){var T=mk(j.steps).filter(function(x){return x.s!=null;});
+  if(T.length){steps.length=0; T.slice(-DAYS).forEach(function(x){steps.push(x);}); window.__liveSteps=1; used.push("lépés");}}
+ if(j.weight&&j.weight.length){var W=mk(j.weight).filter(function(x){return x.kg!=null;});
+  if(W.length){wpts.length=0; W.forEach(function(x){wpts.push(x);}); used.push("súly");}}
+ if(j.gym&&j.gym.length){var G=mk(j.gym), Bk={};
+  G.forEach(function(x){var t=new Date(x.d); var dd=(t.getDay()+6)%7; t.setDate(t.getDate()-dd);
+   var kk=t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0");
+   if(!Bk[kk]) Bk[kk]={n:0,vol:0}; Bk[kk].n++; Bk[kk].vol+=(x.vol||0);});
+  var ks=Object.keys(Bk).sort().slice(-9);
+  if(ks.length){weeks.length=0; ks.forEach(function(kk){weeks.push({label:kk.slice(5).replace("-","."),n:Bk[kk].n,vol:Math.round(Bk[kk].vol)});});
+   gym.clear(); sleep.forEach(function(s,i){ if(G.some(function(x){return x.d.toDateString()===s.d.toDateString();})) gym.add(i); });
+   window.__liveGym=1; used.push("edzés");}}
+ if(banner){
+  if(used.length){
+   banner.innerHTML="✅ <b>ÉLŐ ADAT a Notionből</b> — frissítve: "+new Date(j.ts).toLocaleString("hu-HU",{timeZone:"Europe/Budapest"})+
+    "<br>Valós: <b>"+used.join(" · ")+"</b>."+(errs.length?"<br><b>Hiba:</b> "+errs.join(" | "):"")+" A csillagos sorok még demo adatok.";
+   banner.style.background="#e9f8f1"; banner.style.borderColor="#bfe9d6";
+   banner.style.borderLeftColor="var(--green)"; banner.style.color="#0b6b4f";
+  } else {
+   banner.insertAdjacentHTML("beforeend","<br><b>A Notion válaszolt, de üres.</b> Valószínűleg az integráció nincs megosztva az Élet Log oldallal."+(errs.length?"<br>"+errs.join(" | "):""));
+  }
+ }
+ window.__renderHealth();
+})();
+
+var rt; addEventListener("resize",function(){clearTimeout(rt); rt=setTimeout(function(){window.__renderHealth();},150);});
 })();
 </script>
 <section class="pane" id="pane-school">
