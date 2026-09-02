@@ -716,14 +716,137 @@ var rt; addEventListener("resize",function(){clearTimeout(rt); rt=setTimeout(fun
 })();
 </script>
 <section class="pane" id="pane-school">
-<div class="empty">
-<div class="big">△</div>
-<b>Az iskola-domain még nem él.</b><br>
-Ide fog kerülni: az IBS-ről kiszedett órarend, a beadandók határidővel és követelménnyel,
-és hogy melyik mennyire sürgős.<br><br>
-<b>Ami hiányzik hozzá:</b> az IBS-portál címe — anélkül nem tudom nézni.<br>
-Az első tanítási nap reálisan <b>szept. 21. (hétfő)</b>.
+
+<style>
+.sk-alert{background:#f6f2ff; border:1px solid #d9caf7; border-left:3px solid #6d28d9; border-radius:14px;
+padding:16px 16px 14px; margin-bottom:13px; box-shadow:var(--shadow);}
+.sk-alert.hot{background:#fdecef; border-color:#f6c3ce; border-left-color:#e11d48;}
+.sk-alert .t{font-size:10.5px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#6d28d9; margin-bottom:9px;}
+.sk-alert.hot .t{color:#e11d48;}
+.sk-alert .h{font-size:16px; font-weight:800; line-height:1.3; margin-bottom:7px;}
+.sk-alert .d{font-size:12.5px; color:var(--sub); line-height:1.55;}
+.sk-alert .d b{color:var(--ink);}
+.sk-cd{display:flex; align-items:baseline; gap:9px; margin:11px 0 3px;}
+.sk-cd .n{font-size:31px; font-weight:800; font-family:var(--mono); line-height:1; color:#6d28d9;}
+.sk-alert.hot .sk-cd .n{color:#e11d48;}
+.sk-cd .u{font-size:12px; color:var(--sub); font-weight:600;}
+
+.sk-tl{position:relative; margin:4px 0 2px; padding-left:20px;}
+.sk-tl::before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:var(--line);}
+.sk-row{position:relative; padding:9px 0; display:flex; gap:11px; align-items:flex-start;}
+.sk-row::before{content:""; position:absolute; left:-19px; top:14px; width:10px; height:10px; border-radius:50%;
+background:var(--card); border:2px solid var(--line2); box-shadow:0 0 0 3px var(--card);}
+.sk-row.done::before{background:var(--line); border-color:var(--line);}
+.sk-row.now::before{background:#6d28d9; border-color:#6d28d9;}
+.sk-row.next::before{background:var(--card); border-color:#6d28d9;}
+.sk-row .dt{flex:0 0 96px; font-size:11px; font-family:var(--mono); color:var(--sub); padding-top:1px;}
+.sk-row .tx{font-size:12.5px; line-height:1.5; color:var(--sub);}
+.sk-row .tx b{color:var(--ink);}
+.sk-row.done .dt, .sk-row.done .tx{opacity:.5;}
+.sk-row.now{background:#f6f2ff; border-radius:10px; margin-left:-9px; padding-left:9px; padding-right:9px;}
+.sk-row.now .tx b{color:#5b21b6;}
+.sk-badge{display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.6px; text-transform:uppercase;
+padding:2px 7px; border-radius:6px; background:#ede4fd; color:#5b21b6; margin-left:6px; vertical-align:1px;}
+
+.sk-kv{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line);
+border-radius:12px; overflow:hidden; margin-top:14px;}
+.sk-kv .c{background:var(--card); padding:12px 11px;}
+.sk-kv .k{font-size:9.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--faint);}
+.sk-kv .v{font-size:14px; font-weight:700; margin-top:4px; font-family:var(--mono);}
+.sk-src{font-size:10.5px; color:var(--faint); margin-top:12px; padding-top:10px; border-top:1px solid var(--line2); line-height:1.55;}
+</style>
+
+<div class="sk-alert hot" id="sk-neptun">
+  <div class="t">⚠ Élő határidő — Neptun tárgyfelvétel</div>
+  <div class="h">Az elsődleges tárgyfelvételi időszak <b>szeptember 6-án</b> zárul.</div>
+  <div class="sk-cd"><span class="n" id="sk-days">–</span><span class="u" id="sk-daysu">nap van hátra</span></div>
+  <div class="d">A te sávod (<b>Buckingham BSc, 3. félév</b>) <b>aug. 26. 13:00</b>-kor nyílt.
+  Szept. 6. után csak maradékhelyekre kerülhetsz, <b>szept. 14. után pedig leadni sem tudsz</b>.<br>
+  Az IBS kikötése: <b>csak az vehet fel tárgyat, akinek nincs tartozása és kész a check-inje.</b></div>
 </div>
+
+<div class="card d1">
+  <div class="eyebrow"><span class="k">△</span> A félév menetrendje — 2026-27/1</div>
+  <div class="sk-tl" id="sk-tl">
+    <div class="sk-row" data-from="2026-08-26" data-to="2026-09-06">
+      <div class="dt">aug. 26 – szept. 6</div>
+      <div class="tx"><b>Elsődleges tárgyfelvétel.</b> Felvétel, csoportcsere, leadás szabadon. A helyek még nem véglegesek.</div>
+    </div>
+    <div class="sk-row" data-from="2026-09-07" data-to="2026-09-13">
+      <div class="dt">szept. 7 – 13</div>
+      <div class="tx"><b>Felülvizsgálat.</b> Várólisták rendezése, helyek véglegesítése, ütköző órák jelzése.</div>
+    </div>
+    <div class="sk-row" data-from="2026-09-14" data-to="2026-09-20">
+      <div class="dt">szept. 14 – 20</div>
+      <div class="tx"><b>Konszolidáció.</b> A csoportok befagynak — <b>leadni már nem lehet</b>. Ütköző órák törlésre kerülnek.</div>
+    </div>
+    <div class="sk-row" data-from="2026-09-21" data-to="2026-09-21">
+      <div class="dt">szept. 21 (H)</div>
+      <div class="tx"><b>Indul a rendes oktatás.</b></div>
+    </div>
+    <div class="sk-row" data-from="2026-09-28" data-to="2026-09-28">
+      <div class="dt">szept. 28 (H)</div>
+      <div class="tx"><b>Check-in 2026-27/1 — Step 1 (C0) zárul.</b> Ez az egyetlen esemény a Moodle-naptáradban.</div>
+    </div>
+    <div class="sk-row" data-from="2026-10-04" data-to="2026-10-04">
+      <div class="dt">okt. 4 (V)</div>
+      <div class="tx"><b>A Neptun végleg bezár</b> a hallgatói felvétel előtt.</div>
+    </div>
+  </div>
+
+  <div class="sk-kv">
+    <div class="c"><div class="k">Képzés</div><div class="v">BDFIN25</div></div>
+    <div class="c"><div class="k">Első tanítási nap</div><div class="v">szept. 21.</div></div>
+    <div class="c"><div class="k">Felvett tárgy 26-27/1</div><div class="v">0</div></div>
+    <div class="c"><div class="k">Jegy / visszajelzés</div><div class="v">nincs</div></div>
+  </div>
+
+  <div class="sk-src">Forrás: MyIBS → Student Admin (Neptun sign-ups 2026-27/1) és a Moodle-naptár, ellenőrizve 2026-09-01.
+  A „0 felvett tárgy" a Moodle-ra vonatkozik — <b>a Neptunt nem látom</b>, ott lehet, hogy már felvetted őket.</div>
+</div>
+
+<div class="card d2">
+  <div class="eyebrow"><span class="k">◇</span> Mit látok és mit nem</div>
+  <div class="nt" style="border-top:none; padding-top:0; margin-top:0;">
+    <b>Látom:</b> a Moodle-naptáradat, a modul-listát, a jegyeket (most üresek) és a Student Admin oldalait.<br><br>
+    <b>Nem látom:</b> a <b>Neptunt</b> — a tárgyfelvétel ott zajlik, oda nem lépek be helyetted.
+    A <b>tananyagot</b> csak akkor tudom olvasni, ha a gépednél vagy; az ütemezett reggeli futás felhőben megy, az nem éri el.<br><br>
+    <b>Régi modul:</b> a <code>MANB116_26A — Business Insights and Storytelling</code> még látszik a listádon, de az
+    <b>lezárt tárgy</b> — a vizsgája 2026. jún. 4-én volt. Nem az új félévhez tartozik.
+  </div>
+</div>
+
+<script>
+(function(){
+  function d0(s){var p=s.split('-'); return new Date(p[0], p[1]-1, p[2]);}
+  function today(){var n=new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate());}
+  var T=today();
+
+  /* Visszaszamlalas a Neptun-hataridore */
+  var days=Math.round((d0('2026-09-06')-T)/86400000);
+  var n=document.getElementById('sk-days'), u=document.getElementById('sk-daysu'), box=document.getElementById('sk-neptun');
+  if(n){
+    if(days>1){ n.textContent=days; u.textContent='nap van hátra'; }
+    else if(days===1){ n.textContent='1'; u.textContent='nap van hátra — holnap zárul'; }
+    else if(days===0){ n.textContent='MA'; u.textContent='zárul az időszak'; }
+    else { n.textContent='lejárt'; u.textContent='az elsődleges időszak lezárult'; }
+    if(days<0){ box.classList.remove('hot'); }
+  }
+
+  /* Melyik szakaszban vagyunk */
+  document.querySelectorAll('#sk-tl .sk-row').forEach(function(r){
+    var a=d0(r.dataset.from), b=d0(r.dataset.to);
+    if(T>b) r.classList.add('done');
+    else if(T>=a && T<=b) r.classList.add('now');
+    else r.classList.add('next');
+  });
+  var cur=document.querySelector('#sk-tl .sk-row.now');
+  if(cur && !cur.querySelector('.sk-badge')){
+    var s=document.createElement('span'); s.className='sk-badge'; s.textContent='itt tartasz';
+    cur.querySelector('.tx').appendChild(s);
+  }
+})();
+</script>
 </section>
 <section class="pane" id="pane-work">
 <div class="empty">
@@ -745,7 +868,7 @@ hogyan esnek egybe az alvásoddal és a kereskedési napjaiddal.
    A streak + a döntési kártya + a checklist forrása a Mentor Log Élő állapota.
    ===================================================================== */
 const DATA = {
-  updated: "2026-09-01",
+  updated: "2026-09-02",
   syncNote: "kézi frissítés · napi adat élőben a Notionből",
   streak: { current: 0, record: "2*" },
   account: { current: 99500, goal: 110000, initial: 100000, floor: 90000 },
