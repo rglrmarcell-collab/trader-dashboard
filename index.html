@@ -854,64 +854,87 @@ border-radius:12px; overflow:hidden; margin-top:14px;}
 .wk-tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);
 border-radius:13px; overflow:hidden; margin-bottom:13px; box-shadow:var(--shadow);}
 .wk-tiles .c{background:var(--card); padding:14px 9px; text-align:center;}
-.wk-tiles .n{font-size:21px; font-weight:800; line-height:1.1; font-family:var(--mono); color:#92400e;}
+.wk-tiles .n{font-size:20px; font-weight:800; line-height:1.1; font-family:var(--mono); color:#92400e;}
 .wk-tiles .n .u{font-size:11px; font-weight:600; color:var(--sub);}
 .wk-tiles .l{font-size:8.8px; color:var(--faint); margin-top:5px; text-transform:uppercase; letter-spacing:.4px; line-height:1.3;}
 .wk-tiles .s{font-size:9.5px; color:var(--sub); margin-top:3px;}
-
 .wk-h{font-size:13px; font-weight:700; margin:2px 0 3px;}
 .wk-sub{font-size:11.5px; color:var(--sub); margin-bottom:12px; line-height:1.5;}
-.wk-legend{display:flex; flex-wrap:wrap; gap:13px; margin-top:9px; font-size:11px; color:var(--sub);}
-.wk-legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:0;}
+.wk-legend{display:flex; flex-wrap:wrap; gap:13px; margin-top:10px; font-size:11px; color:var(--sub);}
+.wk-legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 .wk-tbl{width:100%; border-collapse:collapse; font-size:11.5px; margin-top:4px;}
 .wk-tbl th{text-align:left; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--faint);
 font-weight:700; padding:6px 6px 6px 0; border-bottom:1px solid var(--line);}
 .wk-tbl td{padding:7px 6px 7px 0; border-bottom:1px solid var(--line2); vertical-align:top;}
 .wk-tbl td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap;}
-.wk-tbl tr:last-child td{border-bottom:none;}
-.wk-tag{display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:6px;}
-.wk-tag.f{background:#e7f5ef; color:#0f766e;} .wk-tag.s{background:#fdf1e3; color:#92400e;}
-.wk-note{font-size:11px; color:var(--faint); margin-top:12px; padding-top:10px; border-top:1px solid var(--line2); line-height:1.55;}
+.wk-tbl tfoot td{border-top:1.5px solid var(--line); border-bottom:none; font-weight:800; padding-top:9px;}
+.wk-tag{display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:6px; white-space:nowrap;}
+.wk-tag.p{background:#e8effc; color:#1d4ed8;} .wk-tag.f{background:#e7f5ef; color:#0f766e;} .wk-tag.s{background:#fdf1e3; color:#92400e;}
+.wk-note{font-size:11px; color:var(--faint); margin-top:12px; padding-top:10px; border-top:1px solid var(--line2); line-height:1.6;}
 .wk-note b{color:var(--sub);}
+.wk-find{background:#f6f2ff; border:1px solid #d9caf7; border-left:3px solid #6d28d9; border-radius:12px;
+padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:var(--sub);}
+.wk-find b{color:var(--ink);}
+.wk-find .t{font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#6d28d9; margin-bottom:7px;}
 </style>
 
 <div class="wk-tiles">
-  <div class="c"><div class="n" id="wk-h">–<span class="u">ó</span></div><div class="l">Ledolgozott óra</div><div class="s">júl.–aug.</div></div>
-  <div class="c"><div class="n" id="wk-m">–</div><div class="l">Kereset (Ft)</div><div class="s" id="wk-m-s">bruttó</div></div>
+  <div class="c"><div class="n" id="wk-h">–<span class="u">ó</span></div><div class="l">Ledolgozott óra</div><div class="s">máj.–aug.</div></div>
+  <div class="c"><div class="n" id="wk-m">–</div><div class="l">Kereset (Ft)</div><div class="s">bruttó</div></div>
   <div class="c"><div class="n" id="wk-r">–</div><div class="l">Átlag órabér</div><div class="s">Ft / óra</div></div>
 </div>
 
 <div class="card d1">
-  <div class="eyebrow"><span class="k">◆</span> Kereset munkahelyenként</div>
-  <div class="wk-h">Hol jött a pénz</div>
-  <div class="wk-sub">Két munka, két nagyon eltérő órabér. A hosszabb nem a jobban fizető.</div>
-  <div id="wk-bars"></div>
-  <div class="wk-legend">
-    <span><i style="background:#0d9488;"></i>Fősped (3 000 Ft/ó)</span>
-    <span><i style="background:#b45309;"></i>Sziget (2 100 Ft/ó)</span>
-  </div>
-</div>
-
-<div class="card d1b">
-  <div class="eyebrow"><span class="k">◷</span> Óra és kereset havonta</div>
-  <div class="wk-h">Július vs. augusztus</div>
-  <div class="wk-sub">Az óra és a pénz külön skálán — szándékosan két külön sáv, nem egy grafikonon két tengely.</div>
+  <div class="eyebrow"><span class="k">◆</span> Havonta</div>
+  <div class="wk-h">Óra és kereset, hónapról hónapra</div>
+  <div class="wk-sub">Külön sáv az órának és a pénznek — szándékosan nem egy grafikonon két tengellyel.</div>
   <div id="wk-months"></div>
 </div>
 
+<div class="card d1b">
+  <div class="eyebrow"><span class="k">▦</span> Munkahelyenként</div>
+  <div class="wk-h">Hol jött a pénz</div>
+  <div class="wk-sub">Három munkahely, három különböző órabér.</div>
+  <div id="wk-bars"></div>
+  <div class="wk-legend">
+    <span><i style="background:#2563eb;"></i>Budapest Park</span>
+    <span><i style="background:#0d9488;"></i>Fősped</span>
+    <span><i style="background:#b45309;"></i>Sziget</span>
+  </div>
+</div>
+
 <div class="card d2">
-  <div class="eyebrow"><span class="k">▤</span> Tételes</div>
+  <div class="eyebrow"><span class="k">↗</span> Órabér alakulása</div>
+  <div class="wk-h">Mennyit ér egy órád</div>
+  <div class="wk-sub">A Budapest Parkban emelést kaptál. A pontok időrendben, munkahely szerint színezve.</div>
+  <div id="wk-rate"></div>
+  <div class="wk-find">
+    <div class="t">◆ Amit az adat mond</div>
+    <b>Június 15-én emelést kaptál a Parkban: 2 353 → 2 588 Ft/óra</b>, +10%. Ez nem szerepelt sehol,
+    a fizetési listákból jött ki.<br><br>
+    <b>A Sziget volt a leghosszabb és a legrosszabbul fizető</b> — 95,5 óra 2 100 Ft-ért.
+    A Fősped 29,5 órája 3 000 Ft-tal <b>óránként 43%-kal többet</b> hozott.<br><br>
+    <b>Máj. 24. vasárnap dupla óradíj volt</b> (4 706 Ft/ó) — egyetlen 10 órás műszak 47 060 Ft.
+    Ez a legjobban fizető napod az egész időszakban.
+  </div>
+</div>
+
+<div class="card d3">
+  <div class="eyebrow"><span class="k">▤</span> Összesítő</div>
   <table class="wk-tbl">
-    <thead><tr><th>Dátum</th><th>Hol</th><th style="text-align:right;">Óra</th><th style="text-align:right;">Ft</th></tr></thead>
+    <thead><tr><th>Hónap</th><th>Hol</th><th style="text-align:right;">Óra</th><th style="text-align:right;">Ft</th></tr></thead>
     <tbody id="wk-rows"></tbody>
+    <tfoot><tr><td>Összesen</td><td></td><td class="num" id="wk-fo">–</td><td class="num" id="wk-ff">–</td></tr></tfoot>
   </table>
   <div class="wk-note">
-    <b>Forrás:</b> Fősped — `fazekas.attila@fosped.hu` elszámoló táblázata (2026-08-05).
-    Sziget — `bianka@giggle.hu` hivatalos elszámolása (2026-08-24).<br>
-    <b>A Sziget egy összesítő sor</b>, nem napi bontás: 10 műszak volt aug. 5–15. között (theBAR, Exit, Hairy Lemon,
-    Bacardi Main Bar), a beosztás szerint <b>108 óra</b>, elszámolva <b>95,5 óra</b> — 12,5 óra a különbség.<br>
-    <b>Budapest Park nincs benne</b>, mert az órák nem e-mailben jönnek, hanem a <b>staff.bppark.hu</b> portálon élnek.
-    Amint bejutok oda, ez a panel kiegészül.
+    <b>Források:</b> Budapest Park — <b>Con-Work Iskolaszövetkezet</b> havi fizetési listái
+    (`conwork@conwork.hu`, PDF, 2026-06-10 / 07-11 / 07-17). Fősped — `fazekas.attila@fosped.hu` elszámoló táblázata (08-05).
+    Sziget — `bianka@giggle.hu` hivatalos elszámolása (08-24).<br>
+    <b>Keresztellenőrzés:</b> a 3 Park-hónap összege <b>283 228 Ft</b>, ami pontosan egyezik a júliusi lista
+    „Göngyölített adóalap" sorával. Az adat stimmel.<br>
+    <b>Jatt nincs a listákon.</b> A Con-Work fizetési jegyzék csak a megbízási díjat tartalmazza —
+    borravaló-sor nincs benne. Ha a jatt máshol jön, még nem találtam meg.<br>
+    <b>A napi bontás a Notionben van</b> (Munka adatbázis, 21 tétel). Itt csak a havi összesítő.
   </div>
 </div>
 
@@ -920,94 +943,140 @@ font-weight:700; padding:6px 6px 6px 0; border-bottom:1px solid var(--line);}
   var SVG="http://www.w3.org/2000/svg";
   function el(n,at){var e=document.createElementNS(SVG,n);for(var k in at)e.setAttribute(k,at[k]);return e;}
   function ft(n){return Math.round(n).toLocaleString('hu-HU').replace(/,/g,' ');}
+  function hu(n){return n.toFixed(2).replace(/\.?0+$/,'').replace('.',',');}
 
-  var JOBS=[
-    {nev:"Fősped", ora:29.5, ber:3000, szin:"#0d9488", ho:"2026-07"},
-    {nev:"Sziget", ora:95.5, ber:2100, szin:"#b45309", ho:"2026-08"}
+  var C={park:"#2563eb", fosped:"#0d9488", sziget:"#b45309"};
+
+  /* Nyers tetelek a fizetesi listakbol / elszamolasokbol */
+  var SHIFTS=[
+    {d:"2026-05-21",r:2353,h:7.75,w:"park"},{d:"2026-05-22",r:2353,h:6,w:"park"},
+    {d:"2026-05-23",r:2353,h:6.5,w:"park"},{d:"2026-05-24",r:4706,h:10,w:"park"},
+    {d:"2026-06-04",r:2353,h:7,w:"park"},{d:"2026-06-05",r:2353,h:4.25,w:"park"},
+    {d:"2026-06-06",r:2353,h:8.5,w:"park"},{d:"2026-06-07",r:2353,h:6.75,w:"park"},
+    {d:"2026-06-15",r:2588,h:4.25,w:"park"},{d:"2026-06-19",r:2588,h:4.75,w:"park"},
+    {d:"2026-06-23",r:2588,h:5.25,w:"park"},{d:"2026-06-26",r:2588,h:9.5,w:"park"},
+    {d:"2026-06-29",r:2588,h:5.75,w:"park"},
+    {d:"2026-07-03",r:2588,h:8.25,w:"park"},{d:"2026-07-04",r:2588,h:7,w:"park"},
+    {d:"2026-07-15",r:2588,h:4,w:"park"},
+    {d:"2026-07-22",r:3000,h:7,w:"fosped"},{d:"2026-07-23",r:3000,h:7,w:"fosped"},
+    {d:"2026-07-28",r:3000,h:8.5,w:"fosped"},{d:"2026-07-31",r:3000,h:7,w:"fosped"},
+    {d:"2026-08-24",r:2100,h:95.5,w:"sziget"}
   ];
-  var ROWS=[
-    {d:"07.22.", h:"Fősped", cls:"f", o:7,   ft:21000, meta:"NETI · Munkácsy M. u. 16 · 8:00–15:00"},
-    {d:"07.23.", h:"Fősped", cls:"f", o:7,   ft:21000, meta:"VERIZON · Bank Center · 9:00–16:00"},
-    {d:"07.28.", h:"Fősped", cls:"f", o:8.5, ft:25500, meta:"MEKH és Centrum · Bajcsy 52. · 7:30–16:00"},
-    {d:"07.31.", h:"Fősped", cls:"f", o:7,   ft:21000, meta:"Soper László · Csanádi u. 21. · 9:00–16:00"},
-    {d:"08.05–15.", h:"Sziget", cls:"s", o:95.5, ft:200550, meta:"10 műszak · pultos · elszámolva 08.24."}
-  ];
+  SHIFTS.forEach(function(s){ s.ft = s.r*s.h; });
 
-  JOBS.forEach(function(j){ j.ft = j.ora * j.ber; });
-  var totO = JOBS.reduce(function(a,j){return a+j.ora;},0);
-  var totF = JOBS.reduce(function(a,j){return a+j.ft;},0);
-
-  document.getElementById('wk-h').innerHTML = totO.toFixed(1).replace('.',',') + '<span class="u">ó</span>';
+  var totO=0, totF=0; SHIFTS.forEach(function(s){ totO+=s.h; totF+=s.ft; });
+  document.getElementById('wk-h').innerHTML = hu(totO)+'<span class="u">ó</span>';
   document.getElementById('wk-m').textContent = ft(totF);
   document.getElementById('wk-r').textContent = ft(totF/totO);
 
-  /* ---- Vizszintes savok: kereset munkahelyenkent ---- */
+  function agg(keyfn){
+    var m={}, order=[];
+    SHIFTS.forEach(function(s){ var k=keyfn(s); if(!m[k]){m[k]={k:k,h:0,ft:0}; order.push(k);} m[k].h+=s.h; m[k].ft+=s.ft; });
+    return order.map(function(k){return m[k];});
+  }
+  var MONTHS=agg(function(s){return s.d.slice(0,7);});
+  var NAMES={"2026-05":"május","2026-06":"június","2026-07":"július","2026-08":"augusztus"};
+  var JOBS=agg(function(s){return s.w;});
+  var JN={park:"Budapest Park", fosped:"Fősped", sziget:"Sziget"};
+
+  /* --- Havi savok: ora es Ft kulon --- */
+  (function(){
+    var box=document.getElementById('wk-months');
+    function band(cim,key,suf,szin,fmt){
+      var wrap=document.createElement('div'); wrap.style.marginBottom='15px';
+      var h=document.createElement('div');
+      h.style.cssText='font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:700;margin-bottom:6px;';
+      h.textContent=cim; wrap.appendChild(h);
+      var W=340,rowH=27,H=MONTHS.length*rowH;
+      var max=Math.max.apply(null,MONTHS.map(function(m){return m[key];}));
+      var s=el('svg',{viewBox:"0 0 "+W+" "+H,width:"100%",height:H,role:"img",'aria-label':cim});
+      MONTHS.forEach(function(m,i){
+        var y=i*rowH, x0=74;
+        var t=el('text',{x:0,y:y+17,'font-size':11,fill:'var(--sub)'}); t.textContent=NAMES[m.k]||m.k; s.appendChild(t);
+        var bw=Math.max(2,(W-x0-90)*(m[key]/max));
+        s.appendChild(el('rect',{x:x0,y:y+6,width:bw,height:13,rx:3,fill:szin}));
+        var v=el('text',{x:x0+bw+8,y:y+17,'font-size':11,fill:'var(--ink)','font-weight':'700',
+          'font-family':'ui-monospace,Menlo,monospace'});
+        v.textContent=fmt(m[key])+suf; s.appendChild(v);
+      });
+      wrap.appendChild(s); return wrap;
+    }
+    box.appendChild(band("Ledolgozott óra","h"," ó","#2563eb",hu));
+    box.appendChild(band("Kereset","ft"," Ft","#b45309",ft));
+  })();
+
+  /* --- Munkahelyenkent --- */
   (function(){
     var box=document.getElementById('wk-bars');
-    var W=340, rowH=46, H=JOBS.length*rowH+6, L=0, R=0;
+    var W=340,rowH=48,H=JOBS.length*rowH+4;
     var max=Math.max.apply(null,JOBS.map(function(j){return j.ft;}));
-    var s=el('svg',{viewBox:"0 0 "+W+" "+H, width:"100%", height:H, role:"img",
-      'aria-label':"Kereset munkahelyenként: Fősped 88 500 Ft, Sziget 200 550 Ft"});
+    var s=el('svg',{viewBox:"0 0 "+W+" "+H,width:"100%",height:H,role:"img",'aria-label':"Kereset munkahelyenként"});
     JOBS.forEach(function(j,i){
-      var y=i*rowH+4;
-      var bw=Math.max(2,(W-L-R-96)*(j.ft/max));
-      s.appendChild(el('rect',{x:0,y:y+14,width:bw,height:16,rx:3,fill:j.szin}));
-      var t1=el('text',{x:0,y:y+9,'font-size':11,fill:'var(--ink)','font-weight':'700'}); t1.textContent=j.nev;
-      s.appendChild(t1);
+      var y=i*rowH+4, bw=Math.max(2,(W-104)*(j.ft/max));
+      var t1=el('text',{x:0,y:y+9,'font-size':11,fill:'var(--ink)','font-weight':'700'}); t1.textContent=JN[j.k]; s.appendChild(t1);
+      s.appendChild(el('rect',{x:0,y:y+14,width:bw,height:15,rx:3,fill:C[j.k]}));
       var t2=el('text',{x:bw+8,y:y+26,'font-size':11.5,fill:'var(--ink)','font-weight':'700',
-        'font-family':'ui-monospace,Menlo,monospace'}); t2.textContent=ft(j.ft)+" Ft";
-      s.appendChild(t2);
-      var t3=el('text',{x:0,y:y+42,'font-size':10,fill:'var(--sub)'});
-      t3.textContent=j.ora.toFixed(1).replace('.',',')+" óra · "+ft(j.ber)+" Ft/óra";
-      s.appendChild(t3);
+        'font-family':'ui-monospace,Menlo,monospace'}); t2.textContent=ft(j.ft)+" Ft"; s.appendChild(t2);
+      var t3=el('text',{x:0,y:y+43,'font-size':10,fill:'var(--sub)'});
+      t3.textContent=hu(j.h)+" óra · átlag "+ft(j.ft/j.h)+" Ft/óra"; s.appendChild(t3);
     });
     box.appendChild(s);
   })();
 
-  /* ---- Havi bontas: ket kulon sav (ora es Ft), sosem ket tengely egy grafikonon ---- */
+  /* --- Orabér idovonal --- */
   (function(){
-    var box=document.getElementById('wk-months');
-    var MON=[{n:"július", o:29.5, ft:88500},{n:"augusztus", o:95.5, ft:200550}];
-    function band(cim, key, suffix, szin){
-      var wrap=document.createElement('div');
-      wrap.style.marginBottom='14px';
-      var h=document.createElement('div');
-      h.style.cssText='font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:700;margin-bottom:6px;';
-      h.textContent=cim; wrap.appendChild(h);
-      var W=340,rowH=30,H=MON.length*rowH;
-      var max=Math.max.apply(null,MON.map(function(m){return m[key];}));
-      var s=el('svg',{viewBox:"0 0 "+W+" "+H,width:"100%",height:H,role:"img",'aria-label':cim});
-      MON.forEach(function(m,i){
-        var y=i*rowH;
-        var t=el('text',{x:0,y:y+18,'font-size':11,fill:'var(--sub)'}); t.textContent=m.n; s.appendChild(t);
-        var x0=72, bw=Math.max(2,(W-x0-86)*(m[key]/max));
-        s.appendChild(el('rect',{x:x0,y:y+7,width:bw,height:14,rx:3,fill:szin}));
-        var v=el('text',{x:x0+bw+8,y:y+18,'font-size':11,fill:'var(--ink)','font-weight':'700',
-          'font-family':'ui-monospace,Menlo,monospace'});
-        v.textContent=(key==='o'? m.o.toFixed(1).replace('.',',') : ft(m.ft))+suffix;
-        s.appendChild(v);
-      });
-      wrap.appendChild(s); return wrap;
-    }
-    box.appendChild(band("Ledolgozott óra","o"," ó","#2563eb"));
-    box.appendChild(band("Kereset","ft"," Ft","#b45309"));
+    var box=document.getElementById('wk-rate');
+    var pts=SHIFTS.slice().sort(function(a,b){return a.d<b.d?-1:1;});
+    var W=340,H=150,L=42,R=10,T=12,B=26;
+    var minR=2000, maxR=4900;
+    var t0=new Date(pts[0].d).getTime(), t1=new Date(pts[pts.length-1].d).getTime();
+    function X(d){ return L + (W-L-R) * ((new Date(d).getTime()-t0)/(t1-t0)); }
+    function Y(r){ return T + (H-T-B) * (1-(r-minR)/(maxR-minR)); }
+    var s=el('svg',{viewBox:"0 0 "+W+" "+H,width:"100%",height:H,role:"img",
+      'aria-label':"Órabér alakulása 2026 május és augusztus között: Budapest Park 2353-ról 2588-ra emelkedett, Fősped 3000, Sziget 2100"});
+    [2000,2500,3000,3500,4000,4500].forEach(function(r){
+      s.appendChild(el('line',{x1:L,y1:Y(r),x2:W-R,y2:Y(r),stroke:'var(--grid)','stroke-width':1}));
+      var t=el('text',{x:L-6,y:Y(r)+3.5,'font-size':9,fill:'var(--muted)','text-anchor':'end',
+        'font-family':'ui-monospace,Menlo,monospace'}); t.textContent=(r/1000).toFixed(1).replace('.',',')+'k'; s.appendChild(t);
+    });
+    ["2026-05-01","2026-06-01","2026-07-01","2026-08-01"].forEach(function(d){
+      if(new Date(d).getTime()<t0||new Date(d).getTime()>t1) return;
+      var t=el('text',{x:X(d),y:H-8,'font-size':9,fill:'var(--muted)','text-anchor':'middle'});
+      t.textContent=({"2026-06-01":"jún.","2026-07-01":"júl.","2026-08-01":"aug."})[d]||""; s.appendChild(t);
+    });
+    pts.forEach(function(p){
+      s.appendChild(el('circle',{cx:X(p.d),cy:Y(p.r),r:4,fill:C[p.w],stroke:'var(--card)','stroke-width':2}));
+    });
+    box.appendChild(s);
   })();
 
-  /* ---- Tetelek ---- */
+  /* --- Osszesito tabla --- */
   (function(){
     var tb=document.getElementById('wk-rows');
-    ROWS.forEach(function(r){
+    var rows=[];
+    MONTHS.forEach(function(m){
+      var per={};
+      SHIFTS.filter(function(s){return s.d.slice(0,7)===m.k;}).forEach(function(s){
+        if(!per[s.w]) per[s.w]={h:0,ft:0}; per[s.w].h+=s.h; per[s.w].ft+=s.ft;
+      });
+      Object.keys(per).forEach(function(w){
+        rows.push({ho:NAMES[m.k]||m.k, w:w, h:per[w].h, ft:per[w].ft});
+      });
+    });
+    var cls={park:"p",fosped:"f",sziget:"s"};
+    rows.forEach(function(r){
       var tr=document.createElement('tr');
-      tr.innerHTML='<td><b>'+r.d+'</b><div style="font-size:10px;color:var(--faint);margin-top:2px;">'+r.meta+'</div></td>'+
-        '<td><span class="wk-tag '+r.cls+'">'+r.h+'</span></td>'+
-        '<td class="num">'+r.o.toFixed(1).replace('.',',')+'</td>'+
-        '<td class="num"><b>'+ft(r.ft)+'</b></td>';
+      tr.innerHTML='<td>'+r.ho+'</td><td><span class="wk-tag '+cls[r.w]+'">'+JN[r.w]+'</span></td>'+
+        '<td class="num">'+hu(r.h)+'</td><td class="num"><b>'+ft(r.ft)+'</b></td>';
       tb.appendChild(tr);
     });
+    document.getElementById('wk-fo').textContent=hu(totO);
+    document.getElementById('wk-ff').textContent=ft(totF);
   })();
 })();
 </script>
 </section>
+
 
 <div class="foot" id="foot"></div>
 
