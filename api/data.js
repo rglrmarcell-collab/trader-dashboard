@@ -110,7 +110,10 @@ async function readBias(){
   const out = { day, fresh: day === today, notrade: null, strength: [], pairs: [], news: [] };
   if (start < 0 || !out.fresh) return out;
   for (let i = start; i < lines.length; i++) {
-    const t = lines[i].t.trim();
+    // A Notion a "|" jelet markdownban visszaadhatja backslash-sel escape-elve.
+    // Ebben a formatumban a backslash-nek nincs semmi dolga, ezert egyszeruen mindet levesszuk.
+    // 2026-09-03, eles futasbol derult ki.
+    const t = lines[i].t.split("\\").join("").trim();
     let m;
     if ((m = /^NOTRADE:\s*(\S+)\s*[·|-]?\s*(.*)$/i.exec(t))) {
       out.notrade = { on: /^igen/i.test(m[1]), why: (m[2] || "").trim() };
