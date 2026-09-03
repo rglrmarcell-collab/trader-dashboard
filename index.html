@@ -287,6 +287,11 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
 .ma-sec p{margin:0 0 4px; color:var(--sub);}
 .ma-sec p:last-child{margin-bottom:0;}
 .ma-empty{color:var(--faint); font-size:12.5px;}
+.uprow{display:flex; gap:11px; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--line2); font-size:12.5px;}
+.uprow:last-child{border-bottom:none;}
+.uprow .w{flex:0 0 auto; min-width:64px; font-size:11.5px; color:var(--faint); font-variant-numeric:tabular-nums;}
+.uprow .t{color:var(--ink); line-height:1.45;}
+.uprow.soon .w{color:var(--red); font-weight:600;}
 .ma-err{color:var(--red); font-size:12.5px;}
 #ptr{position:fixed; top:0; left:0; right:0; display:flex; align-items:center; justify-content:center;
   height:0; overflow:hidden; font-size:11.5px; font-family:var(--mono); color:var(--sub);
@@ -398,6 +403,12 @@ box-shadow:0 6px 20px rgba(16,24,40,.22); transform:translate(-50%,-115%);}
 <div class="card" id="ma-card">
   <div class="eyebrow">Ma<span id="ma-fresh" style="margin-left:auto; font-weight:500; letter-spacing:0; text-transform:none; font-family:var(--mono);"></span></div>
   <div id="ma-body" class="ma-body"><div class="ma-empty">betöltés…</div></div>
+</div>
+
+<!-- ELŐTTED ÁLL — nyitott, hataridos teendok a TickTickbol -->
+<div class="card" id="up-card" style="display:none;">
+  <div class="eyebrow">Előtted áll</div>
+  <div id="up-body"></div>
 </div>
 <style>
 .lgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
@@ -1902,6 +1913,18 @@ else {
       if(w) w.innerHTML='<div class="banner '+(b.notrade.on?'no':'ok')+'">'
         +(b.notrade.on?'⛔ MA NEM TRADING NAP. ':'✅ TRADING NAP. ')+esc(b.notrade.why)+'</div>';
     }
+    var uc=document.getElementById('up-card'), ub=document.getElementById('up-body');
+    if(uc && ub){
+      var U=(b.upcoming||[]).filter(function(x){return x.what;});
+      if(U.length){
+        ub.innerHTML=U.slice(0,6).map(function(x){
+          var soon=/ma|holnap|^0|^1 nap/i.test(x.when||'');
+          return '<div class="uprow'+(soon?' soon':'')+'"><span class="w">'+esc(x.when)+'</span>'
+               + '<span class="t">'+esc(x.what)+'</span></div>';}).join('');
+        uc.style.display='';
+      } else { uc.style.display='none'; }
+    }
+
     var af=document.getElementById('aifocus');
     var hh=new Date().toLocaleTimeString('hu-HU',{timeZone:'Europe/Budapest',hour:'2-digit',minute:'2-digit'});
     if(af) af.innerHTML='<b>Friss bias.</b> A bias-író futása írta ki ma, a Notionből olvasva. Betöltve: '+hh+'.';
