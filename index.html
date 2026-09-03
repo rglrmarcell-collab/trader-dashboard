@@ -47,6 +47,57 @@
 :root[data-theme="dark"] .strength .cur.s-up{color:#6ee7b7;}
 :root[data-theme="dark"] .strength .cur.s-dn{color:#fda4af;}
 :root[data-theme="dark"] .save{background:#0f766e;}
+/* Beegetett vilagos feluletek sotet parja. 2026-09-03 — Marcell jelezte,
+   hogy sotetben egyes szovegek alig latszanak. */
+:root[data-theme="dark"] .sk-alert{background:#1b1630; border-color:#3a2d5e; color:var(--ink);}
+:root[data-theme="dark"] .sk-alert.hot{background:#2a1219; border-color:#4a1f2a;}
+:root[data-theme="dark"] .sk-row.now{background:#1b1630;}
+:root[data-theme="dark"] .sk-badge{background:#2e2450; color:#c4b5fd;}
+:root[data-theme="dark"] .wk-tag.p{background:#16233d; color:#93b4f8;}
+:root[data-theme="dark"] .wk-tag.f{background:#10251d; color:#6ee7b7;}
+:root[data-theme="dark"] .wk-tag.s{background:#2a2011; color:#fcd34d;}
+:root[data-theme="dark"] .wk-find{background:#1b1630; border-color:#3a2d5e; color:var(--ink);}
+:root[data-theme="dark"] .gmark{box-shadow:0 0 0 3px var(--card);}
+:root[data-theme="dark"] .today .c .n{color:var(--ink)!important;}
+:root[data-theme="dark"] .demo{background:#1a1f28; border-color:var(--line); color:var(--sub);}
+:root[data-theme="dark"] .banner{background:var(--slatebg);}
+:root[data-theme="dark"] .banner.ok{background:#10251d;}
+:root[data-theme="dark"] .banner.no{background:#2a1219;}
+:root[data-theme="dark"] .aifocus{background:#141a22;}
+:root[data-theme="dark"] .ckn{background:#232a35; color:var(--sub);}
+:root[data-theme="dark"] .cur, :root[data-theme="dark"] .tag, :root[data-theme="dark"] .pill{background:#232a35;}
+/* Sotetben a terulet-szinek vilagos arnyalatra valtanak, kulonben a sotet kek/lila/barna
+   olvashatatlan a sotet kartyan. 2026-09-03, kontraszt-meressel talalva. */
+:root[data-theme="dark"] #pane-trading{--dom:#60a5fa; --dom-ink:#93c5fd;}
+:root[data-theme="dark"] #pane-health {--dom:#2dd4bf; --dom-ink:#5eead4;}
+:root[data-theme="dark"] #pane-school {--dom:#a78bfa; --dom-ink:#c4b5fd;}
+:root[data-theme="dark"] #pane-work   {--dom:#fbbf24; --dom-ink:#fcd34d;}
+:root[data-theme="dark"] .pane{--dom-ink:var(--ink);}
+:root[data-theme="dark"] #pane-home{--dom:#94a3b8; --dom-ink:#cbd5e1;}
+:root[data-theme="dark"] .pane .eyebrow{opacity:1;}
+:root[data-theme="dark"] .today .c:nth-child(1) .n,
+:root[data-theme="dark"] .today .c:nth-child(2) .n,
+:root[data-theme="dark"] .today .c:nth-child(3) .n{color:#93c5fd;}
+:root[data-theme="dark"] .today .c:nth-child(4) .n{color:#5eead4;}
+:root[data-theme="dark"] .wk-tiles .n{color:#fcd34d;}
+:root[data-theme="dark"] .tbtn{background:#232a35; color:var(--sub); border-color:var(--line);}
+:root[data-theme="dark"] .skl, :root[data-theme="dark"] .skr{color:var(--sub);}
+/* Vedohalo: sotetben a maradek vilagos feluletek es sotet szovegek.
+   Kontraszt-meressel talalva, 2026-09-03. */
+:root[data-theme="dark"] .sk-alert .t, :root[data-theme="dark"] .sk-alert .h,
+:root[data-theme="dark"] .sk-row .tx, :root[data-theme="dark"] .sk-row .tx b,
+:root[data-theme="dark"] .sk-row .dt, :root[data-theme="dark"] .wk-find .t,
+:root[data-theme="dark"] .gt{color:var(--ink);}
+:root[data-theme="dark"] .sk-alert.hot .t, :root[data-theme="dark"] .gt{color:#fda4af;}
+:root[data-theme="dark"] .streak, :root[data-theme="dark"] .acc{background:var(--card);}
+/* A "10 masodperces dontesi kartya" (piros blokk) teljes szovege sotetben. */
+:root[data-theme="dark"] .gate, :root[data-theme="dark"] .gate *{color:#fecdd3;}
+:root[data-theme="dark"] .gate b{color:#fff1f2;}
+:root[data-theme="dark"] .gate .gt{color:#fda4af;}
+:root[data-theme="dark"] .gate .gn{background:#4a1f2a; color:#fecdd3;}
+/* A terulet-chipek felirata feher hatteren tul halvany volt. */
+.chips label span{color:var(--sub);}
+:root[data-theme="dark"] .chips label{background:var(--card); border-color:var(--line);}
 
 /* --- Session Brief, a referencia-elrendezes szerint (2026-09-03) --- */
 .strength{display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin:13px 0 14px;}
@@ -106,8 +157,12 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans
   background:linear-gradient(90deg,#fbdce3 0%,#fbe9d6 32%,#eef1f5 48%,#eef1f5 52%,#e2f4ec 68%,#cdeede 100%); border:1px solid var(--line);}
 .gmid{position:absolute; left:50%; top:-3px; bottom:-3px; width:2px; background:var(--slate); opacity:.5; transform:translateX(-1px);}
 .gmark{position:absolute; top:-4px; width:4px; height:22px; border-radius:3px; background:var(--ink); box-shadow:0 0 0 3px rgba(255,255,255,.9); transition:left 1.1s cubic-bezier(.2,.7,.2,1);}
-.gscale{display:flex; justify-content:space-between; margin-top:8px; font-size:9.5px; color:var(--faint); font-family:var(--mono);}
-.gscale b{color:var(--sub);}
+.gscale{display:flex; justify-content:space-between; margin-top:9px; font-size:11px; color:var(--faint);}
+.gscale b{font-weight:600; font-variant-numeric:tabular-nums;}
+.gscale .lo b{color:var(--red);}      /* bukas: a szin mondja meg, nem felirat */
+.gscale .mid b{color:var(--faint);}
+.gscale .hi b{color:var(--green);}    /* cel */
+.gscale .mid{text-align:center;} .gscale .hi{text-align:right;}
 .gnow{display:flex; align-items:baseline; gap:8px; margin-top:11px;}
 .gnow .p{font-size:19px; font-weight:800; font-family:var(--mono);}
 .gnow .t{font-size:11px; color:var(--sub);}
@@ -118,10 +173,18 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans
 .stat .l{font-size:9.5px; color:var(--faint); margin-top:4px; letter-spacing:.4px; text-transform:uppercase; line-height:1.3;}
 .stat .sm{font-size:8px;}
 
-.focus{margin-top:15px; display:flex; gap:10px; align-items:flex-start; background:#f4f6ff; border:1px solid #dfe4ff; border-left:3px solid var(--blue); border-radius:11px; padding:11px 13px; font-size:12.5px; color:#33407a;}
-.focus b{color:#1e2a6e;}
+.focus{margin-top:15px; display:flex; gap:11px; align-items:center;
+  background:var(--slatebg); border:1px solid var(--line); border-radius:11px; padding:11px 13px;
+  font-size:12.5px; color:var(--sub);}
+.focus b{color:var(--ink); font-weight:600;}
+.fdots{display:flex; gap:5px; flex:0 0 auto;}
+.fdots i{width:9px; height:9px; border-radius:50%; border:1.5px solid var(--line);
+  background:transparent; display:block; transition:background .3s, border-color .3s;}
+.fdots i.on{background:var(--accent); border-color:var(--accent);}
+.ftx{line-height:1.45;}
+.fsub{font-size:11px; color:var(--faint); margin-top:3px;}
 
-.streak{margin-top:11px; border:1px solid var(--line); border-radius:12px; padding:11px 13px; background:#fcfdfe;}
+.streak{margin-top:11px; border:1px solid var(--line); border-radius:12px; padding:11px 13px; background:var(--card);}
 .streak .sk{display:flex; align-items:baseline; gap:9px;}
 .streak .skn{font-size:24px; font-weight:800; color:var(--accent);}
 .streak .skl{font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:.6px; font-weight:700;}
@@ -131,7 +194,7 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans
 .streak .sklg{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-top:8px; border-top:1px solid var(--line2); font-size:10.5px; color:var(--faint); font-family:var(--mono);}
 
 /* collapsible */
-.acc{border:1px solid var(--line); border-radius:13px; margin-top:12px; overflow:hidden; background:#fcfdfe;}
+.acc{border:1px solid var(--line); border-radius:13px; margin-top:12px; overflow:hidden; background:var(--card);}
 .acc:first-child{margin-top:0;}
 .acc>summary{list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:600; letter-spacing:.02em; text-transform:none; color:var(--sub);}
 .acc>summary::-webkit-details-marker{display:none;}
@@ -424,14 +487,15 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
       <div class="balance num" id="balance"></div>
       <div class="delta" id="delta"></div>
     </div>
-    <div class="chal"><span>Cél / bukás</span><b id="chal-goal"></b><b id="chal-floor" style="color:var(--red);"></b></div>
+    <!-- A "Cél / bukás" szoveges blokk 2026-09-03-an kikerult: a lenti merce
+         ugyanezt mutatja, pozicioval es szinnel. Ne kerüljön vissza. -->
   </div>
   <div class="gauge">
     <div class="gtrack"><div class="gmid"></div><div class="gmark" id="gmark"></div></div>
     <div class="gscale">
-      <span><b id="sc-lo"></b><br>−100% · bukás</span>
-      <span style="text-align:center;"><b id="sc-mid"></b><br>0% · start</span>
-      <span style="text-align:right;"><b id="sc-hi"></b><br>+100% · cél</span>
+      <span class="lo"><b id="sc-lo"></b></span>
+      <span class="mid"><b id="sc-mid"></b></span>
+      <span class="hi"><b id="sc-hi"></b></span>
     </div>
     <div class="gnow"><span class="p num" id="bipct"></span><span class="t" id="bitxt"></span></div>
   </div>
@@ -440,7 +504,10 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
     <div class="stat"><div class="n" id="rr">0</div><div class="l">Átlag RR-cél</div></div>
     <div class="stat"><div class="n" id="tot">0</div><div class="l">Trade · 3 hó</div></div>
   </div>
-  <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 (28 napja) — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
+  <div class="focus">
+    <div class="fdots" id="fdots"></div>
+    <div class="ftx"><b>Fő fék</b> · a trade a belépés ELŐTT kész — SL, TP, LOT<div class="fsub" id="fsub"></div></div>
+  </div>
   <div class="streak">
     <div class="sk"><span class="skn num" id="streak-n">0</span><span class="skl">tiszta trade sorozat</span></div>
     <div class="skr">rekord <b class="num">2*</b> <span class="sknote">*nem igazolt</span></div>
@@ -972,7 +1039,7 @@ font-weight:700; padding:6px 6px 6px 0; border-bottom:1px solid var(--line);}
 .wk-find{background:#f6f2ff; border:1px solid #d9caf7; border-left:3px solid #6d28d9; border-radius:12px;
 padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:var(--sub);}
 .wk-find b{color:var(--ink);}
-.wk-find .t{font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#6d28d9; margin-bottom:7px;}
+.wk-find .t{font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--dom-ink); margin-bottom:7px;}
 </style>
 
 <div class="wk-tiles">
@@ -1335,7 +1402,7 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
   const d=a.current-a.initial;
   $('delta').className="delta "+(d>=0?"up":"down");
   $('delta').textContent=(d>=0?"▲ +":"▼ ")+money(Math.abs(d))+" vs. induló "+money(a.initial);
-  $('chal-goal').textContent="▲ "+money(a.goal); $('chal-floor').textContent="▼ "+money(a.floor);
+  /* A chal-goal / chal-floor elemek megszuntek: a merce mutatja ugyanezt. 2026-09-03. */
   $('sc-lo').textContent=money(a.floor); $('sc-mid').textContent=money(a.initial); $('sc-hi').textContent=money(a.goal);
   const span=a.goal-a.initial; let bip=(a.current-a.initial)/span*100;
   const clamped=Math.max(-100,Math.min(100,bip)); const pos=(clamped+100)/200*100;
@@ -1499,6 +1566,15 @@ else {
   document.getElementById('h-bal').textContent='$'+Math.round(a.current).toLocaleString('hu-HU').replace(/,/g,' ');
   document.getElementById('h-streak').textContent=DATA.streak.current+' / '+DATA.streak.record;
   document.getElementById('h-fek').textContent='0/3';
+  (function(){
+    /* Fo fek: harom tiszta vegrehajtas zarja le. A pontok mutatjak, nem a szoveg. */
+    var done=0, need=3, d=document.getElementById('fdots');
+    if(d){ var h=''; for(var i=0;i<need;i++) h+='<i class="'+(i<done?'on':'')+'"></i>'; d.innerHTML=h; }
+    var last=new Date('2026-08-03T12:00:00Z'), t=new Date();
+    var days=Math.round((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-last.getTime())/86400000);
+    var f=document.getElementById('fsub');
+    if(f) f.textContent=done+'/'+need+' · utolsó éles teszt '+days+' napja, elhasalt';
+  })();
   document.getElementById('h-sleep').innerHTML=(window.__avgSleep?window.__avgSleep.toFixed(1):'–')+'<span class="u">ó</span>';
  }catch(e){}
 })();
