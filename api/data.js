@@ -25,6 +25,84 @@ const hdr = () => ({
   "Content-Type": "application/json"
 });
 
+
+// ---- MAI NAP a Daily Notes-bol (reggeli brief + figyelo korok) ----
+const DAILY_NOTES = "36eac560704880469890e907b6f383d9";
+// "Figyelo — ma" lap: MINDIG csak a mai napot tartalmazza, a futasok felulirjak.
+const WATCH_PAGE = "3d0ac5607048818abc9ff81df709c775";
+
+function dayHeader(){
+  const p = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Budapest", weekday: "long", day: "numeric", month: "long", year: "numeric"
+  }).formatToParts(new Date());
+  const g = (t) => (p.find((x) => x.type === t) || {}).value || "";
+  return g("weekday") + ", " + g("day") + " " + g("month") + " " + g("year");
+}
+const plain = (rt) => (Array.isArray(rt) ? rt : []).map((x) => (x && x.plain_text) || "").join("").trim();
+
+async function children(id){
+  const out = []; let cursor = null;
+  for (let i = 0; i < 25; i++) {
+    const url = NOTION + "/blocks/" + id + "/children?page_size=100" + (cursor ? "&start_cursor=" + cursor : "");
+    const r = await fetch(url, { headers: hdr() });
+    const j = await r.json();
+    if (!r.ok) throw new Error((j && j.message) || ("Notion " + r.status));
+    out.push.apply(out, j.results || []);
+    if (!j.has_more) break;
+    cursor = j.next_cursor;
+  }
+  return out;
+}
+
+// Egy blokk szoveges tartalma, tipustol fuggetlenul.
+function blockText(b){
+  const t = b && b.type; if (!t) return "";
+  const o = b[t]; if (!o) return "";
+  return plain(o.rich_text);
+}
+function isHeading(b){
+  return b && (b.type === "heading_1" || b.type === "heading_2" || b.type === "heading_3");
+}
+
+// A mai napi callout tartalmat szekciokra bontja (fejlec -> sorok).
+async function readToday(){
+  const target = dayHeader();
+  const top = await children(DAILY_NOTES);
+  let day = null;
+  for (let i = top.length - 1; i >= 0; i--) {
+    const b = top[i];
+    if (b.type !== "callout") continue;
+    if (plain(b.callout && b.callout.rich_text).indexOf(target) === 0) { day = b; break; }
+  }
+  if (!day) return { header: target, found: false, sections: [] };
+
+  const kids = day.has_children ? await children(day.id) : [];
+  const sections = []; let cur = null;
+  for (const b of kids) {
+    const s = blockText(b);
+    if (isHeading(b)) { cur = { title: s, lines: [] }; sections.push(cur); continue; }
+    if (!s) continue;
+    if (!cur) { cur = { title: "", lines: [] }; sections.push(cur); }
+    if (cur.lines.length < 40) cur.lines.push(s);
+  }
+  return { header: target, found: true, sections };
+}
+
+// A "Figyelo — ma" lap tartalma. Nem no: minden nap felulirodik.
+async function readWatch(){
+  const kids = await children(WATCH_PAGE);
+  const sections = []; let cur = null;
+  for (const b of kids) {
+    if (b.type === "callout") continue;            // a lap tetejen allo magyarazat nem tartalom
+    const s = blockText(b);
+    if (isHeading(b)) { cur = { title: s, lines: [] }; sections.push(cur); continue; }
+    if (!s) continue;
+    if (!cur) { cur = { title: "", lines: [] }; sections.push(cur); }
+    if (cur.lines.length < 40) cur.lines.push(s);
+  }
+  return sections;
+}
+
 const pDate  = (p) => (p && p.date && p.date.start) ? String(p.date.start).slice(0,10) : null;
 const pNum   = (p) => (p && typeof p.number === "number") ? p.number : null;
 const pText  = (p) => { if(!p) return ""; const a = p.rich_text || p.title; return Array.isArray(a) ? a.map(t=>t.plain_text).join("") : ""; };
@@ -73,8 +151,15 @@ export default async function handler(req, res) {
   }));
   await grab("weight", DB.suly, p => ({ d: pDate(p[D]), kg: pNum(p["S\u00faly (kg)"]) }));
   await grab("work", DB.munka, p => ({
-    d: pDate(p[D]), h: pNum(p["Ledolgozott \u00f3ra"]), rate: pNum(p["\u00d3rab\u00e9r (Ft)"])
+    d: pDate(p[D]), h: pNum(p["Ledolgozott \u00f3ra"]), rate: pNum(p["\u00d3rab\u00e9r (Ft)"]),
+    jatt: pNum(p["Jatt (Ft)"]), name: pText(p["N\u00e9v"])
   }));
+
+  try { out.today = await readToday(); }
+  catch (e) { out.today = { found: false, sections: [] }; out.errors.today = String(e.message || e); }
+
+  try { out.watch = await readWatch(); }
+  catch (e) { out.watch = []; out.errors.watch = String(e.message || e); }
 
   ["sleep","steps","gym","weight","work"].forEach(k => {
     if (Array.isArray(out[k])) out[k].sort((a,b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
