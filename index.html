@@ -469,7 +469,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 <div class="card d1b">
   <details class="acc" style="margin-top:0;">
-    <summary><span class="chev">▸</span> ⚠️ Trade Checklist — belépés előtt / közben <span class="hint" id="chk-hint"></span></summary>
+    <summary><span class="chev">▸</span> Trade Checklist <span class="hint" id="chk-hint"></span></summary>
     <div class="body">
 
       <div class="gate">
@@ -1827,7 +1827,10 @@ else {
         +(b.notrade.on?'⛔ MA NEM TRADING NAP. ':'✅ TRADING NAP. ')+esc(b.notrade.why)+'</div>';
     }
     var af=document.getElementById('aifocus');
-    if(af) af.innerHTML='<b>Friss bias.</b> A reggeli brief írta ma reggel, a Notionből olvasva.';
+    var hh=new Date().toLocaleTimeString('hu-HU',{timeZone:'Europe/Budapest',hour:'2-digit',minute:'2-digit'});
+    if(af) af.innerHTML='<b>Friss bias.</b> A bias-író futása írta ki ma, a Notionből olvasva. Betöltve: '+hh+'.';
+    var tl=document.getElementById('today-label');
+    if(tl) tl.textContent=' '+new Date().toLocaleDateString('hu-HU',{timeZone:'Europe/Budapest',weekday:'long',year:'numeric',month:'long',day:'numeric'});
     document.querySelectorAll('#pane-trading .hint').forEach(function(h){
       if(/nem friss/.test(h.textContent)){ h.textContent='friss · ma'; h.style.color='var(--green)'; }
     });
