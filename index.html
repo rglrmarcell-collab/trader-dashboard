@@ -31,9 +31,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-s
 .live{width:7px; height:7px; border-radius:50%; background:var(--accent2); box-shadow:0 0 0 0 rgba(16,185,129,.5); animation:pulse 2.4s infinite;}
 .stamp{font-size:10.5px; color:var(--faint); font-family:var(--mono); text-align:right; max-width:58%; line-height:1.35;}
 
-.card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:13px; box-shadow:var(--shadow); animation:rise .55s cubic-bezier(.2,.7,.2,1) both;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:18px; margin-bottom:13px; box-shadow:var(--shadow); animation:rise .55s cubic-bezier(.2,.7,.2,1) both;}
 .card.d1{animation-delay:.06s;} .card.d1b{animation-delay:.09s;} .card.d2{animation-delay:.12s;} .card.d3{animation-delay:.18s;}
-.eyebrow{font-size:10.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--faint); margin-bottom:15px; display:flex; align-items:center; gap:8px;}
+.eyebrow{font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--faint); margin-bottom:14px; display:flex; align-items:center; gap:7px;}
 .eyebrow .k{color:var(--accent);}
 
 .acct{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
@@ -75,7 +75,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-s
 /* collapsible */
 .acc{border:1px solid var(--line); border-radius:13px; margin-top:12px; overflow:hidden; background:#fcfdfe;}
 .acc:first-child{margin-top:0;}
-.acc>summary{list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--sub);}
+.acc>summary{list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:600; letter-spacing:.02em; text-transform:none; color:var(--sub);}
 .acc>summary::-webkit-details-marker{display:none;}
 .acc>summary .chev{color:var(--faint); transition:transform .2s; font-size:11px;}
 .acc[open]>summary .chev{transform:rotate(90deg);}
@@ -154,15 +154,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-s
 textarea{width:100%; min-height:72px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:11px 12px; font-family:inherit; font-size:16px; color:var(--ink); background:#fbfcfd; outline:none;}
 textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,.12);}
 .jbtns{display:flex; gap:8px; margin-top:10px; align-items:center;}
-.mic{width:48px; height:48px; flex:0 0 auto; border-radius:12px; border:1px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s;}
-.mic svg{width:21px; height:21px; stroke:var(--sub);}
-.mic:active{transform:scale(.95);}
-.mic.on{background:var(--red); border-color:var(--red); animation:rec 1.2s infinite;}
-.mic.on svg{stroke:#fff;}
-.save{flex:1; height:48px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-weight:700; font-size:14px; cursor:pointer; transition:.15s;}
+/* A diktálás/mikrofon réteg 2026-09-02-án eltávolítva (Marcell kérése). Ne kerüljön vissza. */
+.save{flex:1; height:44px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; font-size:13.5px; letter-spacing:.01em; cursor:pointer; transition:.15s;}
 .save:active{transform:scale(.99);} .save:disabled{opacity:.5;}
-.reclbl{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--red); font-weight:600; margin-top:9px; min-height:16px;}
-.recdot{width:8px; height:8px; border-radius:50%; background:var(--red); animation:rec 1s infinite;}
+.jstat:empty{display:none;}
 .jstat{font-size:11.5px; color:var(--sub); margin-top:8px; min-height:15px; font-family:var(--mono);}
 .jstat.ok{color:var(--green);} .jstat.err{color:var(--red);}
 .jhint{font-size:10.5px; color:var(--faint); margin-top:5px; line-height:1.4;}
@@ -279,7 +274,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 <!-- PANEL 2c: BEADAS -->
 <div class="card d2 lg">
-<div class="eyebrow"><span class="k">⊕</span> Beadás — telefonról egyenesen a Notionbe</div>
+<div class="eyebrow">Beadás</div>
 <div class="jstat" id="logstat" style="margin-bottom:10px; min-height:15px;"></div>
 
 <details class="acc" style="margin-top:0;">
@@ -332,25 +327,20 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 <!-- PANEL 3: JOURNAL -->
 <div class="card d3">
-  <div class="eyebrow"><span class="k">✎</span> Gyorsjegyzet → Daily Notes</div>
-  <textarea id="note" placeholder="Írj ide, vagy nyomd meg a mikrofont és beszélj (magyarul). Csend alatt is figyel — te állítod le."></textarea>
+  <div class="eyebrow">Gyorsjegyzet</div>
+  <textarea id="note" placeholder="Írj ide, amit rögzíteni akarsz a mai naphoz."></textarea>
   <div class="jbtns">
-    <button class="mic" id="mic" title="Diktálás indítása/leállítása">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-    </button>
     <button class="save" id="save">Mentés a Daily Notesba</button>
   </div>
-  <div class="reclbl" id="reclbl" style="display:none;"><span class="recdot"></span><span id="rectxt">Hallgatlak… beszélj nyugodtan, csend alatt is figyelek.</span></div>
   <div class="jstat" id="jstat"></div>
-  <div class="jhint">A mikrofon csak diktál — <b>nem ment magától</b>. Amikor kész vagy, nyomd meg a <b>Mentés</b> gombot; az leállítja a diktálást (ha megy) és időbélyeggel <b>a mai napi blokkba</b> írja a Daily Notesban. Napközben akárhányszor írhatsz — mind egy helyre, a mai naphoz kerül.</div>
+  <div class="jhint">A <b>Mentés</b> időbélyeggel <b>a mai napi blokkba</b> írja a Daily Notesban. Napközben akárhányszor írhatsz — mind egy helyre, a mai naphoz kerül.</div>
 </div>
 
 </section>
 <section class="pane" id="pane-trading">
 <!-- PANEL 1 -->
 <div class="card d1">
-  <div class="eyebrow"><span class="k">◧</span> Account &amp; Challenge</div>
+  <div class="eyebrow">Account &amp; Challenge</div>
   <div class="acct">
     <div>
       <div class="balance num" id="balance"></div>
@@ -411,7 +401,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 <!-- PANEL 2 -->
 <div class="card d2">
-  <div class="eyebrow"><span class="k">☾</span> Session Brief — <span id="today-label" style="color:var(--sub);"></span></div>
+  <div class="eyebrow">Session Brief<span id="today-label" style="color:var(--sub); font-weight:500; letter-spacing:0; text-transform:none; margin-left:2px;"></span></div>
   <div id="tradestatus-wrap"></div>
   <div class="edge" id="edge"></div>
   <div class="sb" id="sb"></div>
@@ -436,7 +426,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 <div class="demo">✅ <b>AZ ALVÁS MÁR VALÓS ADAT</b> — Sleep Cycle export, 2026-07-31 → 2026-09-01, 30 rögzített éjszaka. A <b>trade-sáv</b> is valós (aug. 3.).<br>⚠️ <b>A lépés, az edzés és a testsúly MÉG DEMO</b> — azokat a Strong és az Apple Health exportod fogja lecserélni.</div>
 
 <div class="card">
-<div class="eyebrow"><span class="k">☾</span> Alvás</div>
+<div class="eyebrow">Alvás</div>
 <div class="tiles">
 <div class="tl"><div class="n num" id="t-avg">–</div><div class="l">Átlag alvás</div><div class="d num flat" id="t-avg-d">–</div></div>
 <div class="tl"><div class="n num" id="t-cons">–</div><div class="l">Ingadozás (szórás)</div><div class="d flat">minél kisebb, annál jobb</div></div>
@@ -453,7 +443,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 </div>
 
 <div class="card">
-<div class="eyebrow"><span class="k">↗</span> Lépés</div>
+<div class="eyebrow">Lépés</div>
 <div class="tiles">
 <div class="tl"><div class="n num" id="t-st">–</div><div class="l">Napi átlag</div><div class="d flat">lépés</div></div>
 <div class="tl"><div class="n num" id="t-st-max">–</div><div class="l">Legaktívabb nap</div><div class="d num flat" id="t-st-max-d">–</div></div>
@@ -466,7 +456,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 </div>
 
 <div class="card">
-<div class="eyebrow"><span class="k">◆</span> Edzés</div>
+<div class="eyebrow">Edzés</div>
 <div class="tiles">
 <div class="tl"><div class="n num" id="t-wk">–</div><div class="l">Edzés / hét</div><div class="d flat">9 hét átlaga</div></div>
 <div class="tl"><div class="n num" id="t-gap">–</div><div class="l">Leghosszabb kihagyás</div><div class="d flat">nap</div></div>
@@ -483,7 +473,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 </div>
 
 <div class="card">
-<div class="eyebrow"><span class="k">⚖</span> Testsúly</div>
+<div class="eyebrow">Testsúly</div>
 <div class="ch-h"><span class="ch-t">Súly alakulása</span><button class="tbtn" data-tv="tv-w">Táblázat</button></div>
 <div class="ch-s">Kézzel felvitt mérések</div>
 <div class="viz" id="viz-w"><div class="tip" id="tip-w"></div></div>
@@ -491,7 +481,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 </div>
 
 <div class="card">
-<div class="eyebrow"><span class="k">⊞</span> Összefüggés-nézet</div>
+<div class="eyebrow">Összefüggés-nézet</div>
 <div class="ch-s" style="margin-bottom:14px">Ugyanaz a 30 nap, öt sávban egymás alatt. <b>Nem a számokat kell olvasni, hanem azt, mi esik egybe.</b></div>
 <div id="cal"></div>
 <div class="calsc"><span>alvás:</span><i style="background:var(--seq-100)"></i><i style="background:var(--seq-250)"></i><i style="background:var(--seq-400)"></i><i style="background:var(--seq-550)"></i><i style="background:var(--seq-700)"></i><span>&lt;5 ó → 9 ó+</span><span style="margin-left:auto">* = még demo adat · alvás és trade valós</span></div>
@@ -766,7 +756,7 @@ border-radius:12px; overflow:hidden; margin-top:14px;}
 </div>
 
 <div class="card d1">
-  <div class="eyebrow"><span class="k">△</span> A félév menetrendje — 2026-27/1</div>
+  <div class="eyebrow">A félév menetrendje</div>
   <div class="sk-tl" id="sk-tl">
     <div class="sk-row" data-from="2026-08-26" data-to="2026-09-06">
       <div class="dt">aug. 26 – szept. 6</div>
@@ -806,7 +796,7 @@ border-radius:12px; overflow:hidden; margin-top:14px;}
 </div>
 
 <div class="card d2">
-  <div class="eyebrow"><span class="k">◇</span> Mit látok és mit nem</div>
+  <div class="eyebrow">Mit látok és mit nem</div>
   <div class="nt" style="border-top:none; padding-top:0; margin-top:0;">
     <b>Látom:</b> a Moodle-naptáradat, a modul-listát, a jegyeket (most üresek) és a Student Admin oldalait.<br><br>
     <b>Nem látom:</b> a <b>Neptunt</b> — a tárgyfelvétel ott zajlik, oda nem lépek be helyetted.
@@ -885,14 +875,14 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
 </div>
 
 <div class="card d1">
-  <div class="eyebrow"><span class="k">◆</span> Havonta</div>
+  <div class="eyebrow">Havonta</div>
   <div class="wk-h">Óra és kereset, hónapról hónapra</div>
   <div class="wk-sub">Külön sáv az órának és a pénznek — szándékosan nem egy grafikonon két tengellyel.</div>
   <div id="wk-months"></div>
 </div>
 
 <div class="card d1b">
-  <div class="eyebrow"><span class="k">▦</span> Munkahelyenként</div>
+  <div class="eyebrow">Munkahelyenként</div>
   <div class="wk-h">Hol jött a pénz</div>
   <div class="wk-sub">Három munkahely, három különböző órabér.</div>
   <div id="wk-bars"></div>
@@ -904,7 +894,7 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
 </div>
 
 <div class="card d2">
-  <div class="eyebrow"><span class="k">↗</span> Órabér alakulása</div>
+  <div class="eyebrow">Órabér alakulása</div>
   <div class="wk-h">Mennyit ér egy órád</div>
   <div class="wk-sub">A Budapest Parkban emelést kaptál. A pontok időrendben, munkahely szerint színezve.</div>
   <div id="wk-rate"></div>
@@ -920,7 +910,7 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
 </div>
 
 <div class="card d3">
-  <div class="eyebrow"><span class="k">▤</span> Összesítő</div>
+  <div class="eyebrow">Összesítő</div>
   <table class="wk-tbl">
     <thead><tr><th>Hónap</th><th>Hol</th><th style="text-align:right;">Óra</th><th style="text-align:right;">Ft</th></tr></thead>
     <tbody id="wk-rows"></tbody>
@@ -1290,44 +1280,13 @@ b.disabled = false;
 });
 })();
 
-/* ---- Panel 3: robusztus diktálás + mentés ---- */
+/* ---- Panel 3: jegyzet mentése ----
+   A diktálás/mikrofon réteg 2026-09-02-án eltávolítva, Marcell kérésére.
+   Ne kerüljön vissza: SpeechRecognition, .mic gomb, reclbl, committed-puffer. */
 (function(){
-  const ta=$('note'), micBtn=$('mic'), saveBtn=$('save'), stat=$('jstat'), reclbl=$('reclbl'), rectxt=$('rectxt');
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  let rec=null, listening=false, committed="";
-
-  if(!SR){ micBtn.style.display="none"; }
-  else{
-    rec=new SR(); rec.lang="hu-HU"; rec.continuous=true; rec.interimResults=true;
-    rec.onresult=e=>{
-      let interim="";
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        const r=e.results[i];
-        if(r.isFinal) committed+=r[0].transcript.trim()+" ";
-        else interim+=r[0].transcript;
-      }
-      ta.value=(committed+interim).replace(/\s+/g," ").trimStart();
-    };
-    // Csend alatt a böngésző leállítja — újraindítjuk, amíg a user nem állította le.
-    rec.onend=()=>{ if(listening){ try{rec.start();}catch(_){ setTimeout(()=>{if(listening)try{rec.start()}catch(_){}} ,300);} } };
-    rec.onerror=e=>{
-      if(e.error==="no-speech"||e.error==="aborted") return; // csend/újraindítás — nem baj
-      stat.className="jstat err"; stat.textContent="Mikrofon hiba: "+e.error+" (engedélyezd a mikrofont)"; setListening(false);
-    };
-  }
-  // Kézi gépelés is frissítse a bázist, hogy diktálás után se vesszen el
-  ta.addEventListener('input',()=>{ if(!listening) committed = ta.value?ta.value.replace(/\s+$/,"")+" ":""; });
-
-  function setListening(on){
-    listening=on; micBtn.classList.toggle('on',on); reclbl.style.display=on?'flex':'none';
-    if(on){ stat.textContent=""; stat.className="jstat"; }
-  }
-  function start(){ if(!rec)return; committed=ta.value?ta.value.replace(/\s+$/,"")+" ":""; setListening(true); try{rec.start();}catch(_){}}
-  function stop(){ setListening(false); if(rec){try{rec.stop();}catch(_){}} }
-  micBtn.onclick=()=> listening?stop():start();
+  const ta=$('note'), saveBtn=$('save'), stat=$('jstat');
 
   saveBtn.onclick=async()=>{
-    if(listening) stop();
     const txt=ta.value.trim();
     if(!txt){ stat.className="jstat err"; stat.textContent="Üres a jegyzet."; return; }
     saveBtn.disabled=true; stat.className="jstat"; stat.textContent="Küldés…";
@@ -1339,9 +1298,23 @@ if(sent === true){
   var L = window.__lastLog || {};
   if(L.mod === "lap-vege"){ stat.className="jstat err"; stat.textContent="⚠ Elmentve, DE a lap végére: nem találtam a(z) " + (L.hova||"mai") + " napi blokkot."; }
   else { stat.className="jstat ok"; stat.textContent="✓ Beírva ide: " + (L.hova || "a mai nap"); }
-  ta.value=""; committed="";
+  ta.value="";
 }
-else { stat.className="jstat err"; stat.textContent="Nem ment: " + sent + " — a szoveg a vagolapon van"; window.open("https://www.notion.so/"+DAILY_NOTES_PAGE,"_blank"); }
+else {
+  /* Nem nyitunk meg semmit hiba eseten: a Notion-ful megnyitasa azt a latszatot kelti,
+     hogy sikerult a mentes. 2026-09-02, Marcell jelezte. */
+  var msg = String(sent || "ismeretlen hiba");
+  if(/could not find block|Make sure the relevant pages/i.test(msg)){
+    msg = "A Notion-integracionak nincs hozzaferese a Daily Notes laphoz. "
+        + "Notionben: Daily Notes lap -> ... menu -> Connections -> add hozza az integraciot. "
+        + "(A szoveg a vagolapon van, nem veszett el.)";
+  } else if(/unauthorized|api token is invalid/i.test(msg)){
+    msg = "Ervenytelen NOTION_TOKEN a Vercelben. (A szoveg a vagolapon van.)";
+  } else {
+    msg = msg + " — a szoveg a vagolapon van";
+  }
+  stat.className="jstat err"; stat.textContent="Nem ment: " + msg;
+}
     saveBtn.disabled=false;
   };
 })();
