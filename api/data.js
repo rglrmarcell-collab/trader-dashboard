@@ -93,7 +93,9 @@ async function readWatch(){
   const kids = await children(WATCH_PAGE);
   const sections = []; let cur = null;
   for (const b of kids) {
-    if (b.type === "callout") continue;            // a lap tetejen allo magyarazat nem tartalom
+    // A lap tetejen allo magyarazat (callout VAGY idezet) nem tartalom.
+    // A Notion a ">" markdownt QUOTE blokka alakitja, nem calloutta — 2026-09-03, elesben derult ki.
+    if (b.type === "callout" || b.type === "quote") continue;
     const s = blockText(b);
     if (isHeading(b)) { cur = { title: s, lines: [] }; sections.push(cur); continue; }
     if (!s) continue;
