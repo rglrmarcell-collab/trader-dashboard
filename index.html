@@ -476,6 +476,16 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 </div>
 
 <div class="card">
+<div class="eyebrow">Edzés — hol tartunk</div>
+<div class="tiles">
+<div class="tl"><div class="n num" id="g-since">–</div><div class="l">Utolsó edzés óta</div><div class="d flat">nap</div></div>
+<div class="tl"><div class="n num" id="g-goal">2</div><div class="l">Heti cél</div><div class="d flat">most · később 4</div></div>
+<div class="tl"><div class="n num" id="g-last">–</div><div class="l">Utolsó edzés</div><div class="d flat">Strong</div></div>
+</div>
+<div class="ch-s" id="g-note" style="margin-top:10px; line-height:1.5;"></div>
+</div>
+
+<div class="card">
 <div class="eyebrow">Edzés</div>
 <div class="tiles">
 <div class="tl"><div class="n num" id="t-wk">–</div><div class="l">Edzés / hét</div><div class="d flat">9 hét átlaga</div></div>
@@ -901,6 +911,20 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
   <div id="wk-months"></div>
 </div>
 
+<div class="card d1">
+  <div class="eyebrow">Jatt</div>
+  <div class="wk-h">Borravaló — külön pénz, külön kezelve</div>
+  <div class="wk-sub">A Kultúrpark Zrt. utalja, havonta 10-e körül; az órabért a Con-Work, kéthetente. <b>A fenti 572 278 Ft-ban ez NINCS benne</b> — a fizetési listákon nem szerepel, ezért soha nem olvasztjuk az órabérbe.</div>
+  <table class="wk-tbl">
+    <thead><tr><th>Hónap</th><th style="text-align:right">Jatt</th></tr></thead>
+    <tbody id="jt-rows"></tbody>
+    <tfoot>
+      <tr><td>Jatt összesen</td><td class="num" id="jt-sum">–</td></tr>
+      <tr><td>Bér + jatt</td><td class="num" id="jt-all">–</td></tr>
+    </tfoot>
+  </table>
+</div>
+
 <div class="card d1b">
   <div class="eyebrow">Munkahelyenként</div>
   <div class="wk-h">Hol jött a pénz</div>
@@ -974,10 +998,27 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
   ];
   SHIFTS.forEach(function(s){ s.ft = s.r*s.h; });
 
+  /* --- Jatt: Kulturpark Zrt., havonta ~10-en. Forras: K&H SMS, 2026-09-03.
+     Szandekosan NEM keveredik a berbe: mas termeszetu penz, es a fizetesi listakon nincs rajta. --- */
+  var JATT=[{m:"2026-06",lab:"június",ft:15632},{m:"2026-07",lab:"július",ft:62777},{m:"2026-08",lab:"augusztus",ft:62274}];
+
   var totO=0, totF=0; SHIFTS.forEach(function(s){ totO+=s.h; totF+=s.ft; });
   document.getElementById('wk-h').innerHTML = hu(totO)+'<span class="u">ó</span>';
   document.getElementById('wk-m').textContent = ft(totF);
   document.getElementById('wk-r').textContent = ft(totF/totO);
+
+  (function(){
+    var tb=document.getElementById('jt-rows'); if(!tb) return;
+    var jsum=0;
+    JATT.forEach(function(j){
+      jsum+=j.ft;
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+j.lab+'</td><td class="num">'+ft(j.ft)+'</td>';
+      tb.appendChild(tr);
+    });
+    document.getElementById('jt-sum').textContent=ft(jsum);
+    document.getElementById('jt-all').textContent=ft(totF+jsum);
+  })();
 
   function agg(keyfn){
     var m={}, order=[];
@@ -1596,6 +1637,27 @@ else {
     if(Date.now()-last > 120000 && !busy()) window.__loadMa();
   });
   setInterval(function(){ if(!document.hidden && !busy()) window.__loadMa(); }, 300000);
+})();
+</script>
+
+<script>
+/* Edzes-allapot. A napok szamat a bongeszo szamolja -> magatol pontos marad. */
+(function(){
+  var LAST="2026-06-25";                      // Strong export, utolso rogzitett edzes
+  var el=document.getElementById('g-since'); if(!el) return;
+  /* Naptari napokat szamolunk, nem idobelyeg-kulonbseget: kulonben a napszaktol
+     fuggoen 69 vagy 70 jonne ki ugyanarra a napra. 2026-09-03. */
+  var d=new Date(LAST+"T00:00:00Z");
+  var t=new Date();
+  var todayUTC=Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+  var days=Math.max(0, Math.round((todayUTC-d.getTime())/86400000));
+  el.textContent=days;
+  document.getElementById('g-last').textContent=LAST.slice(5).replace('-','.')+'.';
+  document.getElementById('g-note').innerHTML =
+    'A júniusi blokk <b>nem valós edzésadat</b>: mind a négy Push és mind a három Pull nap '
+   +'<b>betűre azonos</b> volt egymással (5794 kg, illetve 9397 kg, ugyanazok a repek) — sablon, kipipálva. '
+   +'Ezért nincs belőle grafikon. <b>A mérőszám mostantól nem az, hogy volt-e edzés, hanem hogy változnak-e a számok</b> '
+   +'az előző azonos naphoz képest. Ha nem változnak, az nem naplózás.';
 })();
 </script>
 </body>
