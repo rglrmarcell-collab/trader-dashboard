@@ -30,6 +30,8 @@ const hdr = () => ({
 const DAILY_NOTES = "36eac560704880469890e907b6f383d9";
 // "Figyelo — ma" lap: MINDIG csak a mai napot tartalmazza, a futasok felulirjak.
 const WATCH_PAGE = "3d0ac5607048818abc9ff81df709c775";
+// "Bias — ma": a reggeli brief irja felul minden nap. Kotott sorformatum, gep olvassa.
+const BIAS_PAGE  = "3d0ac560704881ffa443cb2402ab8875";
 
 function dayHeader(){
   const p = new Intl.DateTimeFormat("en-GB", {
@@ -86,6 +88,43 @@ async function readToday(){
     if (cur.lines.length < 40) cur.lines.push(s);
   }
   return { header: target, found: true, sections };
+}
+
+// A "Bias — ma" lap. Sorformatum:
+//   ## EEEE-HH-NN | NOTRADE: igen|nem · indok | EROSSEG: ... | PAR: p | bias | indok | HIR: ido | suly | szoveg
+// Csak akkor ad vissza adatot, ha a lapon a MAI datum all — kulonben elavult, es inkabb semmit.
+async function readBias(){
+  const kids = await children(BIAS_PAGE);
+  const lines = [];
+  for (const b of kids) {
+    if (b.type === "callout" || b.type === "quote" || b.type === "code") continue;
+    const t = blockText(b); if (t) lines.push({ h: isHeading(b), t });
+  }
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Budapest" });
+  // az utolso datum-fejlec utani sorok szamitanak
+  let start = -1, day = null;
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].h && /^(\d{4}-\d{2}-\d{2})$/.exec(lines[i].t.trim());
+    if (m) { day = m[1]; start = i + 1; }
+  }
+  const out = { day, fresh: day === today, notrade: null, strength: [], pairs: [], news: [] };
+  if (start < 0 || !out.fresh) return out;
+  for (let i = start; i < lines.length; i++) {
+    const t = lines[i].t.trim();
+    let m;
+    if ((m = /^NOTRADE:\s*(\S+)\s*[·|-]?\s*(.*)$/i.exec(t))) {
+      out.notrade = { on: /^igen/i.test(m[1]), why: (m[2] || "").trim() };
+    } else if ((m = /^EROSSEG:\s*(.+)$/i.exec(t))) {
+      out.strength = m[1].split(",").map(x => x.trim()).filter(Boolean).slice(0, 8);
+    } else if ((m = /^PAR:\s*(.+)$/i.exec(t))) {
+      const a = m[1].split("|").map(x => x.trim());
+      if (a[0]) out.pairs.push({ p: a[0], t: a[1] || "", why: a[2] || "" });
+    } else if ((m = /^HIR:\s*(.+)$/i.exec(t))) {
+      const a = m[1].split("|").map(x => x.trim());
+      if (a[0]) out.news.push({ time: a[0], imp: (a[1] || "").toLowerCase(), txt: a[2] || "" });
+    }
+  }
+  return out;
 }
 
 // A "Figyelo — ma" lap tartalma. Nem no: minden nap felulirodik.
@@ -162,6 +201,9 @@ export default async function handler(req, res) {
 
   try { out.watch = await readWatch(); }
   catch (e) { out.watch = []; out.errors.watch = String(e.message || e); }
+
+  try { out.bias = await readBias(); }
+  catch (e) { out.bias = { fresh: false, pairs: [] }; out.errors.bias = String(e.message || e); }
 
   ["sleep","steps","gym","weight","work"].forEach(k => {
     if (Array.isArray(out[k])) out[k].sort((a,b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
