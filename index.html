@@ -1782,5 +1782,59 @@ else {
     if(window.__renderHealth) try{ window.__renderHealth(); }catch(_){} };
 })();
 </script>
+
+<script>
+/* ====== ELO BIAS a "Bias — ma" Notion-laprol (2026-09-03) ======
+   A reggeli brief (FELHOBEN fut, nem kell hozza Marcell gepe) minden reggel felulirja a lapot.
+   Ha a lapon a mai datum all, az itteni adat lecsereli a beegetett, elavult biast.
+   Ha nem, marad a regi -- de akkor lathatoan "nem friss"-nek van jelolve. */
+(function(){
+  var TAG={bullish:'bull',bearish:'bear','törékeny':'frag',tiltólista:'',semleges:''};
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+  window.__loadBias = async function(){
+    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
+    if(!sec) return;
+    var j; try{
+      var r=await fetch('/api/data?t='+Date.now(),{headers:{'x-log-secret':sec},cache:'no-store'});
+      if(!r.ok) return; j=await r.json();
+    }catch(_){ return; }
+    var b=j.bias; if(!b||!b.fresh) return;              /* nem friss -> nem nyulunk hozza */
+
+    if(b.pairs && b.pairs.length){
+      var host=document.getElementById('bias');
+      if(host) host.innerHTML=b.pairs.map(function(x){
+        var cl=TAG[(x.t||'').toLowerCase()]||'';
+        return '<div class="bcard"><div class="top"><span class="p">'+esc(x.p)+'</span>'
+             + '<span class="tag '+cl+'">'+esc(x.t)+'</span></div>'
+             + '<div class="why">'+esc(x.why)+'</div></div>';}).join('');
+    }
+    if(b.strength && b.strength.length){
+      var sh=document.getElementById('strength');
+      if(sh) sh.innerHTML='<span class="lbl">Deviza-erő</span>'+b.strength.map(function(t){
+        var cl=/erős/i.test(t)?'s-up':/gyenge/i.test(t)?'s-dn':'';
+        return '<span class="cur '+cl+'">'+esc(t)+'</span>';}).join('');
+    }
+    if(b.news && b.news.length){
+      var nh=document.getElementById('news');
+      if(nh) nh.innerHTML=b.news.map(function(n){
+        var cl=n.imp==='erős'?'imp-red':n.imp==='közepes'?'imp-orange':'imp-yellow';
+        return '<div class="nrow"><span class="pill '+cl+'">'+esc(n.imp)+'</span>'
+             + '<div class="tx"><b>'+esc(n.time)+'</b> — '+esc(n.txt)+'</div></div>';}).join('');
+    }
+    if(b.notrade){
+      var w=document.getElementById('tradestatus-wrap');
+      if(w) w.innerHTML='<div class="banner '+(b.notrade.on?'no':'ok')+'">'
+        +(b.notrade.on?'⛔ MA NEM TRADING NAP. ':'✅ TRADING NAP. ')+esc(b.notrade.why)+'</div>';
+    }
+    var af=document.getElementById('aifocus');
+    if(af) af.innerHTML='<b>Friss bias.</b> A reggeli brief írta ma reggel, a Notionből olvasva.';
+    document.querySelectorAll('#pane-trading .hint').forEach(function(h){
+      if(/nem friss/.test(h.textContent)){ h.textContent='friss · ma'; h.style.color='var(--green)'; }
+    });
+  };
+  window.__loadBias();
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) window.__loadBias(); });
+})();
+</script>
 </body>
 </html>
