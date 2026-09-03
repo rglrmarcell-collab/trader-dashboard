@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="Trader">
 <meta name="theme-color" content="#f6f7f9">
 <title>Trader Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme: light;
@@ -16,12 +19,67 @@
   --accent:#0d9488; --accent2:#10b981;
   --green:#059669; --greenbg:#e9f8f1; --red:#e11d48; --redbg:#fdecef;
   --amber:#b45309; --amberbg:#fdf3e3; --slate:#64748b; --slatebg:#f1f4f8; --blue:#2563eb;
-  --mono:ui-monospace,"SF Mono",Menlo,"Cascadia Code",monospace;
+  --mono:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
 }
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0e1117; --card:#161a22; --line:#252b36; --line2:#1d222b;
+  --ink:#e8ecf3; --sub:#9aa4b4; --faint:#6b7484;
+  --greenbg:#10251d; --redbg:#2a1219; --amberbg:#2a2011; --slatebg:#1a1f28;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 18px rgba(0,0,0,.35);
+  --grid:#252b36; --axis:#39414f;
+}
+.tglt{position:fixed; right:14px; bottom:14px; z-index:70; width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:15px; cursor:pointer;
+  box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; padding:0;}
+.tglt:active{transform:scale(.94);}
+/* Sotet modban a zold/piros bannerek es a kiemelesek olvashatoak maradjanak. */
+:root[data-theme="dark"] .banner.ok{color:#6ee7b7; border-color:#1c4a3a;}
+:root[data-theme="dark"] .banner.ok b{color:#a7f3d0;}
+:root[data-theme="dark"] .banner.no{color:#fda4af; border-color:#4a1f2a;}
+:root[data-theme="dark"] .banner.no b{color:#fecdd3;}
+:root[data-theme="dark"] .bcard .tag.bull{color:#6ee7b7;}
+:root[data-theme="dark"] .bcard .tag.bear{color:#fda4af;}
+:root[data-theme="dark"] .bcard .tag.frag{color:#fcd34d;}
+:root[data-theme="dark"] .nrow .pill.imp-red{color:#fda4af;}
+:root[data-theme="dark"] .nrow .pill.imp-orange{color:#fcd34d;}
+:root[data-theme="dark"] .strength .cur.s-up{color:#6ee7b7;}
+:root[data-theme="dark"] .strength .cur.s-dn{color:#fda4af;}
+:root[data-theme="dark"] .save{background:#0f766e;}
+
+/* --- Session Brief, a referencia-elrendezes szerint (2026-09-03) --- */
+.strength{display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin:13px 0 14px;}
+.strength .lbl{font-size:11.5px; color:var(--faint); margin-right:2px;}
+.strength .cur{font-size:12px; font-weight:600; padding:5px 10px; border-radius:8px;
+  background:var(--slatebg); color:var(--sub);}
+.strength .cur.s-up{background:var(--greenbg); color:var(--green);}
+.strength .cur.s-dn{background:var(--redbg); color:var(--red);}
+.bias{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:16px;}
+@media (min-width:760px){ .bias{grid-template-columns:repeat(4,1fr);} }
+.bcard{border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:var(--card);}
+.bcard .top{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
+.bcard .p{font-size:13.5px; font-weight:700; letter-spacing:-.2px;}
+.bcard .tag{font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:6px; margin-left:auto;
+  background:var(--slatebg); color:var(--sub);}
+.bcard .tag.bull{background:var(--greenbg); color:var(--green);}
+.bcard .tag.bear{background:var(--redbg); color:var(--red);}
+.bcard .tag.frag{background:var(--amberbg); color:var(--amber);}
+.bcard .why{font-size:11.5px; color:var(--sub); line-height:1.45;}
+.nwrap{border-top:1px solid var(--line); padding-top:13px;}
+.nhead{font-size:11.5px; color:var(--faint); margin-bottom:8px;}
+.nrow{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line2); font-size:12px;}
+.nrow:last-child{border-bottom:none;}
+.nrow .pill{flex:0 0 auto; font-size:10px; font-weight:600; padding:2px 7px; border-radius:6px;
+  background:var(--slatebg); color:var(--sub);}
+.nrow .pill.imp-red{background:var(--redbg); color:var(--red);}
+.nrow .pill.imp-orange{background:var(--amberbg); color:var(--amber);}
+.nrow .pill.imp-yellow{background:var(--slatebg); color:var(--sub);}
+.nrow .tx{color:var(--sub); line-height:1.45;}
+.nrow .tx b{color:var(--ink);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{background:var(--bg);}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-feature-settings:"cv05","ss01";
   color:var(--ink); line-height:1.45; padding:16px 14px 44px; max-width:840px; margin:0 auto; min-height:100vh;}
 .num{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.4px;}
 
@@ -118,7 +176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-s
 .s-strong{background:var(--greenbg); color:var(--green); border-color:#bfe9d6;}
 .s-weak{background:var(--redbg); color:var(--red); border-color:#f6c9d3;}
 .s-neut{background:var(--slatebg); color:var(--slate); border-color:var(--line);}
-.bias{display:grid; grid-template-columns:repeat(2,1fr); gap:9px;}
+/* a .bias racs a fenti, uj szabalyban van definialva */
 .pair{position:relative; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:11px 12px 11px 15px; overflow:hidden;}
 .pair::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px;}
 .pair .top{display:flex; justify-content:space-between; align-items:center;}
@@ -137,8 +195,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-s
 .newsitem:last-child{border-bottom:none;}
 .imp{width:7px; height:7px; border-radius:2px; flex:0 0 auto; margin-top:5px;}
 .imp-red{background:var(--red);} .imp-orange{background:var(--amber);} .imp-yellow{background:#d4a017;}
-.aifocus{margin-top:14px; background:#f0fdfa; border:1px solid #cbeee6; border-left:3px solid var(--accent); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#134e48;}
-.aifocus b{color:#0b6b57;}
+.aifocus{margin-top:14px; background:var(--slatebg); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:12px; padding:12px 13px; font-size:12px; color:var(--sub); line-height:1.5;}
+.aifocus b{color:var(--ink);}
 
 /* checklist */
 .ckrow{display:flex; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line2); font-size:12.5px; align-items:flex-start;}
@@ -183,7 +241,7 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
 @keyframes rec{0%,100%{box-shadow:0 0 0 0 rgba(225,29,72,.5);}50%{box-shadow:0 0 0 6px rgba(225,29,72,0);}}
 @media (max-width:520px){
   body{padding:14px 12px 40px;}
-  .bias{grid-template-columns:1fr;}
+  /* 2026-09-03: a par-kartyak mobilon is KETTO oszlopban maradnak (referencia-elrendezes). */
   .sb{grid-template-columns:1fr;}
   .balance{font-size:29px;}
 }
@@ -400,22 +458,13 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 <div class="card d2">
   <div class="eyebrow">Session Brief<span id="today-label" style="color:var(--sub); font-weight:500; letter-spacing:0; text-transform:none; margin-left:2px;"></span></div>
   <div id="tradestatus-wrap"></div>
-  <div class="edge" id="edge"></div>
+  <div class="strength" id="strength"></div>
+  <div class="bias" id="bias"></div>
+  <div class="nwrap"><div class="nhead">Hír-ablakok — magyar idő</div><div id="news"></div></div>
   <div class="sb" id="sb"></div>
   <div class="aifocus" id="aifocus"></div>
 
-  <details class="acc">
-    <summary><span class="chev">▸</span> Instrument bias <span class="hint" style="color:var(--red);">nem friss · aug. 20.</span></summary>
-    <div class="body"><div class="bias" id="bias"></div></div>
-  </details>
-  <details class="acc">
-    <summary><span class="chev">▸</span> Deviza-erő <span class="hint" style="color:var(--red);">nem friss · aug. 20.</span></summary>
-    <div class="body"><div class="strength" id="strength"></div></div>
-  </details>
-  <details class="acc">
-    <summary><span class="chev">▸</span> Hír-ablakok <span class="hint" id="news-hint"></span></summary>
-    <div class="body"><div id="news"></div></div>
-  </details>
+
 </div>
 
 <div class="card d1b">
@@ -1320,22 +1369,26 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
   const su=DATA.setup;
   $('today-label').textContent=su.dateLabel;
   $('tradestatus-wrap').innerHTML=`<div class="banner ${su.noTrade?'no':'ok'}">${su.noTrade?'⛔ ':'✅ '}${su.tradeStatusText}</div>`;
-  $('edge').innerHTML=`<div class="score">${su.edge.score}</div><div><div class="ek">Edge Factor</div><div class="ev">${su.edge.label}</div></div>`;
+  /* Az Edge Factor csempe kikerult: ugyanazt mondta, mint a banner. 2026-09-03. */
   const b=su.brief;
   /* 2026-09-03: negy csempe + AI fokusz + edge-felirat ugyanazt mondta harom helyen.
      Egy blokk maradt. Ha ujra szetesik, az visszalepes. */
   $('sb').innerHTML='';
-  $('aifocus').innerHTML=`<b>Ma —</b> ${b.avoid}`
-    + `<div style="margin-top:9px;padding-top:9px;border-top:1px solid #cbeee6;font-size:11.5px;">`
-    + `<b>A pár-bias és a deviza-erő NEM frissül magától.</b> Aug. 20-i állapot, szándékosan „nincs friss bias"-ra állítva, hogy ne dolgozz elavultból. `
-    + `Ezek akkor lesznek élők, ha a reggeli brief kiírja a nyolc pár biasát a Notionbe — addig belépés előtt kérj briefet.</div>`;
-  $('strength').innerHTML=su.strength.map(x=>`<span class="cur ${x.c}">${x.t}</span>`).join('');
-  $('bias').innerHTML=su.bias.map(x=>
-    `<div class="pair ${x.c}"><div class="top"><span class="name">${x.p}</span><span class="tg">${x.t}</span></div>
-     <div class="why">${x.why}</div>
-     <div class="cf"><span class="cfbar"><i style="width:${x.conf}%"></i></span><span class="cfn">conf ${x.conf}%</span></div></div>`).join('');
-  $('news').innerHTML=su.news.map(n=>`<div class="newsitem"><span class="imp ${n.imp}"></span><div>${n.txt}</div></div>`).join('');
-  $('news-hint').textContent=su.news.length+" db";
+  /* A "Ma —" blokk kikerult: ugyanazt mondta, mint a banner es a hir-ablakok.
+     Csak az marad, ami sehol maskor nem szerepel: a bias elavultsaga. 2026-09-03. */
+  $('aifocus').innerHTML=`<b>A pár-bias és a deviza-erő nem frissül magától.</b> Aug. 20-i állapot. `
+    + `Élővé akkor válik, ha a reggeli brief kiírja a nyolc pár biasát a Notionbe — addig belépés előtt kérj briefet.`;
+  $('strength').innerHTML='<span class="lbl">Deviza-erő</span>'+su.strength.map(x=>{
+    var t=(x.t||''), cl = /erős/i.test(t)?'s-up' : /gyenge/i.test(t)?'s-dn' : '';
+    return `<span class="cur ${cl}">${t}</span>`;}).join('');
+  var TG={bull:'bull',bear:'bear',frag:'frag'};
+  $('bias').innerHTML=su.bias.map(x=>{
+    var t=(x.t||''), cl = /bullish/i.test(t)?'bull' : /bearish/i.test(t)?'bear' : /törékeny|fragile/i.test(t)?'frag' : '';
+    return `<div class="bcard"><div class="top"><span class="p">${x.p}</span><span class="tag ${cl}">${t}</span></div>`
+         + `<div class="why">${x.why}</div></div>`;}).join('');
+  var IL={'imp-red':'erős','imp-orange':'közepes','imp-yellow':'halk'};
+  $('news').innerHTML=su.news.map(n=>
+    `<div class="nrow"><span class="pill ${n.imp}">${IL[n.imp]||''}</span><div class="tx">${n.txt}</div></div>`).join('');
 })();
 
 $('updated').textContent=DATA.updated+" · "+DATA.syncNote;
@@ -1705,6 +1758,28 @@ else {
    +'<b>betűre azonos</b> volt egymással (5794 kg, illetve 9397 kg, ugyanazok a repek) — sablon, kipipálva. '
    +'Ezért nincs belőle grafikon. <b>A mérőszám mostantól nem az, hogy volt-e edzés, hanem hogy változnak-e a számok</b> '
    +'az előző azonos naphoz képest. Ha nem változnak, az nem naplózás.';
+})();
+</script>
+<script>
+/* Vilagos/sotet valtas. A valasztas eltarolodik; ha nincs valasztas, a rendszer beallitasa dont. */
+(function(){
+  var KEY='mdash_theme';
+  function apply(t){
+    if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
+    else document.documentElement.removeAttribute('data-theme');
+    var b=document.getElementById('tglt'); if(b){ b.textContent = t==='dark' ? '☀' : '☾';
+      b.setAttribute('aria-label', t==='dark' ? 'Világos mód' : 'Sötét mód'); }
+  }
+  var saved=null; try{ saved=localStorage.getItem(KEY); }catch(_){}
+  var sys=false; try{ sys=window.matchMedia('(prefers-color-scheme: dark)').matches; }catch(_){}
+  var cur = saved || (sys?'dark':'light');
+  var btn=document.createElement('button');
+  btn.className='tglt'; btn.id='tglt'; btn.type='button';
+  document.body.appendChild(btn);
+  apply(cur);
+  btn.onclick=function(){ cur = (cur==='dark'?'light':'dark'); apply(cur);
+    try{ localStorage.setItem(KEY,cur); }catch(_){}
+    if(window.__renderHealth) try{ window.__renderHealth(); }catch(_){} };
 })();
 </script>
 </body>
