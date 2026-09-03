@@ -107,7 +107,7 @@ async function readBias(){
     const m = lines[i].h && /^(\d{4}-\d{2}-\d{2})$/.exec(lines[i].t.trim());
     if (m) { day = m[1]; start = i + 1; }
   }
-  const out = { day, fresh: day === today, notrade: null, strength: [], pairs: [], news: [] };
+  const out = { day, fresh: day === today, notrade: null, strength: [], pairs: [], news: [], upcoming: [] };
   if (start < 0 || !out.fresh) return out;
   for (let i = start; i < lines.length; i++) {
     // A Notion a "|" jelet markdownban visszaadhatja backslash-sel escape-elve.
@@ -125,6 +125,10 @@ async function readBias(){
     } else if ((m = /^HIR:\s*(.+)$/i.exec(t))) {
       const a = m[1].split("|").map(x => x.trim());
       if (a[0]) out.news.push({ time: a[0], imp: (a[1] || "").toLowerCase(), txt: a[2] || "" });
+    } else if ((m = /^ELOTTED:\s*(.+)$/i.exec(t))) {
+      // Elottunk allo, meg ki nem pipalt teendok. Forras: TickTick, a reggeli futas irja ki.
+      const a = m[1].split("|").map(x => x.trim());
+      if (a[0]) out.upcoming.push({ when: a[0], what: a[1] || "", tag: (a[2] || "").toLowerCase() });
     }
   }
   return out;
