@@ -385,8 +385,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
   <div class="focus"><span>🔒</span><div>Fő fék <b>(számláló: 0/3)</b>: <b>a trade-et a belépés ELŐTT fejezed be.</b> Utána a dolgod nem a kezelés, hanem a nem-cselekvés — <b>SL · TP · LOT</b>, mind a három ugyanaz az egy elv. <span style="opacity:.75">Utolsó teszt: 2026-08-03, NAS100 (28 napja) — a TP-oldal elhasalt (kézi zárás 5,2R-nél a tervezett 6R helyett), a számláló visszaállt.</span></div></div>
   <div class="streak">
     <div class="sk"><span class="skn num" id="streak-n">0</span><span class="skl">tiszta trade sorozat</span></div>
-    <div class="skr">rekord <b class="num">2*</b> — <span class="sknote">*a júl. 21. GBPCAD ❓ ismeretlen, ezért csillagos; az első 3 elemű IGAZOLT sorozat lesz az új rekord</span></div>
-    <div class="sklg"><span>✅ tiszta</span><span>❌ szabályszegés</span><span>❓ nincs dokumentálva</span></div>
+    <div class="skr">rekord <b class="num">2*</b> <span class="sknote">*nem igazolt</span></div>
   </div>
 
   <details class="acc">
@@ -396,8 +395,31 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 </div>
 
 <!-- PANEL 1b: TRADE CHECKLIST -->
+
+<!-- PANEL 2 -->
+<div class="card d2">
+  <div class="eyebrow">Session Brief<span id="today-label" style="color:var(--sub); font-weight:500; letter-spacing:0; text-transform:none; margin-left:2px;"></span></div>
+  <div id="tradestatus-wrap"></div>
+  <div class="edge" id="edge"></div>
+  <div class="sb" id="sb"></div>
+  <div class="aifocus" id="aifocus"></div>
+
+  <details class="acc">
+    <summary><span class="chev">▸</span> Instrument bias <span class="hint" style="color:var(--red);">nem friss · aug. 20.</span></summary>
+    <div class="body"><div class="bias" id="bias"></div></div>
+  </details>
+  <details class="acc">
+    <summary><span class="chev">▸</span> Deviza-erő <span class="hint" style="color:var(--red);">nem friss · aug. 20.</span></summary>
+    <div class="body"><div class="strength" id="strength"></div></div>
+  </details>
+  <details class="acc">
+    <summary><span class="chev">▸</span> Hír-ablakok <span class="hint" id="news-hint"></span></summary>
+    <div class="body"><div id="news"></div></div>
+  </details>
+</div>
+
 <div class="card d1b">
-  <details class="acc" style="margin-top:0;" open>
+  <details class="acc" style="margin-top:0;">
     <summary><span class="chev">▸</span> ⚠️ Trade Checklist — belépés előtt / közben <span class="hint" id="chk-hint"></span></summary>
     <div class="body">
 
@@ -419,31 +441,18 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
   </details>
 </div>
 
-<!-- PANEL 2 -->
-<div class="card d2">
-  <div class="eyebrow">Session Brief<span id="today-label" style="color:var(--sub); font-weight:500; letter-spacing:0; text-transform:none; margin-left:2px;"></span></div>
-  <div id="tradestatus-wrap"></div>
-  <div class="edge" id="edge"></div>
-  <div class="sb" id="sb"></div>
-  <div class="aifocus" id="aifocus"></div>
-
-  <details class="acc" open>
-    <summary><span class="chev">▸</span> Instrument bias <span class="hint">8 pár</span></summary>
-    <div class="body"><div class="bias" id="bias"></div></div>
-  </details>
-  <details class="acc">
-    <summary><span class="chev">▸</span> Deviza-erő</summary>
-    <div class="body"><div class="strength" id="strength"></div></div>
-  </details>
-  <details class="acc">
-    <summary><span class="chev">▸</span> Hír-ablakok <span class="hint" id="news-hint"></span></summary>
-    <div class="body"><div id="news"></div></div>
-  </details>
-</div>
 
 </section>
 <section class="pane" id="pane-health">
-<div class="demo">✅ <b>AZ ALVÁS MÁR VALÓS ADAT</b> — Sleep Cycle export, 2026-07-31 → 2026-09-01, 30 rögzített éjszaka. A <b>trade-sáv</b> is valós (aug. 3.).<br>⚠️ <b>A lépés, az edzés és a testsúly MÉG DEMO</b> — azokat a Strong és az Apple Health exportod fogja lecserélni.</div>
+<div class="card">
+  <div class="eyebrow">Alvás — a lényeg</div>
+  <div class="tiles">
+    <div class="tl"><div class="n num" id="sp-avg">–</div><div class="l">Átlag</div><div class="d flat">óra / éjszaka</div></div>
+    <div class="tl"><div class="n num" id="sp-short">–</div><div class="l">6 óra alatt</div><div class="d flat">éjszaka</div></div>
+    <div class="tl"><div class="n num" id="sp-best">–</div><div class="l">Leghosszabb</div><div class="d flat">óra</div></div>
+  </div>
+  <div class="ch-s" id="sp-note" style="margin-top:10px; line-height:1.5;"></div>
+</div>
 
 <div class="card">
 <div class="eyebrow">Alvás</div>
@@ -690,7 +699,25 @@ function drawCal(){
   row.appendChild(lb); row.appendChild(cs); host.appendChild(row);});}
 document.querySelectorAll("[data-tv]").forEach(function(b){b.onclick=function(){var t=document.getElementById(b.dataset.tv);
  t.classList.toggle("on"); b.textContent=t.classList.contains("on")?"Grafikon":"Táblázat";};});
-window.__renderHealth=function(){ drawSleep(); drawSteps(); drawGym(); drawW(); drawCal(); };
+function slpSum(){
+  var el=document.getElementById('sp-avg'); if(!el) return;
+  var hs=sleep.map(function(x){return x.h;}).filter(function(x){return typeof x==="number";});
+  if(!hs.length) return;
+  var avg=hs.reduce(function(a,b){return a+b;},0)/hs.length;
+  var short=hs.filter(function(x){return x<6;}).length;
+  var best=Math.max.apply(null,hs);
+  el.textContent=avg.toFixed(1);
+  document.getElementById('sp-short').textContent=short;
+  document.getElementById('sp-best').textContent=best.toFixed(1);
+  var pct=Math.round(100*short/hs.length);
+  document.getElementById('sp-note').innerHTML=
+    '<b>'+hs.length+' éjszaka</b> adata. Az éjszakák <b>'+pct+'%-a maradt 6 óra alatt</b> — '
+   +(pct>=50?'vagyis a rövid alvás nem kivétel, hanem az alap.'
+            :'a rövid éjszaka a kisebbik rész.')
+   +' A 7 órás vonal <b>referencia, nem elvárás</b>. Amit keresünk: nem az, hogy jól aludtál-e, hanem hogy '
+   +'<b>a rövid éjszakák után máshogy hajtod-e végre a trade-eket</b>. Ehhez trade kell — a mintát csak akkor lehet megnézni.';
+}
+window.__renderHealth=function(){ drawSleep(); drawSteps(); drawGym(); drawW(); drawCal(); slpSum(); };
 window.__renderHealth();
 
 /* ---- ELO ADAT a Notionbol ---- */
@@ -778,8 +805,8 @@ border-radius:12px; overflow:hidden; margin-top:14px;}
 </style>
 
 <div class="sk-alert hot" id="sk-neptun">
-  <div class="t">⚠ Élő határidő — Neptun tárgyfelvétel</div>
-  <div class="h">Az elsődleges tárgyfelvételi időszak <b>szeptember 6-án</b> zárul.</div>
+  <div class="t">✓ Tárgyfelvétel kész — az oktatás indulására vársz</div>
+  <div class="h">Marcell 2026-09-03-án megerősítette: <b>a tárgyfelvétel megvan.</b> A következő fix pont a <b>szept. 21-i oktatáskezdés</b>; addig a szept. 14–20-i konszolidáció alatt a csoportok befagynak.</div>
   <div class="sk-cd"><span class="n" id="sk-days">–</span><span class="u" id="sk-daysu">nap van hátra</span></div>
   <div class="d">A te sávod (<b>Buckingham BSc, 3. félév</b>) <b>aug. 26. 13:00</b>-kor nyílt.
   Szept. 6. után csak maradékhelyekre kerülhetsz, <b>szept. 14. után pedig leadni sem tudsz</b>.<br>
@@ -818,12 +845,12 @@ border-radius:12px; overflow:hidden; margin-top:14px;}
   <div class="sk-kv">
     <div class="c"><div class="k">Képzés</div><div class="v">BDFIN25</div></div>
     <div class="c"><div class="k">Első tanítási nap</div><div class="v">szept. 21.</div></div>
-    <div class="c"><div class="k">Felvett tárgy 26-27/1</div><div class="v">0</div></div>
+    <div class="c"><div class="k">Tárgyfelvétel</div><div class="v">kész</div></div>
     <div class="c"><div class="k">Jegy / visszajelzés</div><div class="v">nincs</div></div>
   </div>
 
   <div class="sk-src">Forrás: MyIBS → Student Admin (Neptun sign-ups 2026-27/1) és a Moodle-naptár, ellenőrizve 2026-09-01.
-  A „0 felvett tárgy" a Moodle-ra vonatkozik — <b>a Neptunt nem látom</b>, ott lehet, hogy már felvetted őket.</div>
+  A tárgyfelvétel tényét <b>Marcell erősítette meg</b> (2026-09-03) — a Neptunba nem lépek be, tehát a tárgyak listáját nem látom, csak azt, hogy megvan.</div>
 </div>
 
 <div class="card d2">
@@ -926,6 +953,8 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
   </table>
 </div>
 
+<div class="card d1b" id="jt-rate"></div>
+
 <div class="card d1b">
   <div class="eyebrow">Munkahelyenként</div>
   <div class="wk-h">Hol jött a pénz</div>
@@ -1019,6 +1048,22 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
     });
     document.getElementById('jt-sum').textContent=ft(jsum);
     document.getElementById('jt-all').textContent=ft(totF+jsum);
+
+    /* Jatt orara. Tomben szamolva, hogy elo adatnal is stimmeljen.
+       CSAK a Budapest Park orakra vetitve: a jatt onnan jon. */
+    var po=0, pf=0;
+    SHIFTS.forEach(function(x){ if(x.w==='park'){ po+=x.h; pf+=x.ft; } });
+    var jo = po ? jsum/po : 0, eo = po ? (pf+jsum)/po : 0, nom = po ? pf/po : 0;
+    var host=document.getElementById('jt-rate'); if(!host) return;
+    host.innerHTML =
+      '<div class="wk-h">Mennyit ér egy park-órád, ha a jatt is beleszámít</div>'
+     +'<div class="wk-sub"><b>A havi bontás itt nem működik</b>, és ezt ki kell mondani: augusztusban <b>nulla</b> park-órád volt, mégis érkezett 62 274 Ft jatt — a kifizetés hónapja nem a munkavégzés hónapja. Ezért a teljes időszakra vetítünk, nem havonta.</div>'
+     +'<table class="wk-tbl"><tbody>'
+     +'<tr><td>Névleges órabér</td><td class="num">'+ft(nom)+' Ft/ó</td></tr>'
+     +'<tr><td>Jatt órára vetítve</td><td class="num">'+ft(jo)+' Ft/ó</td></tr>'
+     +'</tbody><tfoot><tr><td>Együtt</td><td class="num">'+ft(eo)+' Ft/ó</td></tr></tfoot></table>'
+     +'<div class="wk-sub" style="margin-top:10px;margin-bottom:0;">'+po.toFixed(1).replace('.',',')+' park-óra alapján. A jatt <b>+'+Math.round(100*jsum/pf)+'%</b> a béreden felül. '
+     +'<b>Ez megfordít egy korábbi állítást:</b> a Fősped 3 000 Ft/ó-val tűnt a legjobbnak — a Budapest Park a jattal együtt <b>'+ft(eo)+' Ft/ó</b>, vagyis messze a legjobban fizető munkád.</div>';
   })();
 
   function agg(keyfn){
@@ -1277,12 +1322,13 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
   $('tradestatus-wrap').innerHTML=`<div class="banner ${su.noTrade?'no':'ok'}">${su.noTrade?'⛔ ':'✅ '}${su.tradeStatusText}</div>`;
   $('edge').innerHTML=`<div class="score">${su.edge.score}</div><div><div class="ek">Edge Factor</div><div class="ev">${su.edge.label}</div></div>`;
   const b=su.brief;
-  $('sb').innerHTML=`
-    <div class="sbc"><div class="k">Risk tone</div><div class="v">${b.riskTone}</div></div>
-    <div class="sbc"><div class="k">Key driver</div><div class="v">${b.keyDriver}</div></div>
-    <div class="sbc watch"><div class="k">Watch</div><div class="v">${b.watch}</div></div>
-    <div class="sbc avoid"><div class="k">Avoid</div><div class="v">${b.avoid}</div></div>`;
-  $('aifocus').innerHTML=`<b>◇ AI napi fókusz —</b> ${su.aiFocus}`;
+  /* 2026-09-03: negy csempe + AI fokusz + edge-felirat ugyanazt mondta harom helyen.
+     Egy blokk maradt. Ha ujra szetesik, az visszalepes. */
+  $('sb').innerHTML='';
+  $('aifocus').innerHTML=`<b>Ma —</b> ${b.avoid}`
+    + `<div style="margin-top:9px;padding-top:9px;border-top:1px solid #cbeee6;font-size:11.5px;">`
+    + `<b>A pár-bias és a deviza-erő NEM frissül magától.</b> Aug. 20-i állapot, szándékosan „nincs friss bias"-ra állítva, hogy ne dolgozz elavultból. `
+    + `Ezek akkor lesznek élők, ha a reggeli brief kiírja a nyolc pár biasát a Notionbe — addig belépés előtt kérj briefet.</div>`;
   $('strength').innerHTML=su.strength.map(x=>`<span class="cur ${x.c}">${x.t}</span>`).join('');
   $('bias').innerHTML=su.bias.map(x=>
     `<div class="pair ${x.c}"><div class="top"><span class="name">${x.p}</span><span class="tg">${x.t}</span></div>
