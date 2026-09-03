@@ -157,6 +157,20 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
 /* A diktálás/mikrofon réteg 2026-09-02-án eltávolítva (Marcell kérése). Ne kerüljön vissza. */
 .save{flex:1; height:44px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; font-size:13.5px; letter-spacing:.01em; cursor:pointer; transition:.15s;}
 .save:active{transform:scale(.99);} .save:disabled{opacity:.5;}
+
+/* --- MA panel + lehuzasra frissites --- */
+.ma-body{font-size:13px; line-height:1.5; color:var(--ink);}
+.ma-sec{padding:11px 0; border-top:1px solid var(--line);}
+.ma-sec:first-child{border-top:none; padding-top:0;}
+.ma-sec h4{margin:0 0 5px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--dom, #334155);}
+.ma-sec p{margin:0 0 4px; color:var(--sub);}
+.ma-sec p:last-child{margin-bottom:0;}
+.ma-empty{color:var(--faint); font-size:12.5px;}
+.ma-err{color:var(--red); font-size:12.5px;}
+#ptr{position:fixed; top:0; left:0; right:0; display:flex; align-items:center; justify-content:center;
+  height:0; overflow:hidden; font-size:11.5px; font-family:var(--mono); color:var(--sub);
+  background:linear-gradient(#eef2f6,rgba(238,242,246,0)); z-index:60; pointer-events:none; transition:height .12s;}
+#ptr.spin{color:var(--accent);}
 .jstat:empty{display:none;}
 .jstat{font-size:11.5px; color:var(--sub); margin-top:8px; min-height:15px; font-family:var(--mono);}
 .jstat.ok{color:var(--green);} .jstat.err{color:var(--red);}
@@ -257,6 +271,12 @@ box-shadow:0 6px 20px rgba(16,24,40,.22); transform:translate(-50%,-115%);}
 <div class="c"><div class="n num" id="h-streak">–</div><div class="l">Tiszta sorozat</div></div>
 <div class="c"><div class="n num" id="h-fek">–</div><div class="l">Fő fék</div></div>
 <div class="c"><div class="n num" id="h-sleep">–</div><div class="l">Alvás átlag</div></div>
+</div>
+
+<!-- MA — a reggeli brief es a figyelo korok, a Daily Notes mai blokkjabol -->
+<div class="card" id="ma-card">
+  <div class="eyebrow">Ma<span id="ma-fresh" style="margin-left:auto; font-weight:500; letter-spacing:0; text-transform:none; font-family:var(--mono);"></span></div>
+  <div id="ma-body" class="ma-body"><div class="ma-empty">betöltés…</div></div>
 </div>
 <style>
 .lgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
@@ -1483,6 +1503,99 @@ else {
     var on = document.querySelector('.pane.on');
     if(on) refresh(on.id.replace('pane-',''));
   }, 260);
+})();
+</script>
+
+<script>
+/* ================= MA panel + lehuzasra frissites (2026-09-03) =================
+   A panel a Daily Notes MAI blokkjabol olvas: a reggeli brief es a figyelo korok
+   oda irjak a kimenetuket. Egy forras, nincs mit szinkronban tartani. */
+(function(){
+  var body = document.getElementById('ma-body'), fresh = document.getElementById('ma-fresh');
+  if(!body) return;
+
+  function esc(t){ var d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+  function hhmm(iso){ try{ return new Date(iso).toLocaleTimeString('hu-HU',{timeZone:'Europe/Budapest',hour:'2-digit',minute:'2-digit'}); }catch(_){ return ''; } }
+  function ago(iso){
+    var m = Math.round((Date.now() - new Date(iso).getTime())/60000);
+    if(!isFinite(m) || m < 0) return '';
+    if(m < 1) return 'az imént';
+    if(m < 60) return m + ' perce';
+    var h = Math.floor(m/60); return h + ' órája';
+  }
+
+  window.__loadMa = async function(){
+    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
+    if(!sec){ body.innerHTML='<div class="ma-empty">Add meg a jelszót a <b>Beállítás</b> szekcióban, és ide kerül a mai brief.</div>'; return; }
+    try{
+      var r = await fetch('/api/data?t='+Date.now(), {headers:{'x-log-secret':sec}, cache:'no-store'});
+      var j = await r.json();
+      if(!r.ok){ body.innerHTML='<div class="ma-err">'+esc((j&&j.error)||('HTTP '+r.status))+'</div>'; return; }
+      var t = j.today || {};
+      fresh.textContent = j.ts ? (hhmm(j.ts) + ' · ' + ago(j.ts)) : '';
+      if(j.errors && j.errors.today){
+        body.innerHTML = '<div class="ma-err">A mai blokkot nem sikerült elolvasni: '+esc(j.errors.today)+'</div>';
+        return;
+      }
+      var w = (j.watch||[]).filter(function(x){ return (x.lines||[]).length; });
+      if(!t.found && !w.length){
+        body.innerHTML = '<div class="ma-empty">Ma még nincs se brief, se figyelő-kör. Amint fut az első, itt jelenik meg.</div>';
+        return;
+      }
+      var secs = (t.sections||[]).concat(j.watch||[]).filter(function(x){ return (x.lines||[]).length; });
+      if(!secs.length){ body.innerHTML='<div class="ma-empty">A mai blokk megvan, de még üres.</div>'; return; }
+      body.innerHTML = secs.map(function(x){
+        return '<div class="ma-sec">'
+          + (x.title ? '<h4>'+esc(x.title)+'</h4>' : '')
+          + x.lines.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('')
+          + '</div>';
+      }).join('');
+    }catch(e){
+      body.innerHTML = '<div class="ma-err">Nem jött adat: '+esc(e.message||String(e))+'</div>';
+    }
+  };
+  window.__loadMa();
+
+  /* ---- Lehuzasra frissites ---- */
+  var bar = document.createElement('div'); bar.id='ptr'; document.body.appendChild(bar);
+  var y0=null, dy=0, TRIG=70, armed=false;
+
+  function busy(){
+    var ta=document.getElementById('note');
+    if(ta && ta.value.trim()) return true;                 // ne dobjuk el a felig irt jegyzetet
+    var a=document.activeElement;
+    return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  }
+  function set(h,txt,spin){ bar.style.height=h+'px'; bar.textContent=txt; bar.classList.toggle('spin',!!spin); }
+
+  document.addEventListener('touchstart', function(e){
+    if(window.scrollY>0 || busy()){ y0=null; return; }
+    y0 = e.touches[0].clientY; dy=0; armed=false;
+  }, {passive:true});
+
+  document.addEventListener('touchmove', function(e){
+    if(y0===null) return;
+    dy = e.touches[0].clientY - y0;
+    if(dy<=0){ set(0,''); armed=false; return; }
+    var h = Math.min(dy*0.45, 56);
+    armed = dy > TRIG;
+    set(h, armed ? 'engedd el a frissítéshez' : 'húzd le a frissítéshez', armed);
+  }, {passive:true});
+
+  document.addEventListener('touchend', function(){
+    if(y0===null) return;
+    if(armed){ set(44,'frissítés…',true); setTimeout(function(){ location.reload(); }, 120); }
+    else set(0,'');
+    y0=null; armed=false;
+  }, {passive:true});
+
+  /* ---- Magatol is frissuljon: fulre visszateres + 5 percenkent, ha lathato ---- */
+  var last = Date.now();
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ last = Date.now(); return; }
+    if(Date.now()-last > 120000 && !busy()) window.__loadMa();
+  });
+  setInterval(function(){ if(!document.hidden && !busy()) window.__loadMa(); }, 300000);
 })();
 </script>
 </body>
