@@ -281,6 +281,13 @@ textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(13,148,136,
 
 /* --- MA panel + lehuzasra frissites --- */
 .ma-body{font-size:13px; line-height:1.5; color:var(--ink);}
+.ma-more{margin-top:6px;}
+.ma-more>summary{cursor:pointer; list-style:none; font-size:11px; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--muted); padding:2px 0;}
+.ma-more>summary::-webkit-details-marker{display:none;}
+.ma-more>summary::after{content:" ▾";}
+.ma-more[open]>summary::after{content:" ▴";}
+.ma-more>p{color:var(--muted);}
 .ma-sec{padding:11px 0; border-top:1px solid var(--line);}
 .ma-sec:first-child{border-top:none; padding-top:0;}
 .ma-sec h4{margin:0 0 5px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--dom, #334155);}
@@ -1772,10 +1779,28 @@ else {
       }
       var secs = (t.sections||[]).concat(j.watch||[]).filter(function(x){ return (x.lines||[]).length; });
       if(!secs.length){ body.innerHTML='<div class="ma-empty">A mai blokk megvan, de még üres.</div>'; return; }
+      /* Hosszusag-plafon (2026-09-04). Ha egy futas hosszu szoveget ir a Daily Notes-ba
+         (pl. egy teljes reggeli brief), az itt mindent elnyom. Ezert szekcionkent max
+         2 sor / ~220 karakter latszik, a tobbi egy "tobb" nyilo moge kerul. A reszletek
+         helye a Tozsde ful, nem ez a panel. Ne kerüljön ki ez a plafon. */
+      function trim(lines){
+        var head=[], tail=[], chars=0;
+        for(var i=0;i<lines.length;i++){
+          if(head.length<2 && chars<220){ head.push(lines[i]); chars+=lines[i].length; }
+          else tail.push(lines[i]);
+        }
+        return {head:head, tail:tail};
+      }
       body.innerHTML = secs.map(function(x){
+        var s = trim(x.lines);
         return '<div class="ma-sec">'
           + (x.title ? '<h4>'+esc(x.title)+'</h4>' : '')
-          + x.lines.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('')
+          + s.head.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('')
+          + (s.tail.length
+              ? '<details class="ma-more"><summary>még '+s.tail.length+' sor</summary>'
+                + s.tail.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('')
+                + '</details>'
+              : '')
           + '</div>';
       }).join('');
     }catch(e){
