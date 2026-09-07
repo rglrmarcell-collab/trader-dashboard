@@ -1784,17 +1784,21 @@ else {
          2) Szekcionkent MAX 1 sor / ~140 karakter latszik; a tobbi "tobb" moge megy.
          3) Osszesen MAX 3 szekcio latszik; a regebbiek "tobb" moge kerulnek.
          A panel celja, hogy belepeskor 3 masodperc alatt lasd a lenyeget. */
-      var BRIEF_RE = /brief|bias|hír-ablak|hir-ablak|deviza|erősség|erosseg/i;
+      /* A brief-szekcionak gyakran NINCS cime: a "Reggeli Brief (...)" maga a szoveg
+         elso sora. Ezert a cimre ES az elso sorra is illesztunk. (2026-09-07) */
+      var BRIEF_RE = /reggeli brief|session brief|bias|hír-ablak|hir-ablak|deviza-erő|deviza-ero|currency strength/i;
       var secs = (t.sections||[]).concat(j.watch||[])
         .filter(function(x){ return (x.lines||[]).length; })
-        .filter(function(x){ return !BRIEF_RE.test(x.title||''); });
+        .filter(function(x){ return !BRIEF_RE.test((x.title||'') + ' ' + (x.lines[0]||'').slice(0,120)); });
       if(!secs.length){ body.innerHTML='<div class="ma-empty">Ma nincs új tétel. A reggeli brief a <b>Tőzsde</b> fülön.</div>'; return; }
       var hiddenSecs = [];
       if(secs.length > 3){ hiddenSecs = secs.slice(0, secs.length-3); secs = secs.slice(-3); }
+      var MAXC = 140;
+      function cut(t){ return t.length > MAXC ? t.slice(0, MAXC).replace(/\s+\S*$/,'') + '…' : t; }
       function trim(lines){
-        var head=[], tail=[], chars=0;
+        var head=[], tail=[];
         for(var i=0;i<lines.length;i++){
-          if(head.length<1 && chars<140){ head.push(lines[i]); chars+=lines[i].length; }
+          if(head.length<1) head.push(cut(lines[i]));   /* egyetlen sor, HARD vagva 140 karakteren */
           else tail.push(lines[i]);
         }
         return {head:head, tail:tail};
