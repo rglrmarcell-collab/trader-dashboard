@@ -1777,16 +1777,24 @@ else {
         body.innerHTML = '<div class="ma-empty">Ma még nincs se brief, se figyelő-kör. Amint fut az első, itt jelenik meg.</div>';
         return;
       }
-      var secs = (t.sections||[]).concat(j.watch||[]).filter(function(x){ return (x.lines||[]).length; });
-      if(!secs.length){ body.innerHTML='<div class="ma-empty">A mai blokk megvan, de még üres.</div>'; return; }
-      /* Hosszusag-plafon (2026-09-04). Ha egy futas hosszu szoveget ir a Daily Notes-ba
-         (pl. egy teljes reggeli brief), az itt mindent elnyom. Ezert szekcionkent max
-         2 sor / ~220 karakter latszik, a tobbi egy "tobb" nyilo moge kerul. A reszletek
-         helye a Tozsde ful, nem ez a panel. Ne kerüljön ki ez a plafon. */
+      /* SZIGORU PLAFON (2026-09-07, Marcell kerese: "nagyon nagyon rovid legyen").
+         Harom egymasra epulo korlat. EGYIKET SE VEDD KI:
+         1) A reggeli brief NEM jelenik meg ezen a panelen. A helye a Tozsde ful
+            Session Brief kartyaja, ahol rendezetten all. Itt mindent elnyomna.
+         2) Szekcionkent MAX 1 sor / ~140 karakter latszik; a tobbi "tobb" moge megy.
+         3) Osszesen MAX 3 szekcio latszik; a regebbiek "tobb" moge kerulnek.
+         A panel celja, hogy belepeskor 3 masodperc alatt lasd a lenyeget. */
+      var BRIEF_RE = /brief|bias|hír-ablak|hir-ablak|deviza|erősség|erosseg/i;
+      var secs = (t.sections||[]).concat(j.watch||[])
+        .filter(function(x){ return (x.lines||[]).length; })
+        .filter(function(x){ return !BRIEF_RE.test(x.title||''); });
+      if(!secs.length){ body.innerHTML='<div class="ma-empty">Ma nincs új tétel. A reggeli brief a <b>Tőzsde</b> fülön.</div>'; return; }
+      var hiddenSecs = [];
+      if(secs.length > 3){ hiddenSecs = secs.slice(0, secs.length-3); secs = secs.slice(-3); }
       function trim(lines){
         var head=[], tail=[], chars=0;
         for(var i=0;i<lines.length;i++){
-          if(head.length<2 && chars<220){ head.push(lines[i]); chars+=lines[i].length; }
+          if(head.length<1 && chars<140){ head.push(lines[i]); chars+=lines[i].length; }
           else tail.push(lines[i]);
         }
         return {head:head, tail:tail};
@@ -1802,7 +1810,15 @@ else {
                 + '</details>'
               : '')
           + '</div>';
-      }).join('');
+      }).join('')
+      + (hiddenSecs.length
+          ? '<details class="ma-more"><summary>korábbi ' + hiddenSecs.length + ' kör</summary>'
+            + hiddenSecs.map(function(x){
+                return (x.title ? '<h4>'+esc(x.title)+'</h4>' : '')
+                  + x.lines.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('');
+              }).join('')
+            + '</details>'
+          : '');
     }catch(e){
       body.innerHTML = '<div class="ma-err">Nem jött adat: '+esc(e.message||String(e))+'</div>';
     }
