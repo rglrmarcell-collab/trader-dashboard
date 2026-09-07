@@ -1355,6 +1355,7 @@ const DATA = {
     { tier:"",    t:"4H nyitás + 30m entry — várd meg az 5m close-t. A 25. és az 50–55. percben nem nyitunk." }
   ],
   setup: {
+briefDate: "2026-08-31",   /* KOTELEZO. A guard ehhez meri a mai napot. */
 dateLabel: "Hétfő, 2026. augusztus 31.",
 noTrade: false,
 tradeStatusText: "<b>TRADING NAP.</b> Nincs NFP, CPI, FOMC vagy kamatdöntés. Egyetlen közepes esemény: <b>15:45 Chicago PMI</b> → óvatosság 15:15–16:15, <b>nem tiltás</b>. <b>Hónap utolsó napja:</b> a 17:00-s londoni fix körül month-end rebalancing flow — nem naptári esemény, tehát nem tiltott ablak, de érv a kisebb méret vagy a skip mellett. <b>Utolsó éles trade: 2026-08-03 — 28 napja.</b>",
@@ -1362,7 +1363,7 @@ edge: { score: 45, label: "Naptár tiszta — de a pár-bias NEM frissült aug. 
 brief: {
 riskTone: "Az augusztus 1 éles trade-del zárult, és 28 napja nem volt belépés. Ma nem a piac a fő kockázat, hanem a szünet utáni első nap: hosszú kihagyás után a küszöb szokott puhulni. A skip ma is tiszta kimenet, nem elszalasztott lehetőség.",
 keyDriver: "SZEPTEMBERI KERET: szept. 1–18. között napi 9:00–16:00 gépközelben, minden hétköznap — 14 munkanap, és lefedi a dokumentált setupjaid 100%-át (mind a 36 setup 15:20 CEST előtt van). Augusztusban a naptár zárta le a hónapot; szeptemberre ilyen mentség nincs.",
-watch: "MA: 15:45 Chicago PMI (óvatosság 15:15–16:15) · 16:30 Dallas Fed (halk) · kb. 17:00 month-end flow. A HÉT: K 16:00 ISM Manufacturing → tiltott 15:30–16:30 · SZE 14:15 ADP → óvatosság 13:45–14:45 · CS 16:00 ISM Services → tiltott 15:30–16:30.",
+watch: "AUG. 31.: 15:45 Chicago PMI (óvatosság 15:15–16:15) · 16:30 Dallas Fed (halk) · kb. 17:00 month-end flow. A HÉT: K 16:00 ISM Manufacturing → tiltott 15:30–16:30 · SZE 14:15 ADP → óvatosság 13:45–14:45 · CS 16:00 ISM Services → tiltott 15:30–16:30.",
 avoid: "PÉNTEK SZEPT. 4. = NFP → EGÉSZ NAPOS NO-TRADE, megsértése streak-reset. CRUDE tiltólistán marad. A pár-bias ezen az oldalon NEM friss (utolsó frissítés aug. 20.) — belépés előtt kérj reggeli briefet, ne ebből dolgozz."
 },
 strength: [ { t:"nincs friss adat", c:"s-neut" } ],
@@ -1377,9 +1378,9 @@ bias: [
 { p:"CRUDE", c:"frag", t:"Tiltólista", conf:0, why:"Tiltólistán marad (3 hóban 2/2 vesztes). Headline-vezérelt, gap-kockázat. Nincs mérlegelés." }
 ],
 news: [
-{ imp:"imp-orange", txt:"<b>MA 15:45</b> — Chicago PMI (aug.) → SPX500, NAS100, XAUUSD, EURUSD. Óvatosság: <b>15:15–16:15</b>" },
-{ imp:"imp-yellow", txt:"<b>MA 16:30</b> — Dallas Fed Manufacturing (aug.) → halk hatás" },
-{ imp:"imp-yellow", txt:"<b>MA kb. 17:00</b> — hónap végi londoni fix, month-end rebalancing flow. Nem naptári esemény, nem tiltás — de szerkezet nélküli mozgás" },
+{ imp:"imp-orange", txt:"<b>aug. 31. 15:45</b> — Chicago PMI (aug.) → SPX500, NAS100, XAUUSD, EURUSD. Óvatosság: <b>15:15–16:15</b>" },
+{ imp:"imp-yellow", txt:"<b>aug. 31. 16:30</b> — Dallas Fed Manufacturing (aug.) → halk hatás" },
+{ imp:"imp-yellow", txt:"<b>aug. 31. kb. 17:00</b> — hónap végi londoni fix, month-end rebalancing flow. Nem naptári esemény, nem tiltás — de szerkezet nélküli mozgás" },
 { imp:"imp-red", txt:"<b>K szept. 1. 16:00</b> — ISM Manufacturing + JOLTS → USD, XAUUSD, NAS100, SPX500. Tiltott: <b>15:30–16:30</b>" },
 { imp:"imp-orange", txt:"<b>SZE szept. 2. 14:15</b> — ADP → óvatosság 13:45–14:45 · <b>16:30</b> EIA → CRUDE, áttételesen CAD és GBPCAD" },
 { imp:"imp-red", txt:"<b>CS szept. 3. 16:00</b> — ISM Services → tiltott <b>15:30–16:30</b> · 14:30 jobless claims → óvatosság 14:00–15:00" },
@@ -1452,8 +1453,22 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
 /* ---- Panel 2 ---- */
 (function(){
   const su=DATA.setup;
-  $('today-label').textContent=su.dateLabel;
-  $('tradestatus-wrap').innerHTML=`<div class="banner ${su.noTrade?'no':'ok'}">${su.noTrade?'⛔ ':'✅ '}${su.tradeStatusText}</div>`;
+  /* ELAVULAS-GUARD (2026-09-07, M-057). A Session Brief egy beegetett napi
+     pillanatkep. Datum-ellenorzes nelkul a REGI hir-ablakait "MA"-kent mutatta
+     — 7 napon at. Egy kereskedesi input, ami csendben rosszat allit, rosszabb
+     a semminel. EZT A GUARDOT NE VEDD KI. */
+  var todayHU = new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'}); // YYYY-MM-DD
+  var briefStale = !su.briefDate || su.briefDate !== todayHU;
+  $('today-label').textContent = briefStale ? (su.dateLabel + ' — ⚠️ ELAVULT') : su.dateLabel;
+  if(briefStale){
+    $('tradestatus-wrap').innerHTML =
+      '<div class="banner no">⛔ <b>ELAVULT BRIEF — NE HASZNÁLD MAI DÖNTÉSHEZ.</b> '
+      + 'Ez a panel a <b>' + su.briefDate + '</b>-i briefet tartalmazza, nem a mait ('
+      + todayHU + '). A hír-ablakok és a trading-státusz <b>elrejtve</b>, mert azok '
+      + 'arra a napra vonatkoztak. Mai hír-ablakért kérj friss briefet.</div>';
+  } else {
+    $('tradestatus-wrap').innerHTML=`<div class="banner ${su.noTrade?'no':'ok'}">${su.noTrade?'⛔ ':'✅ '}${su.tradeStatusText}</div>`;
+  }
   /* Az Edge Factor csempe kikerult: ugyanazt mondta, mint a banner. 2026-09-03. */
   const b=su.brief;
   /* 2026-09-03: negy csempe + AI fokusz + edge-felirat ugyanazt mondta harom helyen.
@@ -1932,6 +1947,11 @@ else {
     }catch(_){ return; }
     var b=j.bias; if(!b||!b.fresh) return;              /* nem friss -> nem nyulunk hozza */
 
+    if(b.pairs && !b.pairs.length){
+      var eh=document.getElementById('bias');
+      if(eh) eh.innerHTML='<div class="bcard"><div class="top"><span class="p">—</span></div>'
+        + '<div class="why">A mai brief nem tartalmaz pár-biast.</div></div>';
+    }
     if(b.pairs && b.pairs.length){
       var host=document.getElementById('bias');
       if(host) host.innerHTML=b.pairs.map(function(x){
@@ -1940,18 +1960,35 @@ else {
              + '<span class="tag '+cl+'">'+esc(x.t)+'</span></div>'
              + '<div class="why">'+esc(x.why)+'</div></div>';}).join('');
     }
+    if(b.strength && !b.strength.length){
+      var se=document.getElementById('strength');
+      if(se) se.innerHTML='<span class="lbl">Deviza-erő</span><span class="cur">ma nincs megadva</span>';
+    }
     if(b.strength && b.strength.length){
       var sh=document.getElementById('strength');
       if(sh) sh.innerHTML='<span class="lbl">Deviza-erő</span>'+b.strength.map(function(t){
         var cl=/erős/i.test(t)?'s-up':/gyenge/i.test(t)?'s-dn':'';
         return '<span class="cur '+cl+'">'+esc(t)+'</span>';}).join('');
     }
-    if(b.news && b.news.length){
-      var nh=document.getElementById('news');
-      if(nh) nh.innerHTML=b.news.map(function(n){
-        var cl=n.imp==='erős'?'imp-red':n.imp==='közepes'?'imp-orange':'imp-yellow';
-        return '<div class="nrow"><span class="pill '+cl+'">'+esc(n.imp)+'</span>'
-             + '<div class="tx"><b>'+esc(n.time)+'</b> — '+esc(n.txt)+'</div></div>';}).join('');
+    /* M-057 (2026-09-07) — AZ URES ERTEK IS FELULIR.
+       Korabban ez `if(b.news && b.news.length)` volt: ha a mai brief nem tartalmazott
+       hir-ablakot, a blokk NEM irodott felul, es a beegetett aug. 31-i sorok maradtak
+       ott — "MA 15:45 Chicago PMI" —, mikozben a fejlec a MAI datumot kapta es a panel
+       "Friss bias"-t irt. Hazug allapot, ami majdnem befolyasolt egy eles trade-et.
+       SZABALY: friss brief eseten a blokkot MINDIG ujrairjuk. Ha ures, azt kimondjuk.
+       EZT A VISELKEDEST NE ALLITSD VISSZA. */
+    var nh=document.getElementById('news');
+    if(nh){
+      if(b.news && b.news.length){
+        nh.innerHTML=b.news.map(function(n){
+          var cl=n.imp==='erős'?'imp-red':n.imp==='közepes'?'imp-orange':'imp-yellow';
+          return '<div class="nrow"><span class="pill '+cl+'">'+esc(n.imp)+'</span>'
+               + '<div class="tx"><b>'+esc(n.time)+'</b> — '+esc(n.txt)+'</div></div>';}).join('');
+      } else {
+        nh.innerHTML='<div class="nrow"><span class="pill imp-yellow">nincs</span>'
+          + '<div class="tx">A mai brief <b>nem tartalmaz hír-ablakot.</b> '
+          + 'Ez nem hiba és nem elavult adat — ma nincs jelölt esemény.</div></div>';
+      }
     }
     if(b.notrade){
       var w=document.getElementById('tradestatus-wrap');
