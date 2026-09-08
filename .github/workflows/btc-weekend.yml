@@ -1,0 +1,71 @@
+name: BTC Weekend Predictor
+
+# Ket futas hetfon:
+#   00:20 UTC — az elozo hetvege kiertekelese (a vasarnap 23:59 UTC zaras utan)
+#   07:00 UTC — az uj predikcio a kovetkezo hetvegere (09:00 CEST)
+#
+# Nulla Claude-token: ez tisztan GitHub Actions, Claude nem fut benne.
+
+on:
+  schedule:
+    - cron: "20 0 * * 1"   # hetfo 00:20 UTC — resolve
+    - cron: "0 7 * * 1"    # hetfo 07:00 UTC — predict
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mit futtasson"
+        required: true
+        default: "both"
+        type: choice
+        options: [both, resolve, predict]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: btc-weekend
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Adatkonyvtar meghatarozasa
+        id: cfg
+        run: |
+          if [ -d public ]; then echo "dir=public/data" >> "$GITHUB_OUTPUT";
+          else echo "dir=data" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Resolve — elozo hetvege kiertekelese
+        if: github.event.schedule == '20 0 * * 1' || inputs.mode == 'resolve' || inputs.mode == 'both'
+        env:
+          BTCWP_DATA_DIR: ${{ steps.cfg.outputs.dir }}
+        run: python scripts/btcwp.py resolve
+
+      - name: Predict — uj hetvegi predikcio
+        if: github.event.schedule == '0 7 * * 1' || inputs.mode == 'predict' || inputs.mode == 'both'
+        env:
+          BTCWP_DATA_DIR: ${{ steps.cfg.outputs.dir }}
+          # Opcionalis: ha egyszer lesz CoinGlass Professional kulcsod, tedd be
+          # repo secretkent COINGLASS_API_KEY neven -- ekkor a valos heatmap fut
+          # a sajat modell helyett, kodvaltoztatas nelkul.
+          COINGLASS_API_KEY: ${{ secrets.COINGLASS_API_KEY }}
+        run: python scripts/btcwp.py predict
+
+      - name: Commit
+        run: |
+          git config user.name  "btc-weekend-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A "${{ steps.cfg.outputs.dir }}"
+          if git diff --staged --quiet; then
+            echo "nincs valtozas"
+          else
+            git commit -m "btc weekend: $(date -u +%Y-%m-%d)"
+            git push
+          fi
