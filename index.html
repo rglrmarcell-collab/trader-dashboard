@@ -2174,7 +2174,7 @@ else {
     });
 
     if (!real.length) {
-      host.innerHTML = '<div class="ch-s">Nincs meg valodi (nem sablon) edzes-adat.</div>';
+      host.innerHTML = '<div class="ch-s">Nincs még valódi (nem sablon) edzésadat.</div>';
       return;
     }
 
@@ -2200,16 +2200,16 @@ else {
                     v: Math.max(0, icept + slope * (n - 1 + i)) });
       }
       mode = "sajat trend";
-      note = pts.length + " valos het illesztve";
+      note = pts.length + " valós hét illesztve";
     } else {
       for (var j = 1; j <= HORIZON_WEEKS; j++) {
         proj.push({ t: new Date(last.t.getTime() + j * 6048e5),
                     v: last.v * Math.pow(1 + REF_GROWTH, j) });
       }
       mode = "referencia";
-      note = "csak " + pts.length + " valos het van; ez NEM a te trended, hanem "
-           + "irodalmi 2,5%/het progressziv terheles. " + MIN_WEEKS_FOR_FIT
-           + " valos hettol sajat trendre valt, magatol.";
+      note = "csak " + pts.length + " valós hét van; ez NEM a te trended, hanem "
+           + "irodalmi 2,5%/hét progresszív terhelés. " + MIN_WEEKS_FOR_FIT
+           + " valós héttől saját trendre vált, magától.";
     }
 
     var all = pts.concat(proj);
@@ -2232,7 +2232,7 @@ else {
     var endV = proj[proj.length - 1].v;
     var svg =
       '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img" ' +
-      'aria-label="Heti edzes-volumen es 2 honapos elorejelzes">' +
+      'aria-label="Heti edzésvolumen és 2 hónapos előrejelzés">' +
       '<line x1="' + PL + '" y1="' + Y(0) + '" x2="' + (W - PR) + '" y2="' + Y(0) + '" ' +
       'stroke="var(--line)" stroke-width="1"/>' +
       '<path d="' + dash + '" fill="none" stroke="var(--series-2)" stroke-width="2" ' +
@@ -2245,30 +2245,30 @@ else {
       'font-size="9.5" fill="var(--sub)" font-weight="700">' + fmt(last.v) + '</text>' +
       '<text x="' + (W - PR + 3) + '" y="' + (Y(endV) + 3).toFixed(1) + '" font-size="9.5" ' +
       'fill="var(--faint)">' + fmt(endV) + '</text>' +
-      '<text x="' + PL + '" y="' + (H - 3) + '" font-size="8.5" fill="var(--faint)">mert</text>' +
-      '<text x="' + (W - PR - 26) + '" y="' + (H - 3) + '" font-size="8.5" fill="var(--faint)">+2 honap</text>' +
+      '<text x="' + PL + '" y="' + (H - 3) + '" font-size="8.5" fill="var(--faint)">mért</text>' +
+      '<text x="' + (W - PR - 26) + '" y="' + (H - 3) + '" font-size="8.5" fill="var(--faint)">+2 hónap</text>' +
       '</svg>';
 
     var pct = Math.round(100 * (endV / last.v - 1));
     host.innerHTML =
       svg +
       '<div class="ch-s" style="margin-top:2px">' +
-        '<b>' + real.length + ' valodi edzes</b> · e heti volumen <b>' +
-        Math.round(last.v).toLocaleString("hu-HU") + ' kg</b> · 2 honap mulva ~<b>' +
+        '<b>' + real.length + ' valódi edzés</b> · e heti volumen <b>' +
+        Math.round(last.v).toLocaleString("hu-HU") + ' kg</b> · 2 hónap múlva ~<b>' +
         Math.round(endV).toLocaleString("hu-HU") + ' kg</b> (' + (pct >= 0 ? "+" : "") + pct + '%)' +
       '</div>' +
       '<div class="ch-s" style="color:var(--red);margin-top:4px">⚠ ' +
-        (mode === "referencia" ? "Az elorejelzes REFERENCIA, nem meres." : "Sajat trend, keves adatbol.") +
+        (mode === "referencia" ? "Az előrejelzés REFERENCIA, nem mérés." : "Saját trend, kevés adatból.") +
       '</div>' +
-      '<details class="btcwp-d" style="margin-top:8px"><summary>Miert ezek a szamok</summary><div class="bd">' +
+      '<details class="btcwp-d" style="margin-top:8px"><summary>Miért ezek a számok</summary><div class="bd">' +
         '<div class="ch-s" style="padding-top:8px">' +
-        '<b>Mi van a grafikonon:</b> heti osszvolumen (suly × ismetles), folytonos vonal = mert, ' +
-        'szaggatott = elorejelzes 8 hetre.<br><br>' +
-        '<b>Mi hianyzik rola szandekosan:</b> a 2026-01-26 → 06-25 kozotti 16 edzes ' +
-        'kiszurve. Azok volumene sablonertek — minden Push pontosan 6 014 kg, minden Pull ' +
-        '9 445 kg, karakterre azonos honapokon at. Ez a Strong elokitoltese, nem mert terheles. ' +
-        'Ezekbol trendet szamolni felrevezeto lenne.<br><br>' +
-        '<b>Az elorejelzes:</b> ' + note +
+        '<b>Mi van a grafikonon:</b> heti összvolumen (súly × ismétlés), folytonos vonal = mért, ' +
+        'szaggatott = előrejelzés 8 hétre.<br><br>' +
+        '<b>Mi hiányzik róla szándékosan:</b> a 2026-01-26 → 06-25 közötti 16 edzés ' +
+        'kiszűrve. Azok volumene sablonérték — minden Push pontosan 6 014 kg, minden Pull ' +
+        '9 445 kg, karakterre azonos hónapokon át. Ez a Strong előkitöltése, nem mért terhelés. ' +
+        'Ezekből trendet számolni félrevezető lenne.<br><br>' +
+        '<b>Az előrejelzés:</b> ' + note +
         '</div></div></details>';
   };
 })();
