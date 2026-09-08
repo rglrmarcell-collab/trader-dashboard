@@ -406,6 +406,9 @@ box-shadow:0 6px 20px rgba(16,24,40,.22); transform:translate(-50%,-115%);}
 <div class="c"><div class="n num" id="h-sleep">–</div><div class="l">Alvás átlag</div></div>
 </div>
 
+<!-- BTC Weekend Predictor -->
+<div id="btcwp-mini"></div>
+
 <!-- MA — a reggeli brief es a figyelo korok, a Daily Notes mai blokkjabol -->
 <div class="card" id="ma-card">
   <div class="eyebrow">Ma<span id="ma-fresh" style="margin-left:auto; font-weight:500; letter-spacing:0; text-transform:none; font-family:var(--mono);"></span></div>
@@ -497,6 +500,10 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 </section>
 <section class="pane" id="pane-trading">
+
+<!-- BTC Weekend Predictor -->
+<div id="btcwp-full"></div>
+
 <!-- PANEL 1 -->
 <div class="card d1">
   <div class="eyebrow">Account &amp; Challenge</div>
@@ -2020,5 +2027,104 @@ else {
   document.addEventListener('visibilitychange',function(){ if(!document.hidden) window.__loadBias(); });
 })();
 </script>
+
+<!-- ===== BTC Weekend Predictor ===== -->
+<style>
+.btcwp-d{margin-top:9px; border:1px solid var(--line); border-radius:11px; background:var(--card);}
+.btcwp-d>summary{cursor:pointer; list-style:none; padding:9px 12px; font-size:11.5px; font-weight:600;
+  color:var(--sub); display:flex; align-items:center; gap:6px;}
+.btcwp-d>summary::-webkit-details-marker{display:none;}
+.btcwp-d>summary::after{content:"▾"; margin-left:auto; font-size:10px; color:var(--faint);}
+.btcwp-d[open]>summary::after{content:"▴";}
+.btcwp-d .bd{padding:0 12px 11px; border-top:1px solid var(--line2, var(--line));}
+.btcwp-t{width:100%; border-collapse:collapse; font-size:11.5px; margin-top:8px;}
+.btcwp-t th{text-align:left; font-weight:600; color:var(--faint); font-size:10px; padding:4px 5px;
+  text-transform:uppercase; letter-spacing:.3px;}
+.btcwp-t td{padding:4px 5px; border-top:1px solid var(--line2, var(--line)); vertical-align:top;}
+.btcwp-t .u{color:var(--green); font-weight:700;} .btcwp-t .d{color:var(--red); font-weight:700;}
+.btcwp-t .f{color:var(--faint);}
+.btcwp-n{font-size:10.5px; color:var(--faint); line-height:1.5; margin-top:9px;}
+.btcwp-w{font-family:var(--mono); font-size:10px;}
+</style>
+
+<script>
+(function () {
+  var NAMES = {derivatives:"Funding + OI", technical:"Technikai", liquidation:"Likvidáció",
+    retail_positioning:"Retail pozíció", kalshi:"Kalshi", fear_greed:"Fear & Greed",
+    reddit_contrarian:"Reddit"};
+
+  function usd(n){ return n==null ? "–" : "$" + Math.round(n).toLocaleString("hu-HU"); }
+  function cls(d){ return d==="UP" ? "u" : d==="DOWN" ? "d" : "f"; }
+  function arr(d){ return d==="UP" ? "↑" : d==="DOWN" ? "↓" : "→"; }
+
+  // Kompakt kartya — ugyanaz a .pair osztaly, mint a bias-kartyaknal
+  function card(p, acc){
+    var tone = p.direction==="UP" ? "bull" : p.direction==="DOWN" ? "bear" : "frag";
+    var r = p.expected_range || {};
+    var hist = (acc && acc.hit_rate != null)
+      ? "talált " + acc.hit_rate + "% · " + acc.n + " hét"
+      : "mérés alatt · " + ((acc && acc.n) || 0) + " hét";
+    return '<div class="pair ' + tone + '">' +
+      '<div class="top"><span class="name">BTC hétvége</span>' +
+      '<span class="tg">' + p.bias + ' ' + Math.round(p.score) + '%</span></div>' +
+      '<div class="why">' + usd(r.low) + '–' + usd(r.high) +
+      ' · invalidáció ' + (p.invalidation_side==="below" ? "alatta " : "felette ") +
+      usd(p.invalidation) + '</div>' +
+      '<div class="cf"><span class="cfbar"><i style="width:' +
+      Math.max(4, Math.min(100, p.score)) + '%"></i></span>' +
+      '<span class="cfn">' + hist + '</span></div></div>';
+  }
+
+  // Kinyithato reszletek — csak a Tozsde fulon
+  function details(p, acc){
+    var rows = (p.factors || []).map(function (f) {
+      var a = acc && acc.by_factor && acc.by_factor[f.name];
+      var proven = a && a.n_directional >= 15;
+      var h = (a && a.hit_rate != null) ? a.hit_rate + "%" : "–";
+      return '<tr><td>' + (NAMES[f.name] || f.name) +
+        (f.unproven && !proven ? ' <span title="súlyoz, de saját találati aránya még nincs">⚠</span>' : '') +
+        '</td><td class="' + cls(f.dir) + '">' + arr(f.dir) + '</td>' +
+        '<td class="btcwp-w">' + Math.round(f.w * 100) + '%</td>' +
+        '<td class="btcwp-w f">' + h + '</td></tr>';
+    }).join("");
+
+    var mat = (acc && acc.n)
+      ? acc.n + " lezárt hétvége · irány " + (acc.hit_rate == null ? "–" : acc.hit_rate + "%") +
+        " · sáv " + (acc.range_hit_rate == null ? "–" : acc.range_hit_rate + "%")
+      : "Még nincs lezárt hétvége — a mérés most indul.";
+
+    return '<details class="btcwp-d"><summary>BTC Weekend Predictor — faktorok</summary>' +
+      '<div class="bd"><table class="btcwp-t">' +
+      '<tr><th>Faktor</th><th>Jel</th><th>Súly</th><th>Talált</th></tr>' + rows + '</table>' +
+      '<div class="btcwp-n"><b>' + mat + '</b><br>' +
+      'Horgony ' + usd(p.anchor_price) + ' · bizalom ' + Math.round(p.confidence * 100) +
+      '% · profil ' + p.weight_profile + '. A ⚠ faktorok súlyoznak, de a saját találati arányuk ' +
+      'még nincs meg. Irány-hívás véletlenszerűen ~50%: 55% alatt a jel értéktelen.' +
+      ((p.sources_failed || []).length ? '<br>Kiesett forrás: ' + p.sources_failed.join(", ") : "") +
+      '</div></div></details>';
+  }
+
+  function load(){
+    var m = document.getElementById("btcwp-mini"), f = document.getElementById("btcwp-full");
+    if (!m && !f) return;
+    fetch("data/btc-weekend.json?t=" + Date.now(), {cache:"no-store"})
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){
+        if (!d.current) throw new Error("nincs predikció");
+        if (m) m.innerHTML = card(d.current, d.accuracy);
+        if (f) f.innerHTML = card(d.current, d.accuracy) + details(d.current, d.accuracy);
+      })
+      .catch(function(e){
+        var msg = '<div class="pair frag"><div class="top"><span class="name">BTC hétvége</span>' +
+          '<span class="tg">nincs adat</span></div><div class="why">' + e.message + '</div></div>';
+        if (m) m.innerHTML = msg;
+        if (f) f.innerHTML = msg;
+      });
+  }
+  document.readyState === "loading"
+    ? document.addEventListener("DOMContentLoaded", load) : load();
+})();
+</script>
+
 </body>
 </html>
