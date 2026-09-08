@@ -304,9 +304,11 @@ OKX = "https://www.okx.com"
 INST_SPOT = "BTC-USDT"
 INST_SWAP = "BTC-USDT-SWAP"
 
-# UTC-re igazitott savok. A sima "1D"/"4H" az OKX-en hongkongi napzarashoz
-# igazodik (UTC+8) -- a "utc" utotag nelkul eltolt gyertyakat kapnank.
-BAR = {"1d": "1Dutc", "4h": "4Hutc", "1h": "1H"}
+# A napi savot UTC-re igazitjuk ("1Dutc"), kulonben az OKX hongkongi
+# napzarashoz igazodna (UTC+8). FONTOS: az OKX-en UTC-varians CSAK 6H-tol
+# felfele letezik -- "4Hutc" nincs, az 51000 "Parameter bar error"-t ad
+# (2026-09-08-i meres). A 4H es 1H sav sima alakban megy.
+BAR = {"1d": "1Dutc", "4h": "4H", "1h": "1H"}
 
 
 def _okx(path: str, params: dict, retries: int = 3):
@@ -761,7 +763,10 @@ def collect_all(symbol: str = "BTCUSDT") -> dict:
         "liquidation": fetch_liquidation(deriv, symbol),
         "fear_greed": fetch_fear_greed(),
         "kalshi": fetch_kalshi(spot),
-        "reddit": fetch_reddit_sentiment(),
+        # A Reddit adatkozponti IP-rol 403-at ad (bongeszo-UA-val is), ezert
+        # nem gyujtjuk. A retail-oldalt az OKX long/short account ratio fedi le,
+        # ami valos pozicionaltsag, nem cimszo-szamolas.
+        "reddit": {"ok": False, "error": "Reddit 403 adatkozponti IP-rol", "source": "reddit"},
     }
 
 # ===========================================================================
@@ -783,10 +788,12 @@ WEIGHTS = {
     "derivatives": 0.22,          # funding + OI kombinaciok -> crowding / squeeze
     "technical": 0.22,            # trend + RSI + strukturalis helyzet
     "liquidation": 0.18,          # likvidacios klaszter-vonzas (modellezett terkep)
-    "retail_positioning": 0.15,   # OKX long/short account ratio, contrarian
+    "retail_positioning": 0.20,   # OKX long/short account ratio, contrarian
     "kalshi": 0.13,               # prediction market implied eloszlas
     "fear_greed": 0.05,           # csak extremumban
-    "reddit_contrarian": 0.05,    # social retail contrarian
+    # A reddit_contrarian kikerult: a Reddit adatkozponti IP-rol 403-at ad,
+    # igy CI-bol nem gyujtheto. Az 5%-a a retail_positioning-hoz kerult, ami
+    # ugyanazt a retail-contrarian gondolatot meri, csak valos pozicioadatbol.
 }
 
 # Ures: nincs tobbe 0 sulyu sav. A meres viszont megmaradt.
@@ -794,7 +801,7 @@ TRACKED_ONLY: set[str] = set()
 
 # Ezekre a faktorokra meg NINCS sajat merési eredmeny -- a dashboard
 # kulon jeloli oket, hogy latszodjon: sulyuk van, de meg bizonyitatlanok.
-UNPROVEN = {"kalshi", "reddit_contrarian", "liquidation"}
+UNPROVEN = {"kalshi", "liquidation"}
 
 
 def _clamp(v, lo=-1.0, hi=1.0):
@@ -1033,7 +1040,6 @@ def build_signals(data: dict) -> list[dict]:
         signal_liquidation(data.get("liquidation", {}), tech),
         signal_fear_greed(data["fear_greed"]),
         signal_kalshi(data["kalshi"]),
-        signal_reddit(data["reddit"]),
     ]
 
 
