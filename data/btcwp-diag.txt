@@ -1,18 +1,24 @@
-=== collect_all forrasonkent ===
-technical      ok=False  RuntimeError: OKX /api/v5/market/candles code=51000 msg=Parameter bar error
-derivatives    ok=True  None
-liquidation    ok=True  None
-fear_greed     ok=True  None
-kalshi         ok=True  None
-reddit         ok=False  RuntimeError: no reddit posts
-ar: None | hetvege-minta: None
+=== KXBTCMAXMON ===
+piacok szama: 7
+   {"ticker": "KXBTCMAXMON-BTC-26SEP30-9750000", "floor_strike": 97500, "cap_strike": null, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "greater", "subtitle": null}
+   {"ticker": "KXBTCMAXMON-BTC-26SEP30-9500000", "floor_strike": 95000, "cap_strike": null, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "greater", "subtitle": null}
+   {"ticker": "KXBTCMAXMON-BTC-26SEP30-9250000", "floor_strike": 92500, "cap_strike": null, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "greater", "subtitle": null}
+   {"ticker": "KXBTCMAXMON-BTC-26SEP30-9000000", "floor_strike": 90000, "cap_strike": null, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "greater", "subtitle": null}
+   {"ticker": "KXBTCMAXMON-BTC-26SEP30-8750000", "floor_strike": 87500, "cap_strike": null, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "greater", "subtitle": null}
+   {"ticker": "KXBTCMAXMON-BTC-26SEP30-8500000", "floor_strike": 85000, "cap_strike": null, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "greater", "subtitle": null}
+  MINDEN MEZO az elso piacon: ["can_close_early", "close_time", "created_time", "early_close_condition", "event_ticker", "exchange_index", "expected_expiration_time", "expiration_time", "expiration_value", "floor_strike", "last_price_dollars", "latest_expiration_time", "liquidity_dollars", "market_type", "no_ask_dollars", "no_bid_dollars", "no_sub_title", "notional_value_dollars", "occurrence_datetime", "open_interest_fp", "open_time", "previous_price_dollars", "previous_yes_ask_dollars", "previous_yes_bid_dollars", "price_level_structure", "price_ranges", "result", "rules_primary", "rules_secondary", "settlement_timer_seconds", "status", "strike_type", "ticker", "title", "updated_time", "volume_24h_fp", "volume_fp", "yes_ask_dollars", "yes_ask_size_fp", "yes_bid_dollars", "yes_bid_size_fp", "yes_sub_title"]
+=== KXBTCMINMON ===
+piacok szama: 18
+   {"ticker": "KXBTCMINMON-BTC-26SEP30-3250000", "floor_strike": null, "cap_strike": 32500, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "less", "subtitle": null}
+   {"ticker": "KXBTCMINMON-BTC-26SEP30-3500000", "floor_strike": null, "cap_strike": 35000, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "less", "subtitle": null}
+   {"ticker": "KXBTCMINMON-BTC-26SEP30-3750000", "floor_strike": null, "cap_strike": 37500, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "less", "subtitle": null}
+   {"ticker": "KXBTCMINMON-BTC-26SEP30-4000000", "floor_strike": null, "cap_strike": 40000, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "less", "subtitle": null}
+   {"ticker": "KXBTCMINMON-BTC-26SEP30-4250000", "floor_strike": null, "cap_strike": 42500, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "less", "subtitle": null}
+   {"ticker": "KXBTCMINMON-BTC-26SEP30-4500000", "floor_strike": null, "cap_strike": 45000, "yes_bid": null, "yes_ask": null, "last_price": null, "status": "active", "open_interest": null, "close_time": "2026-10-01T03:59:59Z", "strike_type": "less", "subtitle": null}
+  MINDEN MEZO az elso piacon: ["can_close_early", "cap_strike", "close_time", "created_time", "early_close_condition", "event_ticker", "exchange_index", "expected_expiration_time", "expiration_time", "expiration_value", "last_price_dollars", "latest_expiration_time", "liquidity_dollars", "market_type", "no_ask_dollars", "no_bid_dollars", "no_sub_title", "notional_value_dollars", "occurrence_datetime", "open_interest_fp", "open_time", "previous_price_dollars", "previous_yes_ask_dollars", "previous_yes_bid_dollars", "price_level_structure", "price_ranges", "result", "rules_primary", "rules_secondary", "settlement_timer_seconds", "status", "strike_type", "ticker", "title", "updated_time", "volume_24h_fp", "volume_fp", "yes_ask_dollars", "yes_ask_size_fp", "yes_bid_dollars", "yes_bid_size_fp", "yes_sub_title"]
 
-=== egyedi vegpont-probak ===
-candles_1Dutc  OK  n=3  [["1788825600000", "79111.8", "79485.9", "78181.6", "78343.4", "2656.93702542", "208945943.768489942", "208945943.768489942", "0"]]
-history_1H     OK  n=3  [["1788865200000", "78561.9", "78582.1", "78321.2", "78343.4", "36.49758226", "2862596.699963591", "2862596.699963591", "0"]]
-funding        OK  n=1  [{"formulaType": "withRate", "fundingRate": "0.0000540691916619", "fundingTime": "1788883200000", "impactValue": "20000.0000000000000000", "instId": "BTC-USDT-SWAP", "instType": "S
-fund_hist      OK  n=3  [{"formulaType": "withRate", "fundingRate": "0.0000570129775745", "fundingTime": "1788854400000", "instId": "BTC-USDT-SWAP", "instType": "SWAP", "method": "current_period", "realiz
-oi             OK  n=180  [["1788796800000", "2876513742.1184", "4170631156.4393"]]
-ls_acc         OK  n=180  [["1788796800000", "1.26"]]
-ls_top         OK  n=100  [["1788796800000", "1.1212264150943396"]]
-taker          OK  n=180  [["1788796800000", "2122313928.1033", "2037007451.0503"]]
+=== fetch_kalshi kimenete ===
+{"direct_weekend_market": false, "note": "monthly max/min one-touch proxy", "implied_month_high_p50": null, "implied_month_low_p50": null, "implied_month_high_ev": null, "implied_month_low_ev": null, "estimator": "expected-value", "total_open_interest": 0, "ok": true}
+max letra elemszam: 0
+min letra elemszam: 0
+max letra elso 5: []
