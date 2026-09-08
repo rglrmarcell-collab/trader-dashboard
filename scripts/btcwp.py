@@ -658,9 +658,34 @@ def fetch_kalshi(spot_price: float | None = None) -> dict:
         out["implied_month_high_p50"] = implied_at(up)
         out["implied_month_low_p50"] = implied_at(dn)
 
-        if spot_price and out["implied_month_high_p50"] and out["implied_month_low_p50"]:
-            up_room = out["implied_month_high_p50"] / spot_price - 1
-            dn_room = 1 - out["implied_month_low_p50"] / spot_price
+        # A p50-es keresztezes gyakran NEM letezik: ha a legalso strike
+        # valoszinusege mar 0,5 alatt van, nincs metszespont, es korabban
+        # emiatt esett ki a Kalshi faktor. A varhato szelsoertek viszont
+        # mindig szamolhato: egy-erintes piacoknal a letra a tullepesi
+        # valoszinuseg (survival) fuggveny, es
+        #     E[max] = spot + integral_{K>spot} P(max >= K) dK
+        # amit trapez-szabalyal kozelitunk. Ez robusztus es mindig ad erteket.
+        def expected_extreme(rows, spot, up_side: bool):
+            pts = [(float(spot), 1.0)] + [(r["strike"], r["prob"]) for r in rows
+                                          if (r["strike"] > spot if up_side else r["strike"] < spot)]
+            pts.sort(key=lambda x: x[0], reverse=not up_side)
+            if len(pts) < 2:
+                return None
+            area = 0.0
+            for (s1, p1), (s2, p2) in zip(pts, pts[1:]):
+                area += abs(s2 - s1) * (p1 + p2) / 2.0
+            return spot + area if up_side else spot - area
+
+        if spot_price:
+            out["implied_month_high_ev"] = expected_extreme(up, spot_price, True)
+            out["implied_month_low_ev"] = expected_extreme(dn, spot_price, False)
+
+        hi = out.get("implied_month_high_p50") or out.get("implied_month_high_ev")
+        lo = out.get("implied_month_low_p50") or out.get("implied_month_low_ev")
+        out["estimator"] = ("p50" if out.get("implied_month_high_p50") else "expected-value")
+        if spot_price and hi and lo:
+            up_room = hi / spot_price - 1
+            dn_room = 1 - lo / spot_price
             out["upside_room_pct"] = 100.0 * up_room
             out["downside_room_pct"] = 100.0 * dn_room
             tot = up_room + dn_room
@@ -763,10 +788,9 @@ def collect_all(symbol: str = "BTCUSDT") -> dict:
         "liquidation": fetch_liquidation(deriv, symbol),
         "fear_greed": fetch_fear_greed(),
         "kalshi": fetch_kalshi(spot),
-        # A Reddit adatkozponti IP-rol 403-at ad (bongeszo-UA-val is), ezert
-        # nem gyujtjuk. A retail-oldalt az OKX long/short account ratio fedi le,
-        # ami valos pozicionaltsag, nem cimszo-szamolas.
-        "reddit": {"ok": False, "error": "Reddit 403 adatkozponti IP-rol", "source": "reddit"},
+        # A Reddit szandekosan NEM szerepel: adatkozponti IP-rol 403-at ad
+        # (bongeszo-UA-val is), es a retail-oldalt az OKX long/short account
+        # ratio amugy is lefedi, valos pozicioadatbol.
     }
 
 # ===========================================================================
@@ -1007,8 +1031,9 @@ def signal_kalshi(k: dict) -> dict:
     if skew is None:
         return _sig("kalshi", 0, 0, "nem sikerult eloszlast rekonstrualni", ok=False)
     up, dn = k.get("upside_room_pct"), k.get("downside_room_pct")
+    est = k.get("estimator", "?")
     return _sig("kalshi", skew * 0.8, 0.4,
-                f"havi implied: +{up:.1f}% / -{dn:.1f}% tér, skew {skew:+.2f} "
+                f"havi implied: +{up:.1f}% / -{dn:.1f}% tér, skew {skew:+.2f} ({est}) "
                 f"[indirekt — nincs hetvegi Kalshi piac hetfon]")
 
 
@@ -1258,7 +1283,9 @@ def predict_main() -> int:
 
     current = load_json(CURRENT, {})
     current["current"] = prediction
-    current["accuracy"] = current.get("accuracy", {"n": 0, "note": "meres alatt — nincs meg adat"})
+    current["accuracy"] = current.get("accuracy") or {
+        "n": 0, "hit_rate": None, "range_hit_rate": None, "by_factor": {},
+        "maturity": "ELOZETES — meg nincs lezart hetvege"}
     current["updated_at"] = now.isoformat(timespec="seconds")
     CURRENT.write_text(json.dumps(current, indent=1, ensure_ascii=False), encoding="utf-8")
 
