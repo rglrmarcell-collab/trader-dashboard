@@ -1,29 +1,29 @@
 {
  "current": {
   "id": "2026-W37",
-  "made_at": "2026-09-08T11:20:12+00:00",
-  "anchor_price": 78415.8,
+  "made_at": "2026-09-08T11:26:24+00:00",
+  "anchor_price": 78456.0,
   "weekend_start": "2026-09-11T21:00:00+00:00",
   "weekend_end": "2026-09-13T23:00:00+00:00",
-  "score": 57.7,
+  "score": 62.5,
   "bias": "ENYHÉN BULLISH",
   "emoji": "🟢",
   "direction": "UP",
-  "confidence": 0.45,
-  "coverage": 0.6,
-  "agreement": 0.33,
+  "confidence": 0.3,
+  "coverage": 0.66,
+  "agreement": 0.0,
   "expected_range": {
-   "low": 76166.0,
-   "high": 80838.0,
-   "center": 78502.0,
+   "low": 76212.0,
+   "high": 80885.0,
+   "center": 78549.0,
    "width_pct": 5.95,
    "basis": "realizalt hetvegi p80 mozgas 26 hetvegebol",
-   "invalidation": 75670.0,
+   "invalidation": 75711.0,
    "invalidation_side": "below"
   },
-  "invalidation": 75670.0,
+  "invalidation": 75711.0,
   "invalidation_side": "below",
-  "main_drivers": "liquidation ↑, retail_positioning ↓, fear_greed ↓",
+  "main_drivers": "liquidation ↑, technical ↑, retail_positioning ↓",
   "weight_profile": "v2.0-2026-09",
   "factors": [
    {
@@ -39,14 +39,14 @@
    },
    {
     "name": "technical",
-    "dir": "FLAT",
-    "value": 0.0,
+    "dir": "UP",
+    "value": 0.45,
     "conf": 0.7,
     "w": 0.22,
     "tracked_only": false,
     "unproven": false,
     "ok": true,
-    "why": "trend: -0.0% SMA20 / +12.0% SMA50"
+    "why": "trend: +0.0% SMA20 / +12.1% SMA50"
    },
    {
     "name": "retail_positioning",
@@ -62,13 +62,13 @@
    {
     "name": "liquidation",
     "dir": "UP",
-    "value": 0.824,
-    "conf": 0.83,
+    "value": 0.818,
+    "conf": 0.84,
     "w": 0.18,
     "tracked_only": false,
     "unproven": true,
     "ok": true,
-    "why": "legkozelebbi klaszter +0.3% / -8.3%; notional felette $1.9Mrd, alatta $0.2Mrd [sajat modell, OI + tokeattetel-savok]"
+    "why": "legkozelebbi klaszter +0.3% / -9.2%; notional felette $1.9Mrd, alatta $0.2Mrd [sajat modell, OI + tokeattetel-savok]"
    },
    {
     "name": "fear_greed",
@@ -83,38 +83,39 @@
    },
    {
     "name": "kalshi",
-    "dir": null,
-    "value": null,
-    "conf": 0.0,
+    "dir": "FLAT",
+    "value": 0.017,
+    "conf": 0.4,
     "w": 0.13,
     "tracked_only": false,
     "unproven": true,
-    "ok": false,
-    "why": "nem sikerult eloszlast rekonstrualni"
+    "ok": true,
+    "why": "havi implied: +6.5% / -6.2% tér, skew +0.02 (p50) [indirekt — nincs hetvegi Kalshi piac hetfon]"
    }
   ],
   "factor_calls": {
    "derivatives": "FLAT",
-   "technical": "FLAT",
+   "technical": "UP",
    "retail_positioning": "DOWN",
    "liquidation": "UP",
-   "fear_greed": "DOWN"
+   "fear_greed": "DOWN",
+   "kalshi": "FLAT"
   },
   "monthly": {
    "target_time": "2026-09-30T23:00:00+00:00",
    "direction": "UP",
-   "score": 57.7,
-   "kalshi_implied_high": null,
-   "kalshi_implied_low": null,
+   "score": 62.5,
+   "kalshi_implied_high": 83563.82978723405,
+   "kalshi_implied_low": 73563.82978723405,
    "note": "12 adatpont/ev — evekig megfigyeles, nem tanulsag"
   },
   "sources_failed": [],
   "resolved": false,
-  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 58%\nExpected weekend range: $76,166–$80,838\nMain drivers: liquidation ↑, retail_positioning ↓, fear_greed ↓.\nInvalidation: below $75,670."
+  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 62%\nExpected weekend range: $76,212–$80,885\nMain drivers: liquidation ↑, technical ↑, retail_positioning ↓.\nInvalidation: below $75,711."
  },
  "accuracy": {
   "n": 0,
   "note": "meres alatt — nincs meg adat"
  },
- "updated_at": "2026-09-08T11:20:12+00:00"
+ "updated_at": "2026-09-08T11:26:24+00:00"
 }
