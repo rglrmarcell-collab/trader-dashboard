@@ -635,9 +635,15 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 <div class="ch-s" id="g-note" style="margin-top:10px; line-height:1.5;"></div>
 </div>
 
+<!-- Edzes volumen-trend + 2 honapos elorejelzes -->
+<div class="card">
+<div class="eyebrow">Edzés — volumen trend</div>
+<div id="volt-body"><div class="ch-s">Élő adathoz add meg a jelszót az <b>Áttekintés → Beállítás</b> szekcióban.</div></div>
+</div>
+
 <div class="card">
 <div class="eyebrow">Edzés — DEMO ADAT<span style="margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;color:var(--red);">nem valós</span></div>
-<div class="ch-s" style="margin:-6px 0 12px; color:var(--red);">Ez a szekció még <b>kitalált mintaadat</b>, nem a tiéd. A valós állapot a fenti kártyán áll: 70 napja nem volt edzés. Amint a Strong-import elindul, ez lecserélődik.</div>
+<div class="ch-s" style="margin:-6px 0 12px; color:var(--red);">Ez a szekció még <b>kitalált mintaadat</b>, nem a tiéd. A valós állapot a fenti két kártyán áll. Ez a blokk akkor cserélődik le, ha a Notion-jelszó be van írva.</div>
 <div class="tiles">
 <div class="tl"><div class="n num" id="t-wk">–</div><div class="l">Edzés / hét</div><div class="d flat">9 hét átlaga</div></div>
 <div class="tl"><div class="n num" id="t-gap">–</div><div class="l">Leghosszabb kihagyás</div><div class="d flat">nap</div></div>
@@ -887,7 +893,8 @@ window.__renderHealth();
   var ks=Object.keys(Bk).sort().slice(-9);
   if(ks.length){weeks.length=0; ks.forEach(function(kk){weeks.push({label:kk.slice(5).replace("-","."),n:Bk[kk].n,vol:Math.round(Bk[kk].vol)});});
    gym.clear(); sleep.forEach(function(s,i){ if(G.some(function(x){return x.d.toDateString()===s.d.toDateString();})) gym.add(i); });
-   window.__liveGym=1; used.push("edzés");}}
+   window.__liveGym=1; used.push("edzés");
+    try{ if(window.__renderVolTrend) window.__renderVolTrend(G); }catch(_){}}}
  if(banner){
   if(used.length){
    banner.innerHTML="✅ <b>ÉLŐ ADAT a Notionből</b> — frissítve: "+new Date(j.ts).toLocaleString("hu-HU",{timeZone:"Europe/Budapest"})+
@@ -1897,7 +1904,7 @@ else {
 <script>
 /* Edzes-allapot. A napok szamat a bongeszo szamolja -> magatol pontos marad. */
 (function(){
-  var LAST="2026-06-25";                      // Strong export, utolso rogzitett edzes
+  var LAST="2026-09-04";   // Notion Edzes DB, utolso rogzitett edzes (2026-09-08-i ellenorzes)                      // Strong export, utolso rogzitett edzes
   var el=document.getElementById('g-since'); if(!el) return;
   /* Naptari napokat szamolunk, nem idobelyeg-kulonbseget: kulonben a napszaktol
      fuggoen 69 vagy 70 jonne ki ugyanarra a napra. 2026-09-03. */
@@ -2096,7 +2103,7 @@ else {
     return '<details class="btcwp-d"><summary>BTC Weekend Predictor — faktorok</summary>' +
       '<div class="bd"><table class="btcwp-t">' +
       '<tr><th>Faktor</th><th>Jel</th><th>Súly</th><th>Talált</th></tr>' + rows + '</table>' +
-      '<div class="btcwp-n"><b>' + mat + '</b><br>' +
+      '<div class="btcwp-n"><b>Miért ezek a számok:</b> a <b>score</b> a 6 faktor súlyozott átlaga — ez az IRÁNY. A <b>sáv szélessége</b> az elmúlt 26 hétvége tényleges mozgásának 80. percentiliséből jön — ez a TÁVOLSÁG, az indikátorokból nem. A középpontot a bias tolja el, a bizalommal arányosan. Az <b>invalidáció</b> a biassal ellentétes irányban egy teljes sávnyira.<br><br><b>' + mat + '</b><br>' +
       'Horgony ' + usd(p.anchor_price) + ' · bizalom ' + Math.round(p.confidence * 100) +
       '% · profil ' + p.weight_profile + '. A ⚠ faktorok súlyoznak, de a saját találati arányuk ' +
       'még nincs meg. Irány-hívás véletlenszerűen ~50%: 55% alatt a jel értéktelen.' +
@@ -2123,6 +2130,147 @@ else {
   }
   document.readyState === "loading"
     ? document.addEventListener("DOMContentLoaded", load) : load();
+})();
+</script>
+
+
+<!-- ===== Edzes volumen-trend ===== -->
+<script>
+/* ===== Edzes volumen-trend + 2 honapos elorejelzes =====
+   Egy mertek (kg), egy tengely. Folytonos vonal = mert heti volumen,
+   szaggatott = elorejelzes. A ket szakasz ugyanaz az entitas, ezert nincs
+   legend-doboz: a ket vegpont kozvetlenul cimkezve van.
+
+   ADATMINOSEG (Elet - Allapot, 2026-09-07):
+   a 2026-01-26 -> 06-25 kozotti 16 edzes volumene SABLONERTEK, nem mert
+   terheles (minden Push pontosan 6014 kg / 30 szett, minden Pull 9445 kg /
+   36 szett). Ezekbol volumen-trendet szamolni tilos, ezert kiszurjuk oket.
+   Valodi meresnek a 2026-09-03-tol beirt ertekek szamitanak.                */
+(function () {
+  var TEMPLATE_VOL = [6014, 9445];        // a sablon-sorok pontos ujjlenyomata
+  var HORIZON_WEEKS = 8;                  // ~2 honap
+  var REF_GROWTH = 0.025;                 // irodalmi progressziv terheles, heti 2,5%
+  var MIN_WEEKS_FOR_FIT = 4;              // ennyi valos het alatt nem illesztunk sajat trendet
+
+  function wkKey(d) {
+    var t = new Date(d), dd = (t.getDay() + 6) % 7;
+    t.setDate(t.getDate() - dd); t.setHours(0, 0, 0, 0);
+    return t;
+  }
+  function fmt(v) {
+    return v >= 1000 ? (v / 1000).toFixed(1).replace(".", ",") + "e" : Math.round(v) + "";
+  }
+  function lbl(t) {
+    return String(t.getMonth() + 1).padStart(2, "0") + "." + String(t.getDate()).padStart(2, "0");
+  }
+
+  window.__renderVolTrend = function (rows) {
+    var host = document.getElementById("volt-body");
+    if (!host) return;
+
+    var real = (rows || []).filter(function (r) {
+      var v = Math.round(r.vol || 0);
+      return v > 0 && TEMPLATE_VOL.indexOf(v) === -1;
+    });
+
+    if (!real.length) {
+      host.innerHTML = '<div class="ch-s">Nincs meg valodi (nem sablon) edzes-adat.</div>';
+      return;
+    }
+
+    // heti osszvolumen
+    var B = {};
+    real.forEach(function (r) {
+      var k = wkKey(r.d).getTime();
+      B[k] = (B[k] || 0) + Math.round(r.vol || 0);
+    });
+    var keys = Object.keys(B).map(Number).sort(function (a, b) { return a - b; });
+    var pts = keys.map(function (k) { return { t: new Date(k), v: B[k] }; });
+
+    // --- elorejelzes ---
+    var proj = [], mode, note;
+    var last = pts[pts.length - 1];
+    if (pts.length >= MIN_WEEKS_FOR_FIT) {
+      var n = pts.length, sx = 0, sy = 0, sxy = 0, sxx = 0;
+      pts.forEach(function (p, i) { sx += i; sy += p.v; sxy += i * p.v; sxx += i * i; });
+      var slope = (n * sxy - sx * sy) / Math.max(1e-9, (n * sxx - sx * sx));
+      var icept = (sy - slope * sx) / n;
+      for (var i = 1; i <= HORIZON_WEEKS; i++) {
+        proj.push({ t: new Date(last.t.getTime() + i * 6048e5),
+                    v: Math.max(0, icept + slope * (n - 1 + i)) });
+      }
+      mode = "sajat trend";
+      note = pts.length + " valos het illesztve";
+    } else {
+      for (var j = 1; j <= HORIZON_WEEKS; j++) {
+        proj.push({ t: new Date(last.t.getTime() + j * 6048e5),
+                    v: last.v * Math.pow(1 + REF_GROWTH, j) });
+      }
+      mode = "referencia";
+      note = "csak " + pts.length + " valos het van; ez NEM a te trended, hanem "
+           + "irodalmi 2,5%/het progressziv terheles. " + MIN_WEEKS_FOR_FIT
+           + " valos hettol sajat trendre valt, magatol.";
+    }
+
+    var all = pts.concat(proj);
+    var W = 300, H = 96, PL = 4, PR = 34, PT = 12, PB = 16;
+    var maxV = Math.max.apply(null, all.map(function (p) { return p.v; })) * 1.12;
+    var minV = 0;
+    var X = function (i) { return PL + i * (W - PL - PR) / Math.max(1, all.length - 1); };
+    var Y = function (v) { return PT + (1 - (v - minV) / Math.max(1e-9, maxV - minV)) * (H - PT - PB); };
+
+    var solid = pts.map(function (p, i) { return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(p.v).toFixed(1); }).join(" ");
+    var dash = "M" + X(pts.length - 1).toFixed(1) + " " + Y(last.v).toFixed(1) + " " +
+      proj.map(function (p, i) { return "L" + X(pts.length + i).toFixed(1) + " " + Y(p.v).toFixed(1); }).join(" ");
+
+    var dots = pts.map(function (p, i) {
+      return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(p.v).toFixed(1) + '" r="3.5" ' +
+        'fill="var(--series-2)" stroke="var(--card)" stroke-width="2">' +
+        '<title>' + lbl(p.t) + ' hete — ' + Math.round(p.v).toLocaleString("hu-HU") + ' kg</title></circle>';
+    }).join("");
+
+    var endV = proj[proj.length - 1].v;
+    var svg =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img" ' +
+      'aria-label="Heti edzes-volumen es 2 honapos elorejelzes">' +
+      '<line x1="' + PL + '" y1="' + Y(0) + '" x2="' + (W - PR) + '" y2="' + Y(0) + '" ' +
+      'stroke="var(--line)" stroke-width="1"/>' +
+      '<path d="' + dash + '" fill="none" stroke="var(--series-2)" stroke-width="2" ' +
+      'stroke-dasharray="4 3" opacity=".55" stroke-linecap="round"/>' +
+      '<path d="' + solid + '" fill="none" stroke="var(--series-2)" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>' + dots +
+      '<circle cx="' + X(all.length - 1).toFixed(1) + '" cy="' + Y(endV).toFixed(1) + '" r="3" ' +
+      'fill="none" stroke="var(--series-2)" stroke-width="2" opacity=".6"/>' +
+      '<text x="' + (X(pts.length - 1) + 5).toFixed(1) + '" y="' + (Y(last.v) - 7).toFixed(1) + '" ' +
+      'font-size="9.5" fill="var(--sub)" font-weight="700">' + fmt(last.v) + '</text>' +
+      '<text x="' + (W - PR + 3) + '" y="' + (Y(endV) + 3).toFixed(1) + '" font-size="9.5" ' +
+      'fill="var(--faint)">' + fmt(endV) + '</text>' +
+      '<text x="' + PL + '" y="' + (H - 3) + '" font-size="8.5" fill="var(--faint)">mert</text>' +
+      '<text x="' + (W - PR - 26) + '" y="' + (H - 3) + '" font-size="8.5" fill="var(--faint)">+2 honap</text>' +
+      '</svg>';
+
+    var pct = Math.round(100 * (endV / last.v - 1));
+    host.innerHTML =
+      svg +
+      '<div class="ch-s" style="margin-top:2px">' +
+        '<b>' + real.length + ' valodi edzes</b> · e heti volumen <b>' +
+        Math.round(last.v).toLocaleString("hu-HU") + ' kg</b> · 2 honap mulva ~<b>' +
+        Math.round(endV).toLocaleString("hu-HU") + ' kg</b> (' + (pct >= 0 ? "+" : "") + pct + '%)' +
+      '</div>' +
+      '<div class="ch-s" style="color:var(--red);margin-top:4px">⚠ ' +
+        (mode === "referencia" ? "Az elorejelzes REFERENCIA, nem meres." : "Sajat trend, keves adatbol.") +
+      '</div>' +
+      '<details class="btcwp-d" style="margin-top:8px"><summary>Miert ezek a szamok</summary><div class="bd">' +
+        '<div class="ch-s" style="padding-top:8px">' +
+        '<b>Mi van a grafikonon:</b> heti osszvolumen (suly × ismetles), folytonos vonal = mert, ' +
+        'szaggatott = elorejelzes 8 hetre.<br><br>' +
+        '<b>Mi hianyzik rola szandekosan:</b> a 2026-01-26 → 06-25 kozotti 16 edzes ' +
+        'kiszurve. Azok volumene sablonertek — minden Push pontosan 6 014 kg, minden Pull ' +
+        '9 445 kg, karakterre azonos honapokon at. Ez a Strong elokitoltese, nem mert terheles. ' +
+        'Ezekbol trendet szamolni felrevezeto lenne.<br><br>' +
+        '<b>Az elorejelzes:</b> ' + note +
+        '</div></div></details>';
+  };
 })();
 </script>
 
