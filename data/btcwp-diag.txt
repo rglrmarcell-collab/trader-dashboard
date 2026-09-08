@@ -1,0 +1,18 @@
+BTCWP diagnosztika 2026-09-08T10:59:22Z runner=172.182.200.144
+binance_spot     451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
+binance_klines   451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
+binance_fut      451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
+binance_ls       451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
+okx_candles      200  {"code":"0","data":[["1788796800000","78833.9","79485.9","78181.6","78588","3324.51387815"
+okx_funding      200  {"code":"0","data":[{"formulaType":"withRate","fundingRate":"0.0000552626162349","fundingT
+okx_oi           200  {"code":"0","data":[["1788796800000","2876513742.1184","4170631156.4393"],["1788710400000"
+okx_ls           200  {"code":"0","data":[["1788796800000","1.26"],["1788710400000","1.16"],["1788624000000","1.
+bybit_kline      403  {    error:The Amazon CloudFront distribution is configured to block access from your cou
+bybit_tickers    403  {    error:The Amazon CloudFront distribution is configured to block access from your cou
+bybit_oi         403  {    error:The Amazon CloudFront distribution is configured to block access from your cou
+coinbase         200  [[1788825600,78146,79477.07,79091.97,78589.22,1503.41628882],[1788739200,78666,80462.23,80
+kraken           200  {"error":[],"result":{"XXBTZUSD":[[1726617600,"60317.1","61777.7","59164.6","61777.7","602
+fear_greed       200  {	"name": "Fear and Greed Index",	"data": [		{			"value": "69",			"value_classificati
+kalshi_a         200  {"cursor":"CgwI35vZ1AYQkKam0wISH0tYQlRDTUFYTU9OLUJUQy0yNlNFUDMwLTkyNTAwMDA","markets":[{"c
+kalshi_b         200  {"cursor":"CgwI35vZ1AYQkKam0wISH0tYQlRDTUFYTU9OLUJUQy0yNlNFUDMwLTkyNTAwMDA","markets":[{"c
+reddit           403  <body class=theme-beta><div><style>.theme-light,:root{--rem360:22.5rem;--rem320:20rem;--re
