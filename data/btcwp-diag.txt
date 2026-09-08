@@ -1,18 +1,18 @@
-BTCWP diagnosztika 2026-09-08T10:59:22Z runner=172.182.200.144
-binance_spot     451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
-binance_klines   451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
-binance_fut      451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
-binance_ls       451  {  "code": 0,  "msg": "Service unavailable from a restricted location according to 'b. E
-okx_candles      200  {"code":"0","data":[["1788796800000","78833.9","79485.9","78181.6","78588","3324.51387815"
-okx_funding      200  {"code":"0","data":[{"formulaType":"withRate","fundingRate":"0.0000552626162349","fundingT
-okx_oi           200  {"code":"0","data":[["1788796800000","2876513742.1184","4170631156.4393"],["1788710400000"
-okx_ls           200  {"code":"0","data":[["1788796800000","1.26"],["1788710400000","1.16"],["1788624000000","1.
-bybit_kline      403  {    error:The Amazon CloudFront distribution is configured to block access from your cou
-bybit_tickers    403  {    error:The Amazon CloudFront distribution is configured to block access from your cou
-bybit_oi         403  {    error:The Amazon CloudFront distribution is configured to block access from your cou
-coinbase         200  [[1788825600,78146,79477.07,79091.97,78589.22,1503.41628882],[1788739200,78666,80462.23,80
-kraken           200  {"error":[],"result":{"XXBTZUSD":[[1726617600,"60317.1","61777.7","59164.6","61777.7","602
-fear_greed       200  {	"name": "Fear and Greed Index",	"data": [		{			"value": "69",			"value_classificati
-kalshi_a         200  {"cursor":"CgwI35vZ1AYQkKam0wISH0tYQlRDTUFYTU9OLUJUQy0yNlNFUDMwLTkyNTAwMDA","markets":[{"c
-kalshi_b         200  {"cursor":"CgwI35vZ1AYQkKam0wISH0tYQlRDTUFYTU9OLUJUQy0yNlNFUDMwLTkyNTAwMDA","markets":[{"c
-reddit           403  <body class=theme-beta><div><style>.theme-light,:root{--rem360:22.5rem;--rem320:20rem;--re
+=== collect_all forrasonkent ===
+technical      ok=False  RuntimeError: OKX /api/v5/market/candles code=51000 msg=Parameter bar error
+derivatives    ok=True  None
+liquidation    ok=True  None
+fear_greed     ok=True  None
+kalshi         ok=True  None
+reddit         ok=False  RuntimeError: no reddit posts
+ar: None | hetvege-minta: None
+
+=== egyedi vegpont-probak ===
+candles_1Dutc  OK  n=3  [["1788825600000", "79111.8", "79485.9", "78181.6", "78343.4", "2656.93702542", "208945943.768489942", "208945943.768489942", "0"]]
+history_1H     OK  n=3  [["1788865200000", "78561.9", "78582.1", "78321.2", "78343.4", "36.49758226", "2862596.699963591", "2862596.699963591", "0"]]
+funding        OK  n=1  [{"formulaType": "withRate", "fundingRate": "0.0000540691916619", "fundingTime": "1788883200000", "impactValue": "20000.0000000000000000", "instId": "BTC-USDT-SWAP", "instType": "S
+fund_hist      OK  n=3  [{"formulaType": "withRate", "fundingRate": "0.0000570129775745", "fundingTime": "1788854400000", "instId": "BTC-USDT-SWAP", "instType": "SWAP", "method": "current_period", "realiz
+oi             OK  n=180  [["1788796800000", "2876513742.1184", "4170631156.4393"]]
+ls_acc         OK  n=180  [["1788796800000", "1.26"]]
+ls_top         OK  n=100  [["1788796800000", "1.1212264150943396"]]
+taker          OK  n=180  [["1788796800000", "2122313928.1033", "2037007451.0503"]]
