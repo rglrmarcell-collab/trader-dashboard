@@ -8,40 +8,37 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - name: Forrasonkenti hibak
+      - name: Kalshi diagnosztika
         run: |
           mkdir -p data
           python - > data/btcwp-diag.txt 2>&1 <<'EOF'
-          import sys, json, traceback
+          import sys, json
           sys.path.insert(0, 'scripts')
           import btcwp as B
-          print('=== collect_all forrasonkent ===')
-          d = B.collect_all()
-          for k, v in d.items():
-              if isinstance(v, dict):
-                  print(f"{k:14s} ok={v.get('ok')}  {str(v.get('error'))[:400]}")
-          t = d.get('technical', {})
-          print('ar:', t.get('price'), '| hetvege-minta:', (t.get('weekend_move_stats') or {}).get('n'))
-          print()
-          print('=== egyedi vegpont-probak ===')
-          for name, fn in [
-              ('candles_1Dutc', lambda: B._okx('/api/v5/market/candles', {'instId':'BTC-USDT','bar':'1Dutc','limit':3})),
-              ('history_1H',    lambda: B._okx('/api/v5/market/history-candles', {'instId':'BTC-USDT','bar':'1H','limit':3})),
-              ('funding',       lambda: B._okx('/api/v5/public/funding-rate', {'instId':'BTC-USDT-SWAP'})),
-              ('fund_hist',     lambda: B._okx('/api/v5/public/funding-rate-history', {'instId':'BTC-USDT-SWAP','limit':3})),
-              ('oi',            lambda: B._okx('/api/v5/rubik/stat/contracts/open-interest-volume', {'ccy':'BTC','period':'1D'})),
-              ('ls_acc',        lambda: B._okx('/api/v5/rubik/stat/contracts/long-short-account-ratio', {'ccy':'BTC','period':'1D'})),
-              ('ls_top',        lambda: B._okx('/api/v5/rubik/stat/contracts/long-short-account-ratio-contract-top-trader', {'instId':'BTC-USDT-SWAP','period':'1D'})),
-              ('taker',         lambda: B._okx('/api/v5/rubik/stat/taker-volume', {'ccy':'BTC','instType':'CONTRACTS','period':'1D'})),
-          ]:
+          for series in ('KXBTCMAXMON', 'KXBTCMINMON'):
+              print('===', series, '===')
               try:
-                  r = fn()
-                  print(f"{name:14s} OK  n={len(r)}  {json.dumps(r[:1])[:180]}")
+                  mk = B._kalshi_markets(series)
+                  print('piacok szama:', len(mk))
+                  for m in mk[:6]:
+                      print('  ', json.dumps({k: m.get(k) for k in
+                            ('ticker','floor_strike','cap_strike','yes_bid','yes_ask',
+                             'last_price','status','open_interest','close_time',
+                             'strike_type','subtitle')}))
+                  if mk:
+                      print('  MINDEN MEZO az elso piacon:', json.dumps(sorted(mk[0].keys())))
               except Exception as e:
-                  print(f"{name:14s} HIBA  {type(e).__name__}: {str(e)[:220]}")
+                  print('HIBA:', type(e).__name__, str(e)[:300])
+          print()
+          print('=== fetch_kalshi kimenete ===')
+          k = B.fetch_kalshi(78000.0)
+          print(json.dumps({a: b for a, b in k.items() if 'ladder' not in a}, ensure_ascii=False)[:900])
+          print('max letra elemszam:', len(k.get('monthly_max_ladder') or []))
+          print('min letra elemszam:', len(k.get('monthly_min_ladder') or []))
+          print('max letra elso 5:', json.dumps((k.get('monthly_max_ladder') or [])[:5]))
           EOF
           cat data/btcwp-diag.txt
       - name: Commit
         run: |
           git config user.name btcwp-bot; git config user.email actions@users.noreply.github.com
-          git add data/btcwp-diag.txt && git commit -m 'diag' && git push
+          git add data/btcwp-diag.txt && git commit -m 'diag kalshi' && git push
