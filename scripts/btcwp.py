@@ -595,19 +595,44 @@ def _kalshi_markets(series: str) -> list[dict]:
     raise RuntimeError(f"kalshi unreachable: {last}")
 
 
-def _mid(m: dict):
-    """Kozeparfolyam 0..1 valoszinusegre. Kalshi centben adja (0-100)."""
-    b, a = m.get("yes_bid"), m.get("yes_ask")
-    if b is None or a is None:
-        lp = m.get("last_price")
-        return (lp / 100.0) if lp else None
-    if a == 0 and b == 0:
+def _num(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
         return None
-    if b == 0 or a == 100:  # egyoldalu konyv: a last_price megbizhatobb
-        lp = m.get("last_price")
-        if lp:
-            return lp / 100.0
-    return (b + a) / 200.0
+
+
+def _mid(m: dict):
+    """Kozeparfolyam 0..1 valoszinusegre.
+
+    A Kalshi 2026-ban DOLLAR-mezoket ad (`yes_bid_dollars`, `yes_ask_dollars`,
+    `last_price_dollars`) -- ezek eleve 0..1 kozottiek, mert a szerzodes $1-t
+    fizet. A regi centes mezok (`yes_bid`, `yes_ask`, `last_price`) mar nem
+    szerepelnek a valaszban; tartalekkent maradnak bent.
+    """
+    b = _num(m.get("yes_bid_dollars"))
+    a = _num(m.get("yes_ask_dollars"))
+    lp = _num(m.get("last_price_dollars"))
+    if lp is None:
+        lp = _num(m.get("previous_price_dollars"))
+
+    # Szuk spread -> a kozeparfolyam a legjobb becsles.
+    if b is not None and a is not None and a >= b and (a - b) <= 0.20:
+        return max(0.0, min(1.0, (a + b) / 2.0))
+    # Tag vagy ures konyv -> az utolso kotes tobbet er, mint egy 0/1 kozep.
+    if lp is not None and 0.0 < lp < 1.0:
+        return lp
+    if b is not None and a is not None and a >= b:
+        return max(0.0, min(1.0, (a + b) / 2.0))
+
+    # --- tartalek: regi centes mezok ---
+    b2, a2 = _num(m.get("yes_bid")), _num(m.get("yes_ask"))
+    lp2 = _num(m.get("last_price"))
+    if b2 is not None and a2 is not None and not (a2 == 0 and b2 == 0):
+        if b2 == 0 or a2 == 100:
+            return (lp2 / 100.0) if lp2 else None
+        return (b2 + a2) / 200.0
+    return (lp2 / 100.0) if lp2 else None
 
 
 def fetch_kalshi(spot_price: float | None = None) -> dict:
@@ -632,7 +657,7 @@ def fetch_kalshi(spot_price: float | None = None) -> dict:
                     "ticker": m.get("ticker"),
                     "strike": float(strike),
                     "prob": round(p, 4),
-                    "oi": m.get("open_interest"),
+                    "oi": _num(m.get("open_interest_fp")) or _num(m.get("open_interest")),
                     "close_time": m.get("close_time"),
                 })
             rows.sort(key=lambda r: r["strike"])
