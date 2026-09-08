@@ -255,6 +255,10 @@ def fetch_coinglass(get_fn, symbol: str = "BTC", rng: str = "24h") -> dict | Non
 # ===========================================================================
 
 UA = "btc-weekend-predictor/1.0 (github actions; personal research)"
+# A Reddit adatkozponti IP-rol 403-at ad; bongeszo-UA-val neha atmegy.
+# Ha nem, a faktor egyszeruen kiesik es a sulya automatikusan ujraoszlik.
+BROWSER_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/140.0 Safari/537.36")
 TIMEOUT = 20
 
 
@@ -262,13 +266,14 @@ TIMEOUT = 20
 # alap HTTP
 # --------------------------------------------------------------------------
 
-def _get(url: str, params: dict | None = None, retries: int = 3):
+def _get(url: str, params: dict | None = None, retries: int = 3, ua: str | None = None):
     if params:
         url = f"{url}?{urllib.parse.urlencode(params)}"
     last = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+            req = urllib.request.Request(url, headers={"User-Agent": ua or UA,
+                                                      "Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
                 return json.loads(r.read().decode("utf-8"))
         except Exception as e:  # noqa: BLE001
@@ -287,27 +292,72 @@ def _safe(fn, name: str):
 
 
 # --------------------------------------------------------------------------
-# 1. AR + TECHNIKAI (Binance spot klines)
+# 1. AR + TECHNIKAI (OKX spot gyertyak)
 # --------------------------------------------------------------------------
 
-SPOT = "https://api.binance.com"
-FUT = "https://fapi.binance.com"
+# OKX, nem Binance. Indok (2026-09-08-i meres GitHub Actions futtatorol):
+# a Binance minden vegpontja 451 "Service unavailable from a restricted
+# location" az USA-beli runner-IP-krol, a Bybit 403 (CloudFront orszagtiltas).
+# Az OKX mind a negy szukseges vegponton 200-at ad: gyertyak, funding,
+# open interest ES long/short account ratio.
+OKX = "https://www.okx.com"
+INST_SPOT = "BTC-USDT"
+INST_SWAP = "BTC-USDT-SWAP"
+
+# UTC-re igazitott savok. A sima "1D"/"4H" az OKX-en hongkongi napzarashoz
+# igazodik (UTC+8) -- a "utc" utotag nelkul eltolt gyertyakat kapnank.
+BAR = {"1d": "1Dutc", "4h": "4Hutc", "1h": "1H"}
 
 
-def _klines(symbol: str, interval: str, limit: int):
-    raw = _get(f"{SPOT}/api/v3/klines", {"symbol": symbol, "interval": interval, "limit": limit})
-    return [
-        {
-            "open_time": int(k[0]),
-            "open": float(k[1]),
-            "high": float(k[2]),
-            "low": float(k[3]),
-            "close": float(k[4]),
-            "volume": float(k[5]),
-            "close_time": int(k[6]),
-        }
-        for k in raw
-    ]
+def _okx(path: str, params: dict, retries: int = 3):
+    d = _get(f"{OKX}{path}", params, retries=retries)
+    if str(d.get("code")) != "0":
+        raise RuntimeError(f"OKX {path} code={d.get('code')} msg={d.get('msg')}")
+    return d.get("data") or []
+
+
+def _row(k) -> dict:
+    """OKX gyertya -> a Binance-szel azonos alaku dict, hogy a tobbi kod valtozatlan maradjon.
+    OKX sor: [ts, open, high, low, close, vol, volCcy, volCcyQuote, confirm]
+    A ts a gyertya NYITASI ideje, ms-ben, stringkent.
+    """
+    return {
+        "open_time": int(k[0]),
+        "open": float(k[1]),
+        "high": float(k[2]),
+        "low": float(k[3]),
+        "close": float(k[4]),
+        # volCcyQuote = forgalom USD-ben; ez stabilabb suly a likvidacios terkephez
+        "volume": float(k[7]) if len(k) > 7 and k[7] not in ("", None) else float(k[5]),
+        "close_time": int(k[0]) + 1,
+    }
+
+
+def _klines(symbol: str, interval: str, limit: int, inst: str | None = None):
+    """Idorendben (legregibb eloszor) adja vissza a gyertyakat, tetszoleges
+    darabszamra lapozva. Az OKX ujdonsag-eloszor ad vissza, es limitalja
+    a lapmeretet (candles: 300, history-candles: 100).
+    """
+    inst = inst or INST_SPOT
+    bar = BAR.get(interval, interval)
+    out: list[dict] = []
+    after = None
+    while len(out) < limit:
+        need = limit - len(out)
+        if after is None:
+            data = _okx("/api/v5/market/candles",
+                        {"instId": inst, "bar": bar, "limit": min(300, need)})
+        else:
+            data = _okx("/api/v5/market/history-candles",
+                        {"instId": inst, "bar": bar, "after": after, "limit": min(100, need)})
+        if not data:
+            break
+        out = [_row(k) for k in data] + out
+        after = int(data[-1][0])  # a legregibb kapott gyertya -> ennel korabbiak jonnek
+        if len(data) < 2:
+            break
+    out.sort(key=lambda c: c["open_time"])
+    return out[-limit:]
 
 
 def _rsi(closes: list[float], period: int = 14) -> float | None:
@@ -378,7 +428,7 @@ def fetch_price_and_technical(symbol: str = "BTCUSDT") -> dict:
             "weekend_move_stats": wk,
         }
 
-    return _safe(run, "binance_spot")
+    return _safe(run, "okx_spot")
 
 
 def _weekend_moves(symbol: str, weeks: int = 26) -> dict:
@@ -389,24 +439,8 @@ def _weekend_moves(symbol: str, weeks: int = 26) -> dict:
     """
     hours = weeks * 7 * 24 + 48
     out, moves = [], []
-    end = None
-    collected: list[dict] = []
-    remaining = hours
-    while remaining > 0:
-        params = {"symbol": symbol, "interval": "1h", "limit": min(1000, remaining)}
-        if end:
-            params["endTime"] = end
-        chunk = _get(f"{SPOT}/api/v3/klines", params)
-        if not chunk:
-            break
-        collected = [
-            {"t": int(k[0]), "c": float(k[4]), "h": float(k[2]), "l": float(k[3])} for k in chunk
-        ] + collected
-        end = int(chunk[0][0]) - 1
-        remaining -= len(chunk)
-        if len(chunk) < 2:
-            break
-
+    kl = _klines(symbol, "1h", hours)
+    collected = [{"t": c["open_time"], "c": c["close"], "h": c["high"], "l": c["low"]} for c in kl]
     by_ts = {c["t"]: c for c in collected}
     if not collected:
         return {"n": 0}
@@ -456,26 +490,39 @@ def _weekend_moves(symbol: str, weeks: int = 26) -> dict:
 
 
 # --------------------------------------------------------------------------
-# 2. FUNDING + OPEN INTEREST + RETAIL POZICIONALTSAG (Binance futures)
+# 2. FUNDING + OPEN INTEREST + RETAIL POZICIONALTSAG (OKX swap + rubik)
 # --------------------------------------------------------------------------
 
 def fetch_derivatives(symbol: str = "BTCUSDT") -> dict:
     def run():
-        prem = _get(f"{FUT}/fapi/v1/premiumIndex", {"symbol": symbol})
-        fr_hist = _get(f"{FUT}/fapi/v1/fundingRate", {"symbol": symbol, "limit": 42})  # ~14 nap
-        oi_hist = _get(f"{FUT}/futures/data/openInterestHist",
-                       {"symbol": symbol, "period": "1d", "limit": 30})
-        ls_acc = _get(f"{FUT}/futures/data/globalLongShortAccountRatio",
-                      {"symbol": symbol, "period": "1d", "limit": 30})
-        ls_top = _get(f"{FUT}/futures/data/topLongShortPositionRatio",
-                      {"symbol": symbol, "period": "1d", "limit": 30})
-        taker = _get(f"{FUT}/futures/data/takerlongshortRatio",
-                     {"symbol": symbol, "period": "1d", "limit": 14})
+        # OKX. A rubik-statisztikak [ts, ertek] parokat adnak, UJDONSAG-ELOSZOR,
+        # ezert mindenhol megforditjuk, hogy a [-1] legyen a legfrissebb.
+        prem = _okx("/api/v5/public/funding-rate", {"instId": INST_SWAP})
+        fr_hist = _okx("/api/v5/public/funding-rate-history",
+                       {"instId": INST_SWAP, "limit": 42})          # ~14 nap (8oras periodus)
+        oi_hist = _okx("/api/v5/rubik/stat/contracts/open-interest-volume",
+                       {"ccy": "BTC", "period": "1D"})
+        ls_acc = _okx("/api/v5/rubik/stat/contracts/long-short-account-ratio",
+                      {"ccy": "BTC", "period": "1D"})
+        try:
+            ls_top = _okx("/api/v5/rubik/stat/contracts/long-short-account-ratio-contract-top-trader",
+                          {"instId": INST_SWAP, "period": "1D"})
+        except Exception:  # noqa: BLE001 — nem kritikus, csak erositi a retail jelet
+            ls_top = []
+        try:
+            tk = _okx("/api/v5/rubik/stat/taker-volume",
+                      {"ccy": "BTC", "instType": "CONTRACTS", "period": "1D"})
+        except Exception:  # noqa: BLE001
+            tk = []
 
-        rates = [float(x["fundingRate"]) for x in fr_hist]
-        oi = [float(x["sumOpenInterestValue"]) for x in oi_hist]
-        retail = [float(x["longShortRatio"]) for x in ls_acc]
-        top = [float(x["longShortRatio"]) for x in ls_top]
+        now_rate = float(prem[0]["fundingRate"]) if prem else 0.0
+        rates = [float(x["fundingRate"]) for x in reversed(fr_hist)]
+        oi = [float(r[1]) for r in reversed(oi_hist)][-30:]
+        retail = [float(r[1]) for r in reversed(ls_acc)][-30:]
+        top = [float(r[1]) for r in reversed(ls_top)][-30:]
+        # taker-volume sor: [ts, sellVol, buyVol]
+        taker = ([{"buySellRatio": (float(r[2]) / float(r[1])) if float(r[1]) else 1.0}
+                  for r in reversed(tk)][-14:]) if tk else []
 
         def pctile(series, v):
             if not series:
@@ -483,11 +530,11 @@ def fetch_derivatives(symbol: str = "BTCUSDT") -> dict:
             return 100.0 * sum(1 for s in series if s <= v) / len(series)
 
         return {
-            "funding_now": float(prem.get("lastFundingRate", 0)),
+            "funding_now": now_rate,
             "funding_mean_7d": sum(rates[-21:]) / max(len(rates[-21:]), 1),
             "funding_mean_14d": sum(rates) / max(len(rates), 1),
-            "funding_pctile_14d": pctile(rates, float(prem.get("lastFundingRate", 0))),
-            "funding_annualized_pct": float(prem.get("lastFundingRate", 0)) * 3 * 365 * 100,
+            "funding_pctile_14d": pctile(rates, now_rate),
+            "funding_annualized_pct": now_rate * 3 * 365 * 100,
             "oi_now_usd": oi[-1] if oi else None,
             "oi_chg_7d_pct": (100.0 * (oi[-1] / oi[-8] - 1)) if len(oi) >= 8 else None,
             "oi_chg_30d_pct": (100.0 * (oi[-1] / oi[0] - 1)) if len(oi) >= 2 else None,
@@ -500,7 +547,7 @@ def fetch_derivatives(symbol: str = "BTCUSDT") -> dict:
             "taker_buy_sell_ratio": float(taker[-1]["buySellRatio"]) if taker else None,
         }
 
-    return _safe(run, "binance_futures")
+    return _safe(run, "okx_derivatives")
 
 
 # --------------------------------------------------------------------------
@@ -639,7 +686,8 @@ def fetch_reddit_sentiment() -> dict:
         posts = []
         for sub in ("Bitcoin", "CryptoCurrency", "BitcoinMarkets"):
             try:
-                d = _get(f"https://www.reddit.com/r/{sub}/hot.json", {"limit": 60}, retries=2)
+                d = _get(f"https://www.reddit.com/r/{sub}/hot.json", {"limit": 60}, retries=2,
+                         ua=BROWSER_UA)
                 for c in d["data"]["children"]:
                     p = c["data"]
                     posts.append({
@@ -735,7 +783,7 @@ WEIGHTS = {
     "derivatives": 0.22,          # funding + OI kombinaciok -> crowding / squeeze
     "technical": 0.22,            # trend + RSI + strukturalis helyzet
     "liquidation": 0.18,          # likvidacios klaszter-vonzas (modellezett terkep)
-    "retail_positioning": 0.15,   # Binance long/short account ratio, contrarian
+    "retail_positioning": 0.15,   # OKX long/short account ratio, contrarian
     "kalshi": 0.13,               # prediction market implied eloszlas
     "fear_greed": 0.05,           # csak extremumban
     "reddit_contrarian": 0.05,    # social retail contrarian
@@ -866,7 +914,7 @@ def signal_technical(tech: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# 3. RETAIL POSITIONING (contrarian) — Binance global long/short account ratio
+# 3. RETAIL POSITIONING (contrarian) — OKX long/short account ratio
 # ---------------------------------------------------------------------------
 
 def signal_retail_positioning(deriv: dict) -> dict:
@@ -1222,17 +1270,23 @@ FLAT_THRESHOLD_PCT = 0.6
 
 
 def price_at(ts_iso: str) -> float | None:
-    """1h zaroar egy adott UTC idopontra a Binance spotrol."""
+    """1h zaroar egy adott UTC idopontra, OKX-rol.
+
+    Az OKX "after" parametere a megadott idobelyegnel KORABBI rekordokat adja,
+    ujdonsag-eloszor -- ezert after = T+1 ms, es az elso talalat a T-kor nyilo
+    gyertya. Ellenorizzuk is, hogy tenyleg az jott-e vissza.
+    """
     dt = datetime.fromisoformat(ts_iso)
     ms = int(dt.timestamp() * 1000)
-    try:
-        k = _get(
-            "https://api.binance.com/api/v3/klines",
-            {"symbol": "BTCUSDT", "interval": "1h", "startTime": ms, "limit": 1},
-        )
-        return float(k[0][4]) if k else None
-    except Exception:  # noqa: BLE001
-        return None
+    for path in ("/api/v5/market/history-candles", "/api/v5/market/candles"):
+        try:
+            d = _okx(path, {"instId": INST_SPOT, "bar": "1H",
+                                    "after": ms + 1, "limit": 1})
+            if d and int(d[0][0]) == ms:
+                return float(d[0][4])
+        except Exception:  # noqa: BLE001
+            continue
+    return None
 
 
 def actual_direction(pct: float) -> str:
@@ -1308,7 +1362,8 @@ def resolve_one(p: dict) -> dict | None:
 def rollup(hist: list[dict]) -> dict:
     done = [h for h in hist if h.get("resolved") and h.get("outcome")]
     if not done:
-        return {"n": 0, "note": "meres alatt — nincs meg lezart hetvege"}
+        return {"n": 0, "hit_rate": None, "range_hit_rate": None, "by_factor": {},
+                "maturity": "ELOZETES — meg nincs lezart hetvege"}
 
     res = [h["outcome"]["result"] for h in done]
     hits = res.count("HIT")
