@@ -1,8 +1,8 @@
 [
  {
   "id": "2026-W37",
-  "made_at": "2026-09-08T11:15:14+00:00",
-  "anchor_price": 78318.7,
+  "made_at": "2026-09-08T11:20:12+00:00",
+  "anchor_price": 78415.8,
   "weekend_start": "2026-09-11T21:00:00+00:00",
   "weekend_end": "2026-09-13T23:00:00+00:00",
   "score": 57.7,
@@ -13,15 +13,15 @@
   "coverage": 0.6,
   "agreement": 0.33,
   "expected_range": {
-   "low": 76068.0,
-   "high": 80740.0,
-   "center": 78404.0,
-   "width_pct": 5.96,
+   "low": 76166.0,
+   "high": 80838.0,
+   "center": 78502.0,
+   "width_pct": 5.95,
    "basis": "realizalt hetvegi p80 mozgas 26 hetvegebol",
-   "invalidation": 75573.0,
+   "invalidation": 75670.0,
    "invalidation_side": "below"
   },
-  "invalidation": 75573.0,
+  "invalidation": 75670.0,
   "invalidation_side": "below",
   "main_drivers": "liquidation ↑, retail_positioning ↓, fear_greed ↓",
   "weight_profile": "v2.0-2026-09",
@@ -46,7 +46,7 @@
     "tracked_only": false,
     "unproven": false,
     "ok": true,
-    "why": "trend: -0.1% SMA20 / +11.9% SMA50"
+    "why": "trend: -0.0% SMA20 / +12.0% SMA50"
    },
    {
     "name": "retail_positioning",
@@ -57,18 +57,18 @@
     "tracked_only": false,
     "unproven": false,
     "ok": true,
-    "why": "retail L/S 1.25 (70. percentilis 30 napra)"
+    "why": "retail L/S 1.26 (70. percentilis 30 napra)"
    },
    {
     "name": "liquidation",
     "dir": "UP",
-    "value": 0.828,
-    "conf": 0.82,
+    "value": 0.824,
+    "conf": 0.83,
     "w": 0.18,
     "tracked_only": false,
     "unproven": true,
     "ok": true,
-    "why": "legkozelebbi klaszter +0.6% / -8.1%; notional felette $2.0Mrd, alatta $0.1Mrd [sajat modell, OI + tokeattetel-savok]"
+    "why": "legkozelebbi klaszter +0.3% / -8.3%; notional felette $1.9Mrd, alatta $0.2Mrd [sajat modell, OI + tokeattetel-savok]"
    },
    {
     "name": "fear_greed",
@@ -108,10 +108,8 @@
    "kalshi_implied_low": null,
    "note": "12 adatpont/ev — evekig megfigyeles, nem tanulsag"
   },
-  "sources_failed": [
-   "reddit"
-  ],
+  "sources_failed": [],
   "resolved": false,
-  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 58%\nExpected weekend range: $76,068–$80,740\nMain drivers: liquidation ↑, retail_positioning ↓, fear_greed ↓.\nInvalidation: below $75,573."
+  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 58%\nExpected weekend range: $76,166–$80,838\nMain drivers: liquidation ↑, retail_positioning ↓, fear_greed ↓.\nInvalidation: below $75,670."
  }
 ]
