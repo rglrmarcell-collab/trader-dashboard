@@ -6,28 +6,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Elerhetoseg-teszt
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Forrasonkenti hibak
         run: |
           mkdir -p data
-          probe() { code=$(curl -s -o /tmp/b -w '%{http_code}' -m 15 -A 'btcwp/1.0' "$2"); printf '%-16s %s  %s\n' "$1" "$code" "$(head -c 90 /tmp/b | tr -d '\n')" >> data/btcwp-diag.txt; }
-          echo "BTCWP diagnosztika $(date -u +%FT%TZ) runner=$(curl -s -m 10 https://api.ipify.org)" > data/btcwp-diag.txt
-          probe binance_spot   'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
-          probe binance_klines 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=2'
-          probe binance_fut    'https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT'
-          probe binance_ls     'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=1d&limit=1'
-          probe okx_candles    'https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D&limit=2'
-          probe okx_funding    'https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP'
-          probe okx_oi         'https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period=1D'
-          probe okx_ls         'https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period=1D'
-          probe bybit_kline    'https://api.bybit.com/v5/market/kline?category=spot&symbol=BTCUSDT&interval=D&limit=2'
-          probe bybit_tickers  'https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT'
-          probe bybit_oi       'https://api.bybit.com/v5/market/open-interest?category=linear&symbol=BTCUSDT&intervalTime=1d&limit=2'
-          probe coinbase       'https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400'
-          probe kraken         'https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440'
-          probe fear_greed     'https://api.alternative.me/fng/?limit=1'
-          probe kalshi_a       'https://api.elections.kalshi.com/trade-api/v2/markets?series_ticker=KXBTCMAXMON&status=open&limit=3'
-          probe kalshi_b       'https://external-api.kalshi.com/trade-api/v2/markets?series_ticker=KXBTCMAXMON&status=open&limit=3'
-          probe reddit         'https://www.reddit.com/r/Bitcoin/hot.json?limit=3'
+          python - > data/btcwp-diag.txt 2>&1 <<'EOF'
+          import sys, json, traceback
+          sys.path.insert(0, 'scripts')
+          import btcwp as B
+          print('=== collect_all forrasonkent ===')
+          d = B.collect_all()
+          for k, v in d.items():
+              if isinstance(v, dict):
+                  print(f"{k:14s} ok={v.get('ok')}  {str(v.get('error'))[:400]}")
+          t = d.get('technical', {})
+          print('ar:', t.get('price'), '| hetvege-minta:', (t.get('weekend_move_stats') or {}).get('n'))
+          print()
+          print('=== egyedi vegpont-probak ===')
+          for name, fn in [
+              ('candles_1Dutc', lambda: B._okx('/api/v5/market/candles', {'instId':'BTC-USDT','bar':'1Dutc','limit':3})),
+              ('history_1H',    lambda: B._okx('/api/v5/market/history-candles', {'instId':'BTC-USDT','bar':'1H','limit':3})),
+              ('funding',       lambda: B._okx('/api/v5/public/funding-rate', {'instId':'BTC-USDT-SWAP'})),
+              ('fund_hist',     lambda: B._okx('/api/v5/public/funding-rate-history', {'instId':'BTC-USDT-SWAP','limit':3})),
+              ('oi',            lambda: B._okx('/api/v5/rubik/stat/contracts/open-interest-volume', {'ccy':'BTC','period':'1D'})),
+              ('ls_acc',        lambda: B._okx('/api/v5/rubik/stat/contracts/long-short-account-ratio', {'ccy':'BTC','period':'1D'})),
+              ('ls_top',        lambda: B._okx('/api/v5/rubik/stat/contracts/long-short-account-ratio-contract-top-trader', {'instId':'BTC-USDT-SWAP','period':'1D'})),
+              ('taker',         lambda: B._okx('/api/v5/rubik/stat/taker-volume', {'ccy':'BTC','instType':'CONTRACTS','period':'1D'})),
+          ]:
+              try:
+                  r = fn()
+                  print(f"{name:14s} OK  n={len(r)}  {json.dumps(r[:1])[:180]}")
+              except Exception as e:
+                  print(f"{name:14s} HIBA  {type(e).__name__}: {str(e)[:220]}")
+          EOF
           cat data/btcwp-diag.txt
       - name: Commit
         run: |
