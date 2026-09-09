@@ -442,7 +442,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 <details class="acc" style="margin-top:0;">
 <summary><span class="chev">▸</span> Munka <span class="hint">óra + órabér</span></summary>
 <div class="body">
-<div class="lgrid"><input id="m-ora" type="number" step="0.5" inputmode="decimal" placeholder="ledolgozott óra"><input id="m-ber" type="number" step="50" inputmode="numeric" placeholder="órabér (Ft)"></div>
+<div class="lgrid"><input id="m-ora" type="text" class="numdec" inputmode="decimal" autocomplete="off" placeholder="ledolgozott óra"><input id="m-ber" type="number" step="50" inputmode="numeric" placeholder="órabér (Ft)"></div>
 <input id="m-megj" type="text" placeholder="megjegyzés (nem kötelező)">
 <button class="save" data-kind="munka">Munka mentése</button>
 <div class="jhint">A keresetet a Notion számolja (óra × órabér) — neked nem kell összeadnod.</div>
@@ -452,7 +452,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 <details class="acc">
 <summary><span class="chev">▸</span> Testsúly <span class="hint">kg</span></summary>
 <div class="body">
-<input id="s-kg" type="number" step="0.1" inputmode="decimal" placeholder="súly (kg)">
+<input id="s-kg" type="text" class="numdec" inputmode="decimal" autocomplete="off" placeholder="súly (kg)">
 <input id="s-megj" type="text" placeholder="megjegyzés (nem kötelező)">
 <button class="save" data-kind="suly">Súly mentése</button>
 </div>
@@ -462,7 +462,7 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 <summary><span class="chev">▸</span> Life check-in <span class="hint">alvás · hangulat · energia</span></summary>
 <div class="body">
 <div class="lgrid">
-<input id="c-alvas" type="number" step="0.5" inputmode="decimal" placeholder="alvás (óra)">
+<input id="c-alvas" type="text" class="numdec" inputmode="decimal" autocomplete="off" placeholder="alvás (óra)">
 <select id="c-hangulat"><option value="">hangulat…</option><option>jó</option><option>közepes</option><option>rossz</option></select>
 </div>
 <select id="c-energia"><option value="">energia 1-5…</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
@@ -1529,14 +1529,36 @@ return r.ok ? true : (j.error || ('HTTP ' + r.status));
 }catch(e){ return String((e && e.message) || e); }
 };
 
+/* Tizedes bevitel: a .numdec mezokbe vesszo IS irhato (magyar tizedesjel).
+   Beirasnal csak szamot, vesszot es pontot enged; kuldes elott vesszo -> pont. */
+function decNorm(v){
+  v = String(v == null ? '' : v).trim().replace(',', '.');
+  return v;
+}
+function decVal(id){
+  const el = $l(id);
+  if(!el) return '';
+  return decNorm(el.value);
+}
+document.querySelectorAll('input.numdec').forEach(function(i){
+  i.addEventListener('input', function(){
+    let v = i.value.replace(/[^0-9.,]/g, '');
+    const firstSep = v.search(/[.,]/);
+    if(firstSep !== -1){
+      v = v.slice(0, firstSep + 1) + v.slice(firstSep + 1).replace(/[.,]/g, '');
+    }
+    if(v !== i.value) i.value = v;
+  });
+});
+
 document.querySelectorAll('button[data-kind]').forEach(function(b){
 b.onclick = async function(){
 const k = b.dataset.kind;
 b.disabled = true; st.className = 'jstat'; st.textContent = 'Kuldes...';
 let data = {};
-if(k === 'munka')   data = { ora: $l('m-ora').value, orabar: $l('m-ber').value, megj: $l('m-megj').value };
-if(k === 'suly')    data = { suly: $l('s-kg').value, megj: $l('s-megj').value };
-if(k === 'checkin') data = { alvas: $l('c-alvas').value, hangulat: $l('c-hangulat').value,
+if(k === 'munka')   data = { ora: decVal('m-ora'), orabar: decNorm($l('m-ber').value), megj: $l('m-megj').value };
+if(k === 'suly')    data = { suly: decVal('s-kg'), megj: $l('s-megj').value };
+if(k === 'checkin') data = { alvas: decVal('c-alvas'), hangulat: $l('c-hangulat').value,
 energia: $l('c-energia').value, jegyzet: $l('c-jegyzet').value,
 terulet: Array.prototype.slice.call(document.querySelectorAll('.c-ter:checked')).map(function(x){ return x.value; }) };
 const ok = await window.__log(k, data);
