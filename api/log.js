@@ -22,7 +22,11 @@ const hdr = () => ({
 });
 
 const txt = (v) => (v === undefined || v === null || v === "") ? [] : [{ type: "text", text: { content: String(v).slice(0, 1900) } }];
-const num = (v) => (v === undefined || v === null || v === "" || isNaN(Number(v))) ? null : Number(v);
+// A magyar tizedesvesszot is elfogadja (74,5 -> 74.5)
+const num = (v) => {
+  if (typeof v === "string") v = v.trim().replace(",", ".");
+  return (v === undefined || v === null || v === "" || isNaN(Number(v))) ? null : Number(v);
+};
 const sel = (v) => v ? { select: { name: String(v) } } : undefined;
 const today = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Budapest" });
 
