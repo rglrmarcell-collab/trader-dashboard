@@ -131,5 +131,119 @@
    "fear_greed": "FLAT",
    "kalshi": "HIT"
   }
+ },
+ {
+  "id": "2026-W38",
+  "made_at": "2026-09-14T07:17:10+00:00",
+  "anchor_price": 77724.3,
+  "weekend_start": "2026-09-18T21:00:00+00:00",
+  "weekend_end": "2026-09-20T23:00:00+00:00",
+  "score": 56.3,
+  "bias": "ENYHÉN BULLISH",
+  "emoji": "🟢",
+  "direction": "UP",
+  "confidence": 0.48,
+  "coverage": 0.65,
+  "agreement": 0.33,
+  "expected_range": {
+   "low": 75631.0,
+   "high": 79956.0,
+   "center": 77793.0,
+   "width_pct": 5.56,
+   "basis": "realizalt hetvegi p80 mozgas 26 hetvegebol",
+   "invalidation": 75182.0,
+   "invalidation_side": "below"
+  },
+  "invalidation": 75182.0,
+  "invalidation_side": "below",
+  "main_drivers": "liquidation ↑, retail_positioning ↓",
+  "weight_profile": "v2.0-2026-09",
+  "factors": [
+   {
+    "name": "derivatives",
+    "dir": "FLAT",
+    "value": 0.0,
+    "conf": 0.75,
+    "w": 0.22,
+    "tracked_only": false,
+    "unproven": false,
+    "ok": true,
+    "why": "funding semleges (7% ann.)"
+   },
+   {
+    "name": "technical",
+    "dir": "FLAT",
+    "value": 0.0,
+    "conf": 0.7,
+    "w": 0.22,
+    "tracked_only": false,
+    "unproven": false,
+    "ok": true,
+    "why": "trend: -0.9% SMA20 / +8.8% SMA50"
+   },
+   {
+    "name": "retail_positioning",
+    "dir": "DOWN",
+    "value": -0.403,
+    "conf": 0.6,
+    "w": 0.2,
+    "tracked_only": false,
+    "unproven": false,
+    "ok": true,
+    "why": "retail L/S 1.55 (87. percentilis 30 napra)"
+   },
+   {
+    "name": "liquidation",
+    "dir": "UP",
+    "value": 0.816,
+    "conf": 0.85,
+    "w": 0.18,
+    "tracked_only": false,
+    "unproven": true,
+    "ok": true,
+    "why": "legkozelebbi klaszter +0.3% / -9.2%; notional felette $2.0Mrd, alatta $0.3Mrd [sajat modell, OI + tokeattetel-savok]"
+   },
+   {
+    "name": "fear_greed",
+    "dir": "FLAT",
+    "value": 0.0,
+    "conf": 0.15,
+    "w": 0.05,
+    "tracked_only": false,
+    "unproven": false,
+    "ok": true,
+    "why": "F&G 57 — semleges sav, nincs jel"
+   },
+   {
+    "name": "kalshi",
+    "dir": "UP",
+    "value": 0.106,
+    "conf": 0.4,
+    "w": 0.13,
+    "tracked_only": false,
+    "unproven": true,
+    "ok": true,
+    "why": "havi implied: +6.9% / -5.3% tér, skew +0.13 (expected-value) [indirekt — nincs hetvegi Kalshi piac hetfon]"
+   }
+  ],
+  "factor_calls": {
+   "derivatives": "FLAT",
+   "technical": "FLAT",
+   "retail_positioning": "DOWN",
+   "liquidation": "UP",
+   "fear_greed": "FLAT",
+   "kalshi": "UP"
+  },
+  "monthly": {
+   "target_time": "2026-09-30T23:00:00+00:00",
+   "direction": "UP",
+   "score": 56.3,
+   "kalshi_implied_high": null,
+   "kalshi_implied_low": 73616.07142857143,
+   "note": "12 adatpont/ev — evekig megfigyeles, nem tanulsag"
+  },
+  "sources_failed": [],
+  "resolved": false,
+  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 56%\nExpected weekend range: $75,631–$79,956\nMain drivers: liquidation ↑, retail_positioning ↓.\nInvalidation: below $75,182."
  }
 ]
