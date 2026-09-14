@@ -110,7 +110,26 @@
    "note": "12 adatpont/ev — evekig megfigyeles, nem tanulsag"
   },
   "sources_failed": [],
-  "resolved": false,
-  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 62%\nExpected weekend range: $76,212–$80,885\nMain drivers: liquidation ↑, technical ↑, retail_positioning ↓.\nInvalidation: below $75,711."
+  "resolved": true,
+  "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 62%\nExpected weekend range: $76,212–$80,885\nMain drivers: liquidation ↑, technical ↑, retail_positioning ↓.\nInvalidation: below $75,711.",
+  "outcome": {
+   "friday_close": 77119.0,
+   "sunday_close": 76836.0,
+   "weekend_move_pct": -0.37,
+   "actual_direction": "FLAT",
+   "result": "FLAT",
+   "range_hit": true,
+   "anchor_to_sunday_pct": -2.06,
+   "invalidated": false,
+   "resolved_at": "2026-09-14T00:38:41+00:00"
+  },
+  "factor_results": {
+   "derivatives": "HIT",
+   "technical": "FLAT",
+   "retail_positioning": "FLAT",
+   "liquidation": "FLAT",
+   "fear_greed": "FLAT",
+   "kalshi": "HIT"
+  }
  }
 ]

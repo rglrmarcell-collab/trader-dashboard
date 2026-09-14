@@ -114,8 +114,54 @@
   "headline": "BTC WEEKEND BIAS: 🟢 ENYHÉN BULLISH — 62%\nExpected weekend range: $76,212–$80,885\nMain drivers: liquidation ↑, technical ↑, retail_positioning ↓.\nInvalidation: below $75,711."
  },
  "accuracy": {
-  "n": 0,
-  "note": "meres alatt — nincs meg adat"
+  "n": 1,
+  "directional_n": 0,
+  "hit_rate": null,
+  "hits": 0,
+  "misses": 0,
+  "flats": 1,
+  "range_hit_rate": 100.0,
+  "mae_usd": 1713.0,
+  "by_factor": {
+   "derivatives": {
+    "n_directional": 1,
+    "hit_rate": 100.0,
+    "flat": 0,
+    "verdict": "nincs eleg adat"
+   },
+   "technical": {
+    "n_directional": 0,
+    "hit_rate": null,
+    "flat": 1,
+    "verdict": "nincs eleg adat"
+   },
+   "retail_positioning": {
+    "n_directional": 0,
+    "hit_rate": null,
+    "flat": 1,
+    "verdict": "nincs eleg adat"
+   },
+   "liquidation": {
+    "n_directional": 0,
+    "hit_rate": null,
+    "flat": 1,
+    "verdict": "nincs eleg adat"
+   },
+   "fear_greed": {
+    "n_directional": 0,
+    "hit_rate": null,
+    "flat": 1,
+    "verdict": "nincs eleg adat"
+   },
+   "kalshi": {
+    "n_directional": 1,
+    "hit_rate": 100.0,
+    "flat": 0,
+    "verdict": "nincs eleg adat"
+   }
+  },
+  "baseline_note": "irany-hivas veletlenszeruen ~50%. 55% alatt a jel ertektelen.",
+  "maturity": "ELOZETES — 15 lezart hetvege alatt megfigyeles, nem tanulsag"
  },
- "updated_at": "2026-09-08T11:26:24+00:00"
+ "updated_at": "2026-09-14T00:38:42+00:00"
 }
