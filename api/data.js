@@ -19,6 +19,14 @@ const DB = {
   munka: "875ff67011f84dfc918de23b4eb2b8d7"
 };
 
+// Accounts DB — az ELO FTMO egyenleg egyetlen forrasa (Tozsde-szabalykonyv 6).
+// 2026-09-14 (M-070): korabban az egyenleg BE VOLT EGETVE az index.html-be, es a
+// 7.3 szabaly tevesen azt allitotta, hogy a dashboard Notionbol olvassa. 12 napig
+// 99 500-at mutatott 98 686 helyett. Ezert kerul ide: hogy soha ne kelljen kezzel.
+const ACCOUNTS_DB = "2dcac560704881bcb5a4d624caceaaec";
+const ACCOUNT_ROW_NAME = "FTMO $100k";
+
+
 const hdr = () => ({
   "Authorization": "Bearer " + process.env.NOTION_TOKEN,
   "Notion-Version": "2022-06-28",
@@ -202,6 +210,26 @@ export default async function handler(req, res) {
     d: pDate(p[D]), h: pNum(p["Ledolgozott \u00f3ra"]), rate: pNum(p["\u00d3rab\u00e9r (Ft)"]),
     jatt: pNum(p["Jatt (Ft)"]), name: pText(p["N\u00e9v"])
   }));
+
+  // ---- Elo account-egyenleg ----
+  try {
+    const rows = await q(ACCOUNTS_DB, null);
+    let hit = null;
+    for (const p of rows) {
+      const nm = pText(p["Name"]) || pText(p["Név"]) || pText(p["Account"]) || "";
+      if (nm.indexOf(ACCOUNT_ROW_NAME) === 0) { hit = p; break; }
+    }
+    // A "(HIDE) Current Balance" RICH TEXT, nem szam ("98686"). Ezert parse-oljuk.
+    let bal = null;
+    if (hit) {
+      const raw = pText(hit["(HIDE) Current Balance"]).replace(/[^0-9.\-]/g, "");
+      if (raw) { const n = Number(raw); if (!Number.isNaN(n)) bal = n; }
+      if (bal === null) bal = pNum(hit["(HIDE) Current Balance"]);
+    }
+    out.account = (bal === null || bal === undefined)
+      ? { current: null, error: "nem talaltam a(z) '" + ACCOUNT_ROW_NAME + "' sort vagy ures a mezo" }
+      : { current: bal, source: "Notion Accounts DB", row: ACCOUNT_ROW_NAME };
+  } catch (e) { out.account = { current: null, error: String(e.message || e) }; }
 
   try { out.today = await readToday(); }
   catch (e) { out.today = { found: false, sections: [] }; out.errors.today = String(e.message || e); }
