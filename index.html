@@ -1333,12 +1333,16 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
    A streak + a döntési kártya + a checklist forrása a Mentor Log Élő állapota.
    ===================================================================== */
 const DATA = {
-  updated: "2026-09-02",
-  syncNote: "kézi frissítés · napi adat élőben a Notionből",
-  streak: { current: 0, record: "2*" },
-  account: { current: 99500, goal: 110000, initial: 100000, floor: 90000 },
+  updated: "2026-09-14",
+  syncNote: "egyenleg ÉLŐBEN a Notion Accounts DB-ből (2026-09-14 óta) · streak + trade-lista kézi, a Mentor Log Élő állapotából",
+  streak: { current: 1, record: "2*" },
+  /* FALLBACK. Az igazi ertek a Notion Accounts DB "(HIDE) Current Balance" mezoje,
+     amit a /api/data ad vissza es a renderAccount() felulir. Ez csak addig latszik,
+     amig a fetch le nem fut (vagy ha nincs jelszo). 2026-09-14, M-070. */
+  account: { current: 98686, goal: 110000, initial: 100000, floor: 90000 },
   stats3m: { wins: 3, losses: 10, be: 2, total: 15, avgRR: 2.79 },
   trades: [
+    { pair:"EURUSD",  date:"2026-09-09", res:"loss", pnl:"−$800",  conf:"A 10" },
     { pair:"NAS100",  date:"2026-08-03", res:"win",  pnl:"+$1800", conf:"B+ 9" },
     { pair:"XAUUSD",  date:"2026-07-27", res:"loss", pnl:"−$500",  conf:"B+ 8.5" },
     { pair:"NAS100",  date:"2026-07-23", res:"be",   pnl:"BE",     conf:"B+ 8.5" },
@@ -1429,8 +1433,10 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
    requestAnimationFrame(s);})();}
 
 /* ---- Panel 1 ---- */
-(function(){
-  const a=DATA.account, s=DATA.stats3m;
+/* renderAccount(): ujrafuttathato, mert az egyenleg a Notionbol erkezik es
+   a fetch kesobb fut le, mint ez a blokk. 2026-09-14 (M-070). */
+window.renderAccount = function renderAccount(){
+  const a=DATA.account;
   countUp($('balance'),a.current,{pre:"$"});
   const d=a.current-a.initial;
   $('delta').className="delta "+(d>=0?"up":"down");
@@ -1443,6 +1449,11 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
   $('bipct').textContent=(bip>=0?"+":"")+bip.toFixed(0)+"%";
   $('bipct').style.color=bip>=0?"var(--green)":"var(--red)";
   $('bitxt').textContent=bip>=0?"a cél felé ("+money(a.current)+")":"a bukási szint felé ("+money(a.current)+")";
+  var hb=$('h-bal'); if(hb) hb.textContent=money(a.current);
+};
+(function(){
+  const s=DATA.stats3m;
+  renderAccount();
   const decided=s.wins+s.losses, wr=decided?Math.round(s.wins/decided*100):0;
   countUp($('wr'),wr,{suf:"%"});
   $('wr-l').innerHTML=`Win rate<br><span class="sm">${s.wins}W · ${s.losses}L · ${s.be}BE</span>`;
@@ -1974,6 +1985,26 @@ else {
 (function(){
   var TAG={bullish:'bull',bearish:'bear','törékeny':'frag',tiltólista:'',semleges:''};
   function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+  /* ---- ELO EGYENLEG a Notion Accounts DB-bol (2026-09-14, M-070) ----
+     Ezert nem kell tobbe kezzel atirni az egyenleget a kodban. Ha a fetch
+     nem megy (nincs jelszo, nincs halozat, a Notion integracio nem latja az
+     Accounts DB-t), a beegetett fallback marad, es a lap nem hazudik ujat. */
+  window.__loadAccount = async function(){
+    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
+    if(!sec) return;
+    try{
+      var r=await fetch('/api/data?t='+Date.now(),{headers:{'x-log-secret':sec},cache:'no-store'});
+      if(!r.ok) return;
+      var j=await r.json();
+      var cur = j && j.account && j.account.current;
+      if(typeof cur!=='number' || !isFinite(cur)) return;
+      if(cur===DATA.account.current) return;
+      DATA.account.current=cur;
+      if(window.renderAccount) window.renderAccount();
+    }catch(_){}
+  };
+  try{ window.__loadAccount(); }catch(_){}
+
   window.__loadBias = async function(){
     var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
     if(!sec) return;
