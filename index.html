@@ -1472,15 +1472,16 @@ padding:13px 14px; margin-top:13px; font-size:12.5px; line-height:1.55; color:va
    A streak + a döntési kártya + a checklist forrása a Mentor Log Élő állapota.
    ===================================================================== */
 const DATA = {
-  updated: "2026-09-14",
-  syncNote: "egyenleg ÉLŐBEN a Notion Accounts DB-ből (2026-09-14 óta) · streak + trade-lista kézi, a Mentor Log Élő állapotából",
-  streak: { current: 1, record: "2*" },
+  updated: "2026-09-16",
+  syncNote: "egyenleg ÉLŐBEN a Notion Accounts DB-ből (forrása 2026-09-16 óta a cTrader) · streak + trade-lista kézi, a Mentor Log Élő állapotából",
+  streak: { current: 0, record: "2*" },
   /* FALLBACK. Az igazi ertek a Notion Accounts DB "(HIDE) Current Balance" mezoje,
      amit a /api/data ad vissza es a renderAccount() felulir. Ez csak addig latszik,
      amig a fetch le nem fut (vagy ha nincs jelszo). 2026-09-14, M-070. */
-  account: { current: 98686, goal: 110000, initial: 100000, floor: 90000 },
-  stats3m: { wins: 3, losses: 10, be: 2, total: 15, avgRR: 2.79 },
+  account: { current: 97953, goal: 110000, initial: 100000, floor: 90000 },
+  stats3m: { wins: 3, losses: 11, be: 2, total: 16, avgRR: 2.81 },
   trades: [
+    { pair:"GBPCAD",  date:"2026-09-16", res:"loss", pnl:"−$671",  conf:"B+ 9" },
     { pair:"EURUSD",  date:"2026-09-09", res:"loss", pnl:"−$800",  conf:"A 10" },
     { pair:"NAS100",  date:"2026-08-03", res:"win",  pnl:"+$1800", conf:"B+ 9" },
     { pair:"XAUUSD",  date:"2026-07-27", res:"loss", pnl:"−$500",  conf:"B+ 8.5" },
