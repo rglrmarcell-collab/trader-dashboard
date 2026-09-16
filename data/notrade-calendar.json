@@ -1,0 +1,21 @@
+{
+  "_about": "EGESZ NAPOS NO-TRADE napok (Tozsde-szabalykonyv 10.3): NFP, US CPI, FOMC es minden kamatdontes (Fed, ECB, BoE, BoJ, BoC). Vedohalo: a dashboard ebbol akkor is piros bannert mutat, ha a reggeli bias-futas elmarad vagy adat nelkul fut. Forras: fedratecalc.com (US), centralbank.watch + mnimarkets.com (jegybankok), 2026-09-16-i ellenorzes. Karbantarto: a mentor, havi retron (a kovetkezo 3 honap legyen benne). Ha a lista lejar, a dashboard sarga figyelmeztetest ad.",
+  "valid_until": "2026-12-31",
+  "rule_first_friday_nfp": true,
+  "days": {
+    "2026-09-16": "FOMC kamatdöntés (20:00) + US retail sales (14:30)",
+    "2026-09-17": "BoE + BoJ kamatdöntés",
+    "2026-10-02": "NFP (14:30)",
+    "2026-10-14": "US CPI (14:30)",
+    "2026-10-28": "FOMC (19:00) + BoC kamatdöntés",
+    "2026-10-29": "ECB kamatdöntés",
+    "2026-10-30": "BoJ kamatdöntés (forrásonként 10-28 vagy 10-30 — óvatosságból tiltva)",
+    "2026-11-05": "BoE kamatdöntés",
+    "2026-11-06": "NFP (14:30)",
+    "2026-11-10": "US CPI (14:30)",
+    "2026-12-04": "NFP (14:30)",
+    "2026-12-09": "FOMC (20:00) + BoC kamatdöntés",
+    "2026-12-17": "ECB + BoE kamatdöntés",
+    "2026-12-18": "BoJ kamatdöntés"
+  }
+}
