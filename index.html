@@ -500,20 +500,160 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
 
 </section>
 <section class="pane" id="pane-trading">
+<!-- =====================================================================
+     TOZSDE FUL — 2026-09-16 ujratervezes (Marcell: a "Reggeli Brief" sotet
+     kartyas design alapjan). Szerkezet, fentrol lefele:
+       hero · statusz-sav · KPI-csempek (az elso az EDGE FACTOR) ·
+       szeles sav (account-merce + alatta kicsiben a BTC hetvege-merce) ·
+       bias 8 par · deviza-ero · hir-ablakok · AI napi fokusz ·
+       vegrehajtas (fo fek, streak, utolso trade-ek) · Trade Checklist.
+     Az adat NEM itt el: a "Bias — ma" Notion-lap (api/data) + a DATA blokk.
+     ===================================================================== -->
+<style>
+#pane-trading{
+  --tz-bg:transparent; --tz-card:var(--card); --tz-line:var(--line); --tz-ink:var(--ink); --tz-sub:var(--sub);
+  --tz-faint:var(--faint); --tz-g:#15803d; --tz-r:#dc2626; --tz-a:#b45309; --tz-n:#64748b; --tz-y:#b7791f;
+  --tz-gbg:#ecfdf3; --tz-rbg:#fef2f2; --tz-abg:#fffbeb; --tz-nbg:#f1f5f9;
+  --tz-hl:#b45309;
+}
+:root[data-theme="dark"] #pane-trading{
+  --tz-card:#161b22; --tz-line:#262d37; --tz-ink:#e6edf3; --tz-sub:#b3bcc7; --tz-faint:#8b95a1;
+  --tz-g:#4ac26b; --tz-r:#f0524f; --tz-a:#e3b341; --tz-n:#6e7681; --tz-y:#d4a72c;
+  --tz-gbg:#12261b; --tz-rbg:#2b1418; --tz-abg:#2e2410; --tz-nbg:#1c222b;
+  --tz-hl:#e3b341;
+}
+:root[data-theme="dark"] body{background:#0d1117;}
+:root[data-theme="dark"]{--bg:#0d1117;}
+#pane-trading .card::before{display:none;}
 
-<!-- BTC Weekend Predictor -->
-<div id="btcwp-full"></div>
+.tz-hero{padding:6px 2px 16px;}
+.tz-hero h1{font-size:25px; line-height:1.18; font-weight:800; letter-spacing:-.5px; color:var(--tz-ink);}
+.tz-hero h1 .w{display:inline-block;}
+.tz-hero .s{margin-top:6px; font-size:13px; color:var(--tz-sub);}
+.tz-hero .s b{color:var(--tz-ink); font-weight:600;}
 
-<!-- PANEL 1 -->
-<div class="card d1">
-  <div class="eyebrow">Account &amp; Challenge</div>
-  <div class="acct">
+.tz-alert{border:1.5px solid var(--tz-a); background:var(--tz-abg); border-radius:14px; padding:15px 17px; margin-bottom:14px;
+  font-size:14px; line-height:1.55; color:var(--tz-ink);}
+.tz-alert .t{font-weight:800; color:var(--tz-a); font-size:15px; line-height:1.4; margin-bottom:3px;}
+.tz-alert.no{border-color:var(--tz-r); background:var(--tz-rbg);} .tz-alert.no .t{color:var(--tz-r);}
+.tz-alert.ok{border-color:var(--tz-g); background:var(--tz-gbg);} .tz-alert.ok .t{color:var(--tz-g);}
+.tz-alert.idle{border-color:var(--tz-line); background:var(--tz-card);} .tz-alert.idle .t{color:var(--tz-sub);}
+.tz-alert b{color:var(--tz-ink);}
+.tz-alert .x{margin-top:7px; font-size:12px; color:var(--tz-sub);}
+
+.tz-kpis{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:10px;}
+.tz-k{background:var(--tz-card); border:1px solid var(--tz-line); border-radius:14px; padding:14px 14px 13px; min-width:0; position:relative; overflow:hidden;}
+.tz-k .l{font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--tz-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.tz-k .v{font-size:25px; font-weight:800; letter-spacing:-.6px; margin-top:8px; color:var(--tz-ink); font-variant-numeric:tabular-nums; white-space:nowrap;}
+.tz-k .v small{font-size:15px; font-weight:700; color:var(--tz-faint); letter-spacing:0;}
+.tz-k .m{font-size:11px; color:var(--tz-sub); margin-top:4px; line-height:1.35;}
+.tz-k.tz-edge{border-color:color-mix(in srgb, var(--ec, var(--tz-line)) 55%, var(--tz-line));}
+.tz-k.tz-edge .v{color:var(--ec, var(--tz-ink));}
+.tz-k.tz-edge::after{content:""; position:absolute; inset:auto 0 0 0; height:3px; background:var(--tz-line);}
+.tz-k.tz-edge .eb{position:absolute; left:0; bottom:0; height:3px; width:0; background:var(--ec, var(--tz-n)); z-index:1;
+  transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+@media (max-width:640px){
+  .tz-kpis{grid-template-columns:repeat(2,1fr);}
+  .tz-k.tz-edge{grid-column:1 / -1;}
+}
+
+/* szeles sav: account-merce + BTC-merce */
+.tz-band{background:var(--tz-card); border:1px solid var(--tz-line); border-radius:14px; padding:16px 18px 15px; margin-bottom:22px;}
+.tz-band .hd{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.tz-band .lbl{font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--tz-faint);}
+.tz-band .bal{font-size:28px; font-weight:800; letter-spacing:-.7px; color:var(--tz-ink); line-height:1.05; margin-top:4px; font-variant-numeric:tabular-nums;}
+.tz-band .delta{margin-top:4px; font-size:12.5px;}
+.tz-band .gnow{justify-content:flex-end; margin-top:0; text-align:right;}
+.tz-band .gnow .p{font-size:20px;}
+.tz-band .gauge{margin-top:12px;}
+.tz-band .gtrack{height:10px; border-color:var(--tz-line); overflow:visible;}
+:root[data-theme="dark"] .tz-band .gtrack{background:linear-gradient(90deg,#4a1d24 0%,#3a2a14 32%,#1f2630 48%,#1f2630 52%,#163021 68%,#1a4a2e 100%);}
+.tz-band .gmark{top:-5px; height:20px;}
+:root[data-theme="dark"] .tz-band .gmark{background:#e6edf3; box-shadow:0 0 0 3px #161b22, 0 0 14px rgba(230,237,243,.35);}
+.tz-band .gscale{margin-top:7px;}
+.tz-mini{margin-top:13px; padding-top:12px; border-top:1px solid var(--tz-line); display:grid; grid-template-columns:auto 1fr auto; gap:6px 12px; align-items:center;}
+.tz-mini .n{font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--tz-sub); white-space:nowrap;}
+.tz-mini .v{font-size:11.5px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums;}
+.tz-mini .v.u{color:var(--tz-g);} .tz-mini .v.d{color:var(--tz-r);} .tz-mini .v.f{color:var(--tz-a);}
+.tz-mini .trk{position:relative; height:6px; border-radius:6px;
+  background:linear-gradient(90deg,#fbdce3 0%,#eef1f5 45%,#eef1f5 55%,#cdeede 100%);}
+:root[data-theme="dark"] .tz-mini .trk{background:linear-gradient(90deg,#4a1d24 0%,#1f2630 45%,#1f2630 55%,#1a4a2e 100%);}
+.tz-mini .trk::before{content:""; position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:var(--tz-faint); opacity:.6;}
+.tz-mini .trk i{position:absolute; top:-4px; width:4px; height:14px; margin-left:-2px; left:50%; border-radius:3px; background:var(--tz-ink);
+  box-shadow:0 0 0 2px var(--tz-card); transition:left 1.1s cubic-bezier(.16,1,.3,1);}
+.tz-mini .sub{grid-column:1 / -1; font-size:11px; color:var(--tz-faint); line-height:1.4;}
+
+.tz-h{font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--tz-sub); margin:24px 2px 11px;}
+.tz-h:first-of-type{margin-top:4px;}
+.tz-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+@media (max-width:760px){ .tz-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:430px){ .tz-grid{grid-template-columns:1fr;} }
+.tz-p{--pc:var(--tz-n); position:relative; background:var(--tz-card); border:1px solid var(--tz-line); border-radius:14px;
+  padding:15px 16px 15px 19px; overflow:hidden; transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s, border-color .35s;}
+.tz-p::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--pc);}
+.tz-p::after{content:""; position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .3s;
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), color-mix(in srgb, var(--pc) 16%, transparent), transparent 70%);}
+.tz-p:hover{transform:translateY(-3px); border-color:color-mix(in srgb, var(--pc) 45%, var(--tz-line)); box-shadow:0 12px 30px -12px color-mix(in srgb, var(--pc) 45%, transparent);}
+.tz-p:hover::after{opacity:1;}
+.tz-p .top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+.tz-p .nm{font-size:16px; font-weight:800; letter-spacing:-.2px; color:var(--tz-ink);}
+.tz-p .tg{font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--pc); text-align:right; margin-top:3px;}
+.tz-p .wh{font-size:13px; color:var(--tz-sub); line-height:1.5; margin-top:7px;}
+.tz-p.bull{--pc:var(--tz-g);} .tz-p.bear{--pc:var(--tz-r);} .tz-p.frag{--pc:var(--tz-y);} .tz-p.ban{--pc:var(--tz-n);}
+.tz-p.ban .tg{color:var(--tz-faint);}
+.tz-p.dim{opacity:.72;} .tz-p.dim .wh{font-style:italic;}
+
+.tz-box{background:var(--tz-card); border:1px solid var(--tz-line); border-radius:14px; padding:16px 18px;}
+.tz-pills{display:flex; flex-wrap:wrap; gap:9px;}
+.tz-pill{font-size:13.5px; font-weight:700; padding:8px 15px; border-radius:999px; border:1px solid var(--tz-line); color:var(--tz-sub); background:var(--tz-nbg);}
+.tz-pill.up{color:var(--tz-g); background:var(--tz-gbg); border-color:color-mix(in srgb, var(--tz-g) 30%, transparent);}
+.tz-pill.dn{color:var(--tz-r); background:var(--tz-rbg); border-color:color-mix(in srgb, var(--tz-r) 30%, transparent);}
+.tz-news{list-style:none;}
+.tz-news li{position:relative; padding:7px 0 7px 20px; font-size:14px; line-height:1.5; color:var(--tz-ink);}
+.tz-news li::before{content:""; position:absolute; left:2px; top:14px; width:9px; height:9px; border-radius:50%; background:var(--tz-y);}
+.tz-news li.r::before{background:var(--tz-r); box-shadow:0 0 0 3px color-mix(in srgb, var(--tz-r) 18%, transparent);}
+.tz-news li.o::before{background:#e8912d;}
+.tz-news li.y::before{background:#c9b458;}
+.tz-news li b{font-weight:800;}
+.tz-news .none{color:var(--tz-sub); padding-left:0;} .tz-news .none::before{display:none;}
+.tz-focus{font-size:15px; line-height:1.65; color:var(--tz-ink);}
+.tz-focus .hl{color:var(--tz-hl); font-weight:700;}
+.tz-focus .brk{display:block; margin-top:14px; color:var(--tz-hl); font-weight:800;}
+.tz-focus .meta{display:block; margin-top:10px; font-size:11.5px; color:var(--tz-faint);}
+
+/* vegrehajtas-kartya: a regi elemek, sotet feluleten */
+#pane-trading .tz-exec{background:var(--tz-card); border-color:var(--tz-line);}
+#pane-trading .stats{margin-top:0;}
+:root[data-theme="dark"] #pane-trading .focus{background:#1c222b; border-color:var(--tz-line);}
+:root[data-theme="dark"] #pane-trading .streak, :root[data-theme="dark"] #pane-trading .acc{background:#161b22; border-color:var(--tz-line);}
+:root[data-theme="dark"] #pane-trading .card{background:#161b22; border-color:var(--tz-line); box-shadow:none;}
+#pane-trading .card{margin-bottom:12px;}
+</style>
+
+<header class="tz-hero">
+  <h1 id="tz-title">Session Brief</h1>
+  <div class="s" id="tz-sub">FTMO $100k · 1. fázis</div>
+</header>
+
+<div class="tz-alert idle" id="tradestatus-wrap"><div class="t">Betöltés…</div></div>
+
+<div class="tz-kpis">
+  <div class="tz-k tz-edge" id="k-edge"><div class="l">Edge factor</div><div class="v" id="edge-v">–<small> / 100</small></div><div class="m" id="edge-l">&nbsp;</div><i class="eb" id="edge-bar"></i></div>
+  <div class="tz-k"><div class="l">Cél</div><div class="v" id="k-goal">–</div></div>
+  <div class="tz-k"><div class="l">Bukási szint</div><div class="v" id="k-floor">–</div></div>
+  <div class="tz-k"><div class="l">3 hó W/L/BE</div><div class="v" id="k-wlb">–</div><div class="m" id="wr-l">&nbsp;</div></div>
+  <div class="tz-k"><div class="l">Átlag RR</div><div class="v" id="rr">–</div><div class="m" id="tot-l">&nbsp;</div></div>
+</div>
+
+<!-- SZELES SAV: az account-merce (a regi Account & Challenge panel) + a BTC hetvege-merce -->
+<div class="tz-band">
+  <div class="hd">
     <div>
-      <div class="balance num" id="balance"></div>
+      <div class="lbl">Account &amp; challenge</div>
+      <div class="bal" id="balance"></div>
       <div class="delta" id="delta"></div>
     </div>
-    <!-- A "Cél / bukás" szoveges blokk 2026-09-03-an kikerult: a lenti merce
-         ugyanezt mutatja, pozicioval es szinnel. Ne kerüljön vissza. -->
+    <div class="gnow"><span class="p num" id="bipct"></span><span class="t" id="bitxt"></span></div>
   </div>
   <div class="gauge">
     <div class="gtrack"><div class="gmid"></div><div class="gmark" id="gmark"></div></div>
@@ -522,41 +662,37 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
       <span class="mid"><b id="sc-mid"></b></span>
       <span class="hi"><b id="sc-hi"></b></span>
     </div>
-    <div class="gnow"><span class="p num" id="bipct"></span><span class="t" id="bitxt"></span></div>
   </div>
+  <div class="tz-mini" id="btcwp-band"><span class="n">BTC hétvége</span><span class="trk"><i></i></span><span class="v f">…</span></div>
+</div>
+
+<h3 class="tz-h">Bias — 8 pár</h3>
+<div class="tz-grid" id="bias"></div>
+
+<h3 class="tz-h">Deviza-erő</h3>
+<div class="tz-box"><div class="tz-pills" id="strength"></div></div>
+
+<h3 class="tz-h">Hír-ablakok (CEST)</h3>
+<div class="tz-box"><ul class="tz-news" id="news"></ul></div>
+
+<h3 class="tz-h">AI napi fókusz</h3>
+<div class="tz-box"><div class="tz-focus" id="aifocus"></div></div>
+
+<h3 class="tz-h">Végrehajtás</h3>
+<div class="card tz-exec">
   <div class="stats">
-    <div class="stat"><div class="n" id="wr">0%</div><div class="l" id="wr-l">Win rate</div></div>
-    <div class="stat"><div class="n" id="rr">0</div><div class="l">Átlag RR-cél</div></div>
+    <div class="stat"><div class="n" id="wr">0%</div><div class="l">Win rate · 3 hó</div></div>
     <div class="stat"><div class="n" id="tot">0</div><div class="l">Trade · 3 hó</div></div>
+    <div class="stat"><div class="n num" id="streak-n">0</div><div class="l">Tiszta sorozat · rekord <span id="streak-rec">–</span></div></div>
   </div>
   <div class="focus">
     <div class="fdots" id="fdots"></div>
     <div class="ftx"><b>Fő fék</b> · a trade a belépés ELŐTT kész — SL, TP, LOT<div class="fsub" id="fsub"></div></div>
   </div>
-  <div class="streak">
-    <div class="sk"><span class="skn num" id="streak-n">0</span><span class="skl">tiszta trade sorozat</span></div>
-    <div class="skr">rekord <b class="num">2*</b> <span class="sknote">*nem igazolt</span></div>
-  </div>
-
   <details class="acc">
     <summary><span class="chev">▸</span> Utolsó trade-ek <span class="hint" id="trades-hint"></span></summary>
     <div class="body"><div id="trades"></div></div>
   </details>
-</div>
-
-<!-- PANEL 1b: TRADE CHECKLIST -->
-
-<!-- PANEL 2 -->
-<div class="card d2">
-  <div class="eyebrow">Session Brief<span id="today-label" style="color:var(--sub); font-weight:500; letter-spacing:0; text-transform:none; margin-left:2px;"></span></div>
-  <div id="tradestatus-wrap"></div>
-  <div class="strength" id="strength"></div>
-  <div class="bias" id="bias"></div>
-  <div class="nwrap"><div class="nhead">Hír-ablakok — magyar idő</div><div id="news"></div></div>
-  <div class="sb" id="sb"></div>
-  <div class="aifocus" id="aifocus"></div>
-
-
 </div>
 
 <div class="card d1b">
@@ -582,8 +718,11 @@ color:var(--ink); background:#fbfcfd; outline:none; margin-bottom:8px;}
   </details>
 </div>
 
+<!-- BTC Weekend Predictor — a teljes kartya + faktorok -->
+<div id="btcwp-full"></div>
 
 </section>
+
 <section class="pane" id="pane-health">
 <div class="card">
   <div class="eyebrow">Alvás — a lényeg</div>
@@ -1372,40 +1511,11 @@ const DATA = {
     { tier:"",    t:"Egymás ellen fogadás korreláló párokban — nézd meg belépés előtt." },
     { tier:"",    t:"4H nyitás + 30m entry — várd meg az 5m close-t. A 25. és az 50–55. percben nem nyitunk." }
   ],
-  setup: {
-briefDate: "2026-08-31",   /* KOTELEZO. A guard ehhez meri a mai napot. */
-dateLabel: "Hétfő, 2026. augusztus 31.",
-noTrade: false,
-tradeStatusText: "<b>TRADING NAP.</b> Nincs NFP, CPI, FOMC vagy kamatdöntés. Egyetlen közepes esemény: <b>15:45 Chicago PMI</b> → óvatosság 15:15–16:15, <b>nem tiltás</b>. <b>Hónap utolsó napja:</b> a 17:00-s londoni fix körül month-end rebalancing flow — nem naptári esemény, tehát nem tiltott ablak, de érv a kisebb méret vagy a skip mellett. <b>Utolsó éles trade: 2026-08-03 — 28 napja.</b>",
-edge: { score: 45, label: "Naptár tiszta — de a pár-bias NEM frissült aug. 20. óta" },
-brief: {
-riskTone: "Az augusztus 1 éles trade-del zárult, és 28 napja nem volt belépés. Ma nem a piac a fő kockázat, hanem a szünet utáni első nap: hosszú kihagyás után a küszöb szokott puhulni. A skip ma is tiszta kimenet, nem elszalasztott lehetőség.",
-keyDriver: "SZEPTEMBERI KERET: szept. 1–18. között napi 9:00–16:00 gépközelben, minden hétköznap — 14 munkanap, és lefedi a dokumentált setupjaid 100%-át (mind a 36 setup 15:20 CEST előtt van). Augusztusban a naptár zárta le a hónapot; szeptemberre ilyen mentség nincs.",
-watch: "AUG. 31.: 15:45 Chicago PMI (óvatosság 15:15–16:15) · 16:30 Dallas Fed (halk) · kb. 17:00 month-end flow. A HÉT: K 16:00 ISM Manufacturing → tiltott 15:30–16:30 · SZE 14:15 ADP → óvatosság 13:45–14:45 · CS 16:00 ISM Services → tiltott 15:30–16:30.",
-avoid: "PÉNTEK SZEPT. 4. = NFP → EGÉSZ NAPOS NO-TRADE, megsértése streak-reset. CRUDE tiltólistán marad. A pár-bias ezen az oldalon NEM friss (utolsó frissítés aug. 20.) — belépés előtt kérj reggeli briefet, ne ebből dolgozz."
-},
-strength: [ { t:"nincs friss adat", c:"s-neut" } ],
-bias: [
-{ p:"NAS100", c:"neut", t:"Nincs friss bias", conf:0, why:"Az ISM (K, CS) és az NFP (P) USD-hírek ide is átgyűrűznek. Bias nem frissítve aug. 20. óta — kérj briefet." },
-{ p:"SPX500", c:"neut", t:"Nincs friss bias", conf:0, why:"Ugyanaz az USD-kitettség, mint a NAS100-on. Bias nem frissítve aug. 20. óta." },
-{ p:"XAUUSD", c:"neut", t:"Nincs friss bias", conf:0, why:"USD-hírre a legérzékenyebb a nyolcból. Aug. 19-én hat hete tartó range volt — oldalazás = no trade. Nem frissítve." },
-{ p:"EURUSD", c:"neut", t:"Nincs friss bias", conf:0, why:"Aug. 20-án ez volt a legtisztább pár. Azóta nem frissítve — nem hordozható át." },
-{ p:"USDJPY", c:"neut", t:"Nincs friss bias", conf:0, why:"BoJ-kitettség és USD-hírek mindkét oldalról. Nem frissítve aug. 20. óta." },
-{ p:"GBPJPY", c:"neut", t:"Nincs friss bias", conf:0, why:"Két erős deviza egymás ellen, nagy spread — a te legdrágább vegyes-jel párod. Nem frissítve." },
-{ p:"GBPCAD", c:"neut", t:"Nincs friss bias", conf:0, why:"A CAD az olajon lóg (SZE 16:30 EIA). Korreláció: CRUDE long + GBPCAD long = egymás ellen fogadás. Nem frissítve." },
-{ p:"CRUDE", c:"frag", t:"Tiltólista", conf:0, why:"Tiltólistán marad (3 hóban 2/2 vesztes). Headline-vezérelt, gap-kockázat. Nincs mérlegelés." }
-],
-news: [
-{ imp:"imp-orange", txt:"<b>aug. 31. 15:45</b> — Chicago PMI (aug.) → SPX500, NAS100, XAUUSD, EURUSD. Óvatosság: <b>15:15–16:15</b>" },
-{ imp:"imp-yellow", txt:"<b>aug. 31. 16:30</b> — Dallas Fed Manufacturing (aug.) → halk hatás" },
-{ imp:"imp-yellow", txt:"<b>aug. 31. kb. 17:00</b> — hónap végi londoni fix, month-end rebalancing flow. Nem naptári esemény, nem tiltás — de szerkezet nélküli mozgás" },
-{ imp:"imp-red", txt:"<b>K szept. 1. 16:00</b> — ISM Manufacturing + JOLTS → USD, XAUUSD, NAS100, SPX500. Tiltott: <b>15:30–16:30</b>" },
-{ imp:"imp-orange", txt:"<b>SZE szept. 2. 14:15</b> — ADP → óvatosság 13:45–14:45 · <b>16:30</b> EIA → CRUDE, áttételesen CAD és GBPCAD" },
-{ imp:"imp-red", txt:"<b>CS szept. 3. 16:00</b> — ISM Services → tiltott <b>15:30–16:30</b> · 14:30 jobless claims → óvatosság 14:00–15:00" },
-{ imp:"imp-red", txt:"<b>P SZEPT. 4. 14:30 — NFP</b> → EGÉSZ NAPOS NO-TRADE. Megsértése streak-reset, köztes fokozat nincs" }
-],
-aiFocus: "AZ EGY DOLOG (aug. 31. – szept. 6.): <b>a TP számmal, ÉS a TP/SL-mozgatás triggere mechanikusan, tesztelhetően leírva a Notes-ba BELÉPÉS ELŐTT.</b> Ha nincs leírva: a TP és az SL marad, ahol van. Ez nem új cél — aug. 19-re fogadtad el, és nulla trade miatt sosem lett tesztelve. A fő fék 28 napja EGY adatponton áll (aug. 3., elhasalt): a következő három tiszta végrehajtás zárja le, nem a P&L. <b>Figyelmeztetés a hosszú szünet után:</b> napi 7 óra chart előtt + 28 nap kihagyás = az év legnagyobb over-trading kockázata. Szám-korlátot nem vezettünk be — vagyis a 8,5-ös küszöb az EGYETLEN fék. Ha az puhul, nincs mögötte semmi."
-}
+  /* A regi beegetett "setup" (aug. 31-i brief-pillanatkep) 2026-09-16-an KIKERULT.
+     A Session Brief kizarolag a "Bias — ma" Notion-laprol + a data/notrade-calendar.json
+     vedohalobol rajzolodik (lasd: __renderBrief). Beegetett, datumhoz kotott brief-tartalom
+     ide NE keruljon vissza (M-057, M-071). */
+  mainBrake: "a trade a belépés ELŐTT kész — SL, TP, LOT"
 };
 
 const DAILY_NOTES_PAGE = "36eac560704880469890e907b6f383d9";
@@ -1432,7 +1542,25 @@ function countUp(el,to,o={}){const dur=850,t0=performance.now(),dec=o.dec||0,suf
    el.textContent=fmtCU(to*(1-Math.pow(1-k,3)),dec,pre,suf);
    requestAnimationFrame(s);})();}
 
-/* ---- Panel 1 ---- */
+/* ---- Kozos /api/data lekeres (2026-09-16) ----
+   Korabban harom kulon fetch ment ugyanarra a vegpontra (Ma-panel, egyenleg, bias).
+   Most egy kozos, 15 mp-ig ervenyes igeret. Eredmeny: {ok, j, err, status}. */
+(function(){
+  var P=null, T=0;
+  window.__api = function(force){
+    if(!force && P && Date.now()-T < 15000) return P;
+    T=Date.now();
+    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
+    if(!sec){ P=Promise.resolve({ok:false, err:'nincs jelszó', nosecret:true}); return P; }
+    P=fetch('/api/data?t='+Date.now(),{headers:{'x-log-secret':sec},cache:'no-store'})
+      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){
+        return r.ok ? {ok:true, j:j} : {ok:false, j:j, err:(j&&j.error)||('HTTP '+r.status), status:r.status}; }); })
+      .catch(function(e){ return {ok:false, err:String((e&&e.message)||e)}; });
+    return P;
+  };
+})();
+
+/* ---- Panel 1: account + statisztika ---- */
 /* renderAccount(): ujrafuttathato, mert az egyenleg a Notionbol erkezik es
    a fetch kesobb fut le, mint ez a blokk. 2026-09-14 (M-070). */
 window.renderAccount = function renderAccount(){
@@ -1441,24 +1569,35 @@ window.renderAccount = function renderAccount(){
   const d=a.current-a.initial;
   $('delta').className="delta "+(d>=0?"up":"down");
   $('delta').textContent=(d>=0?"▲ +":"▼ ")+money(Math.abs(d))+" vs. induló "+money(a.initial);
-  /* A chal-goal / chal-floor elemek megszuntek: a merce mutatja ugyanezt. 2026-09-03. */
   $('sc-lo').textContent=money(a.floor); $('sc-mid').textContent=money(a.initial); $('sc-hi').textContent=money(a.goal);
+  $('k-goal').textContent=money(a.goal); $('k-floor').textContent=money(a.floor);
   const span=a.goal-a.initial; let bip=(a.current-a.initial)/span*100;
   const clamped=Math.max(-100,Math.min(100,bip)); const pos=(clamped+100)/200*100;
-  setTimeout(()=>{ $('gmark').style.left="calc("+pos+"% - 2px)"; },60);
+  const gm=$('gmark'); gm.style.left="calc(50% - 2px)";
+  setTimeout(()=>{ gm.style.left="calc("+pos+"% - 2px)"; },90);
   $('bipct').textContent=(bip>=0?"+":"")+bip.toFixed(0)+"%";
-  $('bipct').style.color=bip>=0?"var(--green)":"var(--red)";
-  $('bitxt').textContent=bip>=0?"a cél felé ("+money(a.current)+")":"a bukási szint felé ("+money(a.current)+")";
+  $('bipct').style.color=bip>=0?"var(--tz-g)":"var(--tz-r)";
+  $('bitxt').textContent=bip>=0?"a cél felé":"a bukási szint felé";
   var hb=$('h-bal'); if(hb) hb.textContent=money(a.current);
 };
-(function(){
+window.__animTrading = function(){
   const s=DATA.stats3m;
   renderAccount();
   const decided=s.wins+s.losses, wr=decided?Math.round(s.wins/decided*100):0;
   countUp($('wr'),wr,{suf:"%"});
-  $('wr-l').innerHTML=`Win rate<br><span class="sm">${s.wins}W · ${s.losses}L · ${s.be}BE</span>`;
   countUp($('rr'),s.avgRR,{dec:2}); countUp($('tot'),s.total);
+  if(window.__edgeAnim) window.__edgeAnim();
+  if(window.__btcBandAnim) window.__btcBandAnim();
+};
+(function(){
+  const s=DATA.stats3m;
+  const decided=s.wins+s.losses, wr=decided?Math.round(s.wins/decided*100):0;
+  $('k-wlb').textContent=`${s.wins} / ${s.losses} / ${s.be}`;
+  $('wr-l').textContent=`${wr}% win rate`;
+  $('tot-l').textContent=`${s.total} trade · 3 hó`;
+  window.__animTrading();
   $('streak-n').textContent=DATA.streak.current;
+  $('streak-rec').textContent=DATA.streak.record;
   $('trades-hint').textContent=`${s.wins}W · ${s.losses}L`;
   const pill=r=>r==="win"?'<span class="pill w">Nyert</span>':r==="loss"?'<span class="pill l">Vesztett</span>':'<span class="pill b">BE</span>';
   const pcol=r=>r==="win"?"var(--green)":r==="loss"?"var(--red)":"var(--sub)";
@@ -1475,45 +1614,172 @@ window.renderAccount = function renderAccount(){
     `<div class="ckrow"><span class="ckn ${x.tier}">${i+1}</span><span class="cktxt">${x.t}</span></div>`).join('');
 })();
 
-/* ---- Panel 2 ---- */
+/* =====================================================================
+   PANEL 2: SESSION BRIEF — 2026-09-16 (M-071)
+   Egyetlen renderer, negy allapot. EZEKET A SZABALYOKAT NE VEDD KI:
+   1) Zold "TRADING NAP" CSAK friss, NEM degradalt bias-futasbol jelenhet meg.
+      Adat nelkuli futas (b.degraded) = sarga figyelmeztetes, sosem zold.
+   2) NAPTAR-VEDOHALO: ha a mai nap a data/notrade-calendar.json-ban all (vagy a
+      honap elso penteke), a banner PIROS, akkor is, ha a bias-futas mast irt,
+      elmaradt, vagy nincs jelszo. FOMC-napon a lap soha tobbe nem mondhat zoldet.
+   3) Datumhoz kotott tartalom csak a MAI datummal jelenhet meg (M-057).
+   ===================================================================== */
 (function(){
-  const su=DATA.setup;
-  /* ELAVULAS-GUARD (2026-09-07, M-057). A Session Brief egy beegetett napi
-     pillanatkep. Datum-ellenorzes nelkul a REGI hir-ablakait "MA"-kent mutatta
-     — 7 napon at. Egy kereskedesi input, ami csendben rosszat allit, rosszabb
-     a semminel. EZT A GUARDOT NE VEDD KI. */
-  var todayHU = new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'}); // YYYY-MM-DD
-  var briefStale = !su.briefDate || su.briefDate !== todayHU;
-  $('today-label').textContent = briefStale ? (su.dateLabel + ' — ⚠️ ELAVULT') : su.dateLabel;
-  if(briefStale){
-    $('tradestatus-wrap').innerHTML =
-      '<div class="banner no">⛔ <b>ELAVULT BRIEF — NE HASZNÁLD MAI DÖNTÉSHEZ.</b> '
-      + 'Ez a panel a <b>' + su.briefDate + '</b>-i briefet tartalmazza, nem a mait ('
-      + todayHU + '). A hír-ablakok és a trading-státusz <b>elrejtve</b>, mert azok '
-      + 'arra a napra vonatkoztak. Mai hír-ablakért kérj friss briefet.</div>';
-  } else {
-    $('tradestatus-wrap').innerHTML=`<div class="banner ${su.noTrade?'no':'ok'}">${su.noTrade?'⛔ ':'✅ '}${su.tradeStatusText}</div>`;
+  var CAL=null, CAL_ERR=false, R=null;   /* R = __api() eredmenye */
+  var PAIRS=['SPX500','CRUDE','GBPCAD','GBPJPY','USDJPY','XAUUSD','EURUSD','NAS100'];
+  function esc(t){var d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;}
+  function todayISO(){ return new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'}); }
+  function dow(){ return new Date(todayISO()+'T12:00:00Z').getUTCDay(); }
+  function calHit(d){
+    if(!CAL) return null;
+    if(CAL.days && CAL.days[d]) return CAL.days[d];
+    if(CAL.rule_first_friday_nfp){ var t=new Date(d+'T12:00:00Z'); if(t.getUTCDay()===5 && t.getUTCDate()<=7) return 'NFP (a hónap első péntekje)'; }
+    return null;
   }
-  /* Az Edge Factor csempe kikerult: ugyanazt mondta, mint a banner. 2026-09-03. */
-  const b=su.brief;
-  /* 2026-09-03: negy csempe + AI fokusz + edge-felirat ugyanazt mondta harom helyen.
-     Egy blokk maradt. Ha ujra szetesik, az visszalepes. */
-  $('sb').innerHTML='';
-  /* A "Ma —" blokk kikerult: ugyanazt mondta, mint a banner es a hir-ablakok.
-     Csak az marad, ami sehol maskor nem szerepel: a bias elavultsaga. 2026-09-03. */
-  $('aifocus').innerHTML=`<b>A pár-bias és a deviza-erő nem frissül magától.</b> Aug. 20-i állapot. `
-    + `Élővé akkor válik, ha a reggeli brief kiírja a nyolc pár biasát a Notionbe — addig belépés előtt kérj briefet.`;
-  $('strength').innerHTML='<span class="lbl">Deviza-erő</span>'+su.strength.map(x=>{
-    var t=(x.t||''), cl = /erős/i.test(t)?'s-up' : /gyenge/i.test(t)?'s-dn' : '';
-    return `<span class="cur ${cl}">${t}</span>`;}).join('');
-  var TG={bull:'bull',bear:'bear',frag:'frag'};
-  $('bias').innerHTML=su.bias.map(x=>{
-    var t=(x.t||''), cl = /bullish/i.test(t)?'bull' : /bearish/i.test(t)?'bear' : /törékeny|fragile/i.test(t)?'frag' : '';
-    return `<div class="bcard"><div class="top"><span class="p">${x.p}</span><span class="tag ${cl}">${t}</span></div>`
-         + `<div class="why">${x.why}</div></div>`;}).join('');
-  var IL={'imp-red':'erős','imp-orange':'közepes','imp-yellow':'halk'};
-  $('news').innerHTML=su.news.map(n=>
-    `<div class="nrow"><span class="pill ${n.imp}">${IL[n.imp]||''}</span><div class="tx">${n.txt}</div></div>`).join('');
+  function words(txt){ return esc(txt).split(' ').map(function(w,i){ return '<span class="w" style="--i:'+i+'">'+w+'</span>'; }).join(' '); }
+  function tagOf(t){ t=(t||'').toLowerCase();
+    if(/bullish/.test(t)) return ['bull','bullish']; if(/bearish/.test(t)) return ['bear','bearish'];
+    if(/törékeny|fragile/.test(t)) return ['frag','fragile']; if(/tiltólista/.test(t)) return ['ban','tiltólista'];
+    return ['neut','semleges']; }
+  function pill(t){
+    var m=/^\s*([A-Z]{3})\s+(.*)$/.exec(t||''); if(!m) return '<span class="tz-pill">'+esc(t)+'</span>';
+    var w=m[2].toLowerCase(), cl='', ar='→';
+    if(/erős/.test(w)){ cl='up'; ar=/nagyon/.test(w)?'⇈':'↑'; } else if(/gyenge/.test(w)){ cl='dn'; ar=/nagyon/.test(w)?'⇊':'↓'; }
+    return '<span class="tz-pill '+cl+'" title="'+esc(t)+'">'+m[1]+' '+ar+'</span>';
+  }
+  function win(time){ var m=/^(\d{1,2}):(\d{2})$/.exec((time||'').trim()); if(!m) return '';
+    var t=(+m[1])*60+(+m[2]); function f(x){ x=(x+1440)%1440; return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0'); }
+    return f(t-30)+'–'+f(t+30); }
+  function edgeColor(n){ return n==null?'':(n>=60?'var(--tz-g)':n>=35?'var(--tz-a)':'var(--tz-r)'); }
+  var EDGE=null;
+  window.__edgeAnim=function(){
+    var bar=$('edge-bar'), v=$('edge-v'); if(!bar||!v) return;
+    bar.style.width='0';
+    if(!EDGE || EDGE.score==null){ v.innerHTML='–<small> / 100</small>'; return; }
+    setTimeout(function(){ bar.style.width=Math.max(2,EDGE.score)+'%'; },120);
+    var el=document.createElement('span'); v.innerHTML=''; v.appendChild(el);
+    v.insertAdjacentHTML('beforeend','<small> / 100</small>');
+    countUp(el,EDGE.score);
+  };
+  function hl(txt){
+    var h=esc(txt);
+    PAIRS.concat(['no-trade','NO-TRADE','nincs belépés']).forEach(function(p){
+      h=h.split(p).join('<span class="hl">'+p+'</span>'); });
+    return h;
+  }
+
+  window.__renderBrief=function(){
+    var d=todayISO(), wd=dow(), weekend=(wd===0||wd===6);
+    var j=R&&R.ok?R.j:null, b=j&&j.bias||null;
+    var fresh=!!(b&&b.fresh), deg=fresh&&!!b.degraded, cal=calHit(d);
+    var runNo=fresh&&b.notrade&&b.notrade.on;
+    var news=fresh?(b.news||[]):[];
+    var red=news.filter(function(n){return /erős/i.test(n.imp) && /^\d{1,2}:\d{2}$/.test((n.time||'').trim());});
+    var longD=new Date().toLocaleDateString('hu-HU',{timeZone:'Europe/Budapest',year:'numeric',month:'long',day:'numeric',weekday:'long'});
+
+    /* hero */
+    $('tz-title').innerHTML=words('Session Brief — '+longD);
+    var hh=new Date().toLocaleTimeString('hu-HU',{timeZone:'Europe/Budapest',hour:'2-digit',minute:'2-digit'});
+    $('tz-sub').innerHTML='FTMO $100k · 1. fázis · '+(fresh?(deg?'<b>adat nélküli</b> bias-futás':'bias a Notionből')+' · betöltve '+hh
+      :(R&&R.ok?'<b>ma még nincs bias</b>':'élő adat nélkül'));
+
+    /* status-sav */
+    var cls='', t='', body='', x=[];
+    if(cal || runNo){
+      cls='no'; t='⛔ MA NEM TRADING NAP';
+      body='<b>'+esc(cal||b.notrade.why)+'</b>'
+
+        +'<br>Egész napos no-trade — megsértése streak-reset, köztes fokozat nincs.';
+      if(cal && fresh && !runNo) x.push('A mai bias-futás „trading nap”-ot írt — a naptár-védőháló felülírta.');
+    } else if(weekend){
+      cls='idle'; t='Hétvége'; body='Ma nincs kereskedés.';
+    } else if(!R || !R.ok){
+      cls='idle'; t=(R&&R.nosecret)?'Élő bias nincs betöltve — nincs jelszó':'Élő bias nincs betöltve';
+      body='A naptár-védőháló szerint ma nincs egész napos tiltás, de a pár-biast és a hír-ablakokat nem látod. '
+        +((R&&R.nosecret)?'Add meg a jelszót az Áttekintés → Beállítás alatt.':'Hiba: '+esc(R&&R.err))+' Belépés előtt kérj briefet.';
+    } else if(!fresh){
+      cls=''; t='⚠ Ma még nincs bias';
+      body='Az utolsó bias-lap dátuma: <b>'+esc(b&&b.day||'nincs')+'</b>. A hétköznap 08:15-ös futás még nem írt, vagy elmaradt. '
+        +'A naptár-védőháló szerint ma nincs egész napos tiltás — a hír-ablakokat viszont nem látod, belépés előtt kérj briefet.';
+    } else if(deg){
+      cls=''; t='⚠ A mai bias-futás adat nélkül írt — ne ebből dönts';
+      body='Ok: '+esc(b.degradedWhy)+'. A naptár-védőháló szerint ma nincs egész napos tiltás, de a pár-bias és a hír-ablakok <b>nem megbízhatók</b>. Kérj briefet a chatben.';
+    } else if(red.length){
+      cls=''; t='TRADING NAP — tiltott ablakokkal';
+      body=esc(b.notrade&&b.notrade.why||'')+'<br>Tiltott: <b>'+red.map(function(n){return esc(win(n.time))+' ('+esc(n.txt.split('—')[0].trim())+')';}).join(' · ')+'</b>';
+    } else {
+      cls='ok'; t='✅ TRADING NAP'; body=esc(b.notrade&&b.notrade.why||'Nincs egész napos tiltás.');
+    }
+    if(!CAL) x.push(CAL_ERR?'A no-trade naptár nem töltődött be — a védőháló most nem véd.':'');
+    else if(CAL.valid_until && d>CAL.valid_until) x.push('A no-trade naptár lejárt ('+CAL.valid_until+') — frissíteni kell.');
+    if(fresh && b.status && b.status.why) x.push('Futás: '+b.status.why);
+    x=x.filter(Boolean);
+    var sw=$('tradestatus-wrap');
+    sw.className='tz-alert '+cls;
+    sw.innerHTML='<div class="t">'+t+'</div><div>'+body+'</div>'+(x.length?'<div class="x">'+x.map(esc).join('<br>')+'</div>':'');
+
+    /* edge factor */
+    if(cal || runNo) EDGE={score:0, label:(fresh&&b.edge&&b.edge.score===0&&b.edge.label)||'no-trade nap'};
+    else if(fresh && !deg && b.edge) EDGE=b.edge;
+    else EDGE={score:null, label: deg?'adat nélküli futás':(fresh?'a mai futás nem adott értéket':'nincs mai érték')};
+    $('k-edge').style.setProperty('--ec', edgeColor(EDGE.score));
+    $('edge-l').textContent=EDGE.label||'';
+    window.__edgeAnim();
+
+    /* bias-kartyak */
+    var list;
+    if(fresh && b.pairs && b.pairs.length) list=b.pairs;
+    else list=PAIRS.map(function(p){ return {p:p, t:p==='CRUDE'?'tiltólista':'semleges', why:p==='CRUDE'?'Tiltólistán marad.':'Nincs mai bias.'}; });
+    $('bias').innerHTML=list.map(function(x,i){
+      var tg=tagOf(x.t);
+      return '<div class="tz-p '+tg[0]+(fresh&&!deg?'':' dim')+'" style="--i:'+i+'"><div class="top"><span class="nm">'+esc(x.p)+'</span>'
+        +'<span class="tg">'+esc(tg[1])+'</span></div><div class="wh">'+esc(x.why)+'</div></div>'; }).join('');
+
+    /* deviza-ero — a friss, ures ertek is felulir (M-057) */
+    var st=fresh?(b.strength||[]):[];
+    $('strength').innerHTML = st.length && !(deg && st.every(function(z){return /nincs/i.test(z);}))
+      ? st.map(pill).join('') : '<span class="tz-pill">'+(fresh?'ma nincs megadva':'nincs mai adat')+'</span>';
+
+    /* hir-ablakok */
+    var nh=$('news');
+    if(!fresh){ nh.innerHTML='<li class="none">Nincs mai adat'+(cal?' — a naptár szerint ma: <b>'+esc(cal)+'</b>':'')+'.</li>'; }
+    else if(!news.length){ nh.innerHTML='<li class="none">A mai bias <b>nem tartalmaz hír-ablakot</b>'+(deg?' — de a futás adat nélkül írt, ezért ez NEM jelenti, hogy nincs esemény.':'.')+'</li>'; }
+    else nh.innerHTML=news.map(function(n){
+      var c=/erős/i.test(n.imp)?'r':/közepes/i.test(n.imp)?'o':'y', w=c==='r'?win(n.time):'';
+      return '<li class="'+c+'"><b>'+esc(n.time)+'</b> — '+esc(n.txt)+(w?' · tiltott <b>'+w+'</b>':'')+'</li>'; }).join('');
+
+    /* AI napi fokusz */
+    var f;
+    if(fresh && !deg && b.focus) f=hl(b.focus);
+    else if(cal) f='Ma egész napos <span class="hl">no-trade</span>: <b>'+esc(cal)+'</b>. Nincs mérlegelés, nincs „csak egy kicsi” — a streak ma úgy marad életben, ha nem nyitsz.';
+    else if(fresh && !deg) f='A mai bias-futás nem írt fókusz-sort. A státusz-sáv és a pár-kártyák a mérvadók.';
+    else f='Mai AI-fókusz nincs, mert nincs megbízható mai bias. Belépés előtt kérj briefet a chatben.';
+    $('aifocus').innerHTML=f+'<span class="brk">Fő fék: '+esc(DATA.mainBrake)+'.</span>'
+      +'<span class="meta">Forrás: „Bias — ma” (Notion) + no-trade naptár · '+hh+'</span>';
+
+    /* Elotted all (Attekintes ful) */
+    var uc=document.getElementById('up-card'), ub=document.getElementById('up-body');
+    if(uc && ub){
+      var U=(fresh?(b.upcoming||[]):[]).filter(function(z){return z.what;});
+      if(U.length){
+        ub.innerHTML=U.slice(0,6).map(function(z){
+          var soon=/ma|holnap|^0|^1 nap/i.test(z.when||'');
+          return '<div class="uprow'+(soon?' soon':'')+'"><span class="w">'+esc(z.when)+'</span><span class="t">'+esc(z.what)+'</span></div>';}).join('');
+        uc.style.display='';
+      } else uc.style.display='none';
+    }
+    if(window.__reveal) window.__reveal();
+  };
+
+  window.__loadBias=function(force){
+    return window.__api(force).then(function(r){ R=r; window.__renderBrief(); });
+  };
+  fetch('data/notrade-calendar.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(c){ CAL=c; }).catch(function(){ CAL_ERR=true; })
+    .then(function(){ window.__renderBrief(); window.__loadBias(); });
+  window.__renderBrief();
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) window.__loadBias(); });
 })();
 
 $('updated').textContent=DATA.updated+" · "+DATA.syncNote;
@@ -1635,6 +1901,7 @@ else {
   nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.pane===name)));
   try{ localStorage.setItem('mdash_tab', name); }catch(_){}
   if(name==='health' && window.__renderHealth) window.__renderHealth();
+  if(name==='trading' && window.__animTrading) setTimeout(window.__animTrading, 30);
   window.scrollTo({top:0,behavior:'instant'});
  }
  nav.addEventListener('click',e=>{ const b=e.target.closest('button[data-pane]'); if(b) show(b.dataset.pane); });
@@ -1822,12 +2089,11 @@ else {
   }
 
   window.__loadMa = async function(){
-    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
-    if(!sec){ body.innerHTML='<div class="ma-empty">Add meg a jelszót a <b>Beállítás</b> szekcióban, és ide kerül a mai brief.</div>'; return; }
     try{
-      var r = await fetch('/api/data?t='+Date.now(), {headers:{'x-log-secret':sec}, cache:'no-store'});
-      var j = await r.json();
-      if(!r.ok){ body.innerHTML='<div class="ma-err">'+esc((j&&j.error)||('HTTP '+r.status))+'</div>'; return; }
+      var R = await window.__api();
+      if(R.nosecret){ body.innerHTML='<div class="ma-empty">Add meg a jelszót a <b>Beállítás</b> szekcióban, és ide kerül a mai brief.</div>'; return; }
+      if(!R.ok){ body.innerHTML='<div class="ma-err">'+esc(R.err)+'</div>'; return; }
+      var j = R.j;
       var t = j.today || {};
       fresh.textContent = j.ts ? (hhmm(j.ts) + ' · ' + ago(j.ts)) : '';
       if(j.errors && j.errors.today){
@@ -1930,7 +2196,7 @@ else {
     if(document.hidden){ last = Date.now(); return; }
     if(Date.now()-last > 120000 && !busy()) window.__loadMa();
   });
-  setInterval(function(){ if(!document.hidden && !busy()) window.__loadMa(); }, 300000);
+  setInterval(function(){ if(!document.hidden && !busy()){ window.__api(true); window.__loadMa(); if(window.__loadBias) window.__loadBias(); } }, 300000);
 })();
 </script>
 
@@ -1978,113 +2244,21 @@ else {
 </script>
 
 <script>
-/* ====== ELO BIAS a "Bias — ma" Notion-laprol (2026-09-03) ======
-   A reggeli brief (FELHOBEN fut, nem kell hozza Marcell gepe) minden reggel felulirja a lapot.
-   Ha a lapon a mai datum all, az itteni adat lecsereli a beegetett, elavult biast.
-   Ha nem, marad a regi -- de akkor lathatoan "nem friss"-nek van jelolve. */
+/* ---- ELO EGYENLEG a Notion Accounts DB-bol (2026-09-14, M-070) ----
+   Ezert nem kell tobbe kezzel atirni az egyenleget a kodban. Ha a fetch
+   nem megy, a beegetett fallback marad. (A bias-resz 2026-09-16 ota a
+   Panel 2 renderereben el: __renderBrief / __loadBias.) */
 (function(){
-  var TAG={bullish:'bull',bearish:'bear','törékeny':'frag',tiltólista:'',semleges:''};
-  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
-  /* ---- ELO EGYENLEG a Notion Accounts DB-bol (2026-09-14, M-070) ----
-     Ezert nem kell tobbe kezzel atirni az egyenleget a kodban. Ha a fetch
-     nem megy (nincs jelszo, nincs halozat, a Notion integracio nem latja az
-     Accounts DB-t), a beegetett fallback marad, es a lap nem hazudik ujat. */
-  window.__loadAccount = async function(){
-    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
-    if(!sec) return;
-    try{
-      var r=await fetch('/api/data?t='+Date.now(),{headers:{'x-log-secret':sec},cache:'no-store'});
-      if(!r.ok) return;
-      var j=await r.json();
-      var cur = j && j.account && j.account.current;
-      if(typeof cur!=='number' || !isFinite(cur)) return;
-      if(cur===DATA.account.current) return;
+  window.__loadAccount = function(){
+    return window.__api().then(function(r){
+      var cur = r && r.ok && r.j && r.j.account && r.j.account.current;
+      if(typeof cur!=='number' || !isFinite(cur) || cur===DATA.account.current) return;
       DATA.account.current=cur;
       if(window.renderAccount) window.renderAccount();
-    }catch(_){}
-  };
-  try{ window.__loadAccount(); }catch(_){}
-
-  window.__loadBias = async function(){
-    var sec=''; try{ sec=(localStorage.getItem('mdash_secret')||'').trim(); }catch(_){}
-    if(!sec) return;
-    var j; try{
-      var r=await fetch('/api/data?t='+Date.now(),{headers:{'x-log-secret':sec},cache:'no-store'});
-      if(!r.ok) return; j=await r.json();
-    }catch(_){ return; }
-    var b=j.bias; if(!b||!b.fresh) return;              /* nem friss -> nem nyulunk hozza */
-
-    if(b.pairs && !b.pairs.length){
-      var eh=document.getElementById('bias');
-      if(eh) eh.innerHTML='<div class="bcard"><div class="top"><span class="p">—</span></div>'
-        + '<div class="why">A mai brief nem tartalmaz pár-biast.</div></div>';
-    }
-    if(b.pairs && b.pairs.length){
-      var host=document.getElementById('bias');
-      if(host) host.innerHTML=b.pairs.map(function(x){
-        var cl=TAG[(x.t||'').toLowerCase()]||'';
-        return '<div class="bcard"><div class="top"><span class="p">'+esc(x.p)+'</span>'
-             + '<span class="tag '+cl+'">'+esc(x.t)+'</span></div>'
-             + '<div class="why">'+esc(x.why)+'</div></div>';}).join('');
-    }
-    if(b.strength && !b.strength.length){
-      var se=document.getElementById('strength');
-      if(se) se.innerHTML='<span class="lbl">Deviza-erő</span><span class="cur">ma nincs megadva</span>';
-    }
-    if(b.strength && b.strength.length){
-      var sh=document.getElementById('strength');
-      if(sh) sh.innerHTML='<span class="lbl">Deviza-erő</span>'+b.strength.map(function(t){
-        var cl=/erős/i.test(t)?'s-up':/gyenge/i.test(t)?'s-dn':'';
-        return '<span class="cur '+cl+'">'+esc(t)+'</span>';}).join('');
-    }
-    /* M-057 (2026-09-07) — AZ URES ERTEK IS FELULIR.
-       Korabban ez `if(b.news && b.news.length)` volt: ha a mai brief nem tartalmazott
-       hir-ablakot, a blokk NEM irodott felul, es a beegetett aug. 31-i sorok maradtak
-       ott — "MA 15:45 Chicago PMI" —, mikozben a fejlec a MAI datumot kapta es a panel
-       "Friss bias"-t irt. Hazug allapot, ami majdnem befolyasolt egy eles trade-et.
-       SZABALY: friss brief eseten a blokkot MINDIG ujrairjuk. Ha ures, azt kimondjuk.
-       EZT A VISELKEDEST NE ALLITSD VISSZA. */
-    var nh=document.getElementById('news');
-    if(nh){
-      if(b.news && b.news.length){
-        nh.innerHTML=b.news.map(function(n){
-          var cl=n.imp==='erős'?'imp-red':n.imp==='közepes'?'imp-orange':'imp-yellow';
-          return '<div class="nrow"><span class="pill '+cl+'">'+esc(n.imp)+'</span>'
-               + '<div class="tx"><b>'+esc(n.time)+'</b> — '+esc(n.txt)+'</div></div>';}).join('');
-      } else {
-        nh.innerHTML='<div class="nrow"><span class="pill imp-yellow">nincs</span>'
-          + '<div class="tx">A mai brief <b>nem tartalmaz hír-ablakot.</b> '
-          + 'Ez nem hiba és nem elavult adat — ma nincs jelölt esemény.</div></div>';
-      }
-    }
-    if(b.notrade){
-      var w=document.getElementById('tradestatus-wrap');
-      if(w) w.innerHTML='<div class="banner '+(b.notrade.on?'no':'ok')+'">'
-        +(b.notrade.on?'⛔ MA NEM TRADING NAP. ':'✅ TRADING NAP. ')+esc(b.notrade.why)+'</div>';
-    }
-    var uc=document.getElementById('up-card'), ub=document.getElementById('up-body');
-    if(uc && ub){
-      var U=(b.upcoming||[]).filter(function(x){return x.what;});
-      if(U.length){
-        ub.innerHTML=U.slice(0,6).map(function(x){
-          var soon=/ma|holnap|^0|^1 nap/i.test(x.when||'');
-          return '<div class="uprow'+(soon?' soon':'')+'"><span class="w">'+esc(x.when)+'</span>'
-               + '<span class="t">'+esc(x.what)+'</span></div>';}).join('');
-        uc.style.display='';
-      } else { uc.style.display='none'; }
-    }
-
-    var af=document.getElementById('aifocus');
-    var hh=new Date().toLocaleTimeString('hu-HU',{timeZone:'Europe/Budapest',hour:'2-digit',minute:'2-digit'});
-    if(af) af.innerHTML='<b>Friss bias.</b> A bias-író futása írta ki ma, a Notionből olvasva. Betöltve: '+hh+'.';
-    var tl=document.getElementById('today-label');
-    if(tl) tl.textContent=' '+new Date().toLocaleDateString('hu-HU',{timeZone:'Europe/Budapest',weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    document.querySelectorAll('#pane-trading .hint').forEach(function(h){
-      if(/nem friss/.test(h.textContent)){ h.textContent='friss · ma'; h.style.color='var(--green)'; }
+      var hb=document.getElementById('h-bal'); if(hb) hb.textContent='$'+Math.round(cur).toLocaleString('hu-HU').replace(/,/g,' ');
     });
   };
-  window.__loadBias();
-  document.addEventListener('visibilitychange',function(){ if(!document.hidden) window.__loadBias(); });
+  try{ window.__loadAccount(); }catch(_){}
 })();
 </script>
 
@@ -2164,6 +2338,28 @@ else {
       '</div></div></details>';
   }
 
+  /* Kis, hosszukas csuszka a Tozsde ful szeles savjaban (2026-09-16).
+     A 50% a semleges kozep; a sav a score iranyaba nyulik ki onnan. */
+  var BAND = null;
+  function band(p, acc){
+    var el = document.getElementById("btcwp-band"); if (!el) return;
+    var c = cls(p.direction), r = p.expected_range || {};
+    var hist = (acc && acc.hit_rate != null) ? "talált " + acc.hit_rate + "% · " + acc.n + " hét" : "mérés alatt · " + ((acc && acc.n) || 0) + " hét";
+    el.innerHTML = '<span class="n">BTC hétvége</span><span class="trk"><i></i></span>' +
+      '<span class="v ' + c + '">' + arr(p.direction) + ' ' + p.bias + ' ' + Math.round(p.score) + '%</span>' +
+      '<span class="sub">' + usd(r.low) + '–' + usd(r.high) + ' · invalidáció ' +
+      (p.invalidation_side === "below" ? "alatta " : "felette ") + usd(p.invalidation) + ' · ' + hist + '</span>';
+    BAND = { score: Math.max(0, Math.min(100, p.score)), c: c };
+    window.__btcBandAnim();
+  }
+  window.__btcBandAnim = function(){
+    var i = document.querySelector("#btcwp-band .trk i"); if (!i || !BAND) return;
+    var col = BAND.c === "u" ? "var(--tz-g)" : BAND.c === "d" ? "var(--tz-r)" : "var(--tz-a)";
+    i.style.background = col; i.style.boxShadow = "0 0 0 2px var(--tz-card), 0 0 10px " + col;
+    i.style.left = "50%";
+    setTimeout(function(){ i.style.left = BAND.score + "%"; }, 140);
+  };
+
   function load(){
     var m = document.getElementById("btcwp-mini"), f = document.getElementById("btcwp-full");
     if (!m && !f) return;
@@ -2172,13 +2368,16 @@ else {
       .then(function(d){
         if (!d.current) throw new Error("nincs predikció");
         if (m) m.innerHTML = card(d.current, d.accuracy);
-        if (f) f.innerHTML = card(d.current, d.accuracy) + details(d.current, d.accuracy);
+        if (f) f.innerHTML = details(d.current, d.accuracy);
+        band(d.current, d.accuracy);
       })
       .catch(function(e){
         var msg = '<div class="pair frag"><div class="top"><span class="name">BTC hétvége</span>' +
           '<span class="tg">nincs adat</span></div><div class="why">' + e.message + '</div></div>';
         if (m) m.innerHTML = msg;
-        if (f) f.innerHTML = msg;
+        if (f) f.innerHTML = '';
+        var bd = document.getElementById("btcwp-band");
+        if (bd) bd.innerHTML = '<span class="n">BTC hétvége</span><span class="trk"><i></i></span><span class="v f">nincs adat</span>';
       });
   }
   document.readyState === "loading"
@@ -2324,6 +2523,146 @@ else {
         '<b>Az előrejelzés:</b> ' + note +
         '</div></div></details>';
   };
+})();
+</script>
+
+<!-- ===== PREMIUM MOZGAS-RETEG (2026-09-16) =====
+     Gorgetesre beuszo kartyak (fade + emelkedes + blur-oldas, lepcsozetesen),
+     tetejen gorgetes-jelzo csik, uveges ragado fulsor, a Tozsde-hero parallaxa,
+     a par-kartyakon egerkoveto fenyfolt. prefers-reduced-motion eseten minden ki.
+     Biztonsag: ha az IntersectionObserver hianyzik vagy 2,5 mp alatt nem jelez,
+     minden elem lathatova valik — tartalom SOHA nem maradhat rejtve. -->
+<style>
+.scroll-prog{position:fixed; top:0; left:0; right:0; height:2px; transform-origin:0 50%; transform:scaleX(0);
+  background:linear-gradient(90deg,#2563eb,#22d3ee 50%,#4ac26b); z-index:90; pointer-events:none;}
+.tabnav{position:sticky; top:0; z-index:50; margin:0 -14px 4px; padding:8px 14px 11px;
+  background:color-mix(in srgb, var(--bg) 80%, transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4); backdrop-filter:blur(14px) saturate(1.4);
+  transition:box-shadow .35s, border-color .35s; border-bottom:1px solid transparent;}
+.tabnav.stuck{box-shadow:0 10px 26px -18px rgba(0,0,0,.55); border-bottom-color:var(--line);}
+@media (max-width:520px){ .tabnav{margin:0 -12px 4px; padding-left:12px; padding-right:12px;} }
+
+html.rv-on .rv{opacity:0; transform:translate3d(0,30px,0) scale(.975); filter:blur(7px); animation:none!important;
+  transition:opacity .95s cubic-bezier(.16,1,.3,1), transform .95s cubic-bezier(.16,1,.3,1), filter .8s cubic-bezier(.16,1,.3,1);
+  transition-delay:calc(var(--rd,0) * 75ms);}
+html.rv-on .rv.in{opacity:1; transform:none; filter:none;}
+html.rv-on .pane.on > .card, html.rv-on .pane.on > .today{animation:none;}
+
+/* ujrarajzolt par-kartyak (friss adat erkezesekor) finoman beusznak */
+@keyframes tzIn{from{opacity:0; transform:translateY(10px) scale(.98);} to{opacity:1; transform:none;}}
+.tz-p{animation:tzIn .6s cubic-bezier(.16,1,.3,1) both; animation-delay:calc(var(--i,0) * 55ms);}
+.tz-pill, .tz-news li{animation:tzIn .5s cubic-bezier(.16,1,.3,1) both;}
+.tz-news li:nth-child(2){animation-delay:.06s;} .tz-news li:nth-child(3){animation-delay:.12s;} .tz-news li:nth-child(n+4){animation-delay:.18s;}
+.tz-pill:nth-child(2){animation-delay:.05s;} .tz-pill:nth-child(3){animation-delay:.1s;} .tz-pill:nth-child(4){animation-delay:.15s;} .tz-pill:nth-child(5){animation-delay:.2s;}
+
+/* hero: szavankent all ossze */
+.tz-hero h1 .w{opacity:0; transform:translateY(.45em); filter:blur(5px);
+  transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1), filter .6s;
+  transition-delay:calc(var(--i,0) * 55ms);}
+.pane.on .tz-hero.go h1 .w{opacity:1; transform:none; filter:none;}
+.tz-hero{will-change:transform, opacity;}
+
+/* statusz-sav: lassu fenycsik suhan at rajta */
+.tz-alert{position:relative; overflow:hidden;}
+.tz-alert::after{content:""; position:absolute; top:0; bottom:0; left:-40%; width:40%; pointer-events:none;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.10), transparent);
+  animation:sheen 5.5s cubic-bezier(.4,0,.2,1) 1.2s infinite;}
+.tz-alert.no{animation:alertPulse 2.8s ease-in-out infinite;}
+@keyframes sheen{0%{left:-40%;} 35%,100%{left:120%;}}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--tz-r) 0%, transparent);} 50%{box-shadow:0 0 0 5px color-mix(in srgb, var(--tz-r) 16%, transparent);}}
+
+/* KPI-csempek: finom emelkedes hoverre */
+.tz-k, .tz-band, .tz-box{transition:transform .35s cubic-bezier(.16,1,.3,1), border-color .35s, box-shadow .35s;}
+.tz-k:hover{transform:translateY(-2px); box-shadow:0 10px 26px -16px rgba(0,0,0,.45);}
+
+@media (prefers-reduced-motion:reduce){
+  .tz-p, .tz-pill, .tz-news li, .tz-alert, .tz-alert::after{animation:none!important;}
+  .tz-hero h1 .w{opacity:1; transform:none; filter:none; transition:none;}
+  .scroll-prog{display:none;}
+}
+</style>
+<script>
+(function(){
+  var reduce=false; try{ reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){}
+  var prog=document.createElement('div'); prog.className='scroll-prog'; document.body.appendChild(prog);
+  var nav=document.querySelector('.tabnav');
+  var SEL='.today, .pane > .card, #btcwp-mini, .tz-alert, .tz-k, .tz-band, .tz-h, .tz-p, .tz-box, .tiles, .empty, .demo, .pane .ch-h';
+  var io=null;
+
+  function heroGo(){
+    var h=document.querySelector('.pane.on .tz-hero'); if(!h) return;
+    h.classList.remove('go'); void h.offsetWidth;
+    requestAnimationFrame(function(){ h.classList.add('go'); });
+  }
+  if(reduce || !('IntersectionObserver' in window)){
+    window.__reveal=function(){}; window.__heroGo=function(){ var h=document.querySelector('.tz-hero'); if(h) h.classList.add('go'); };
+    window.__heroGo();
+    document.addEventListener('click',function(){ setTimeout(window.__heroGo,40); });
+  } else {
+    document.documentElement.classList.add('rv-on');
+    io=new IntersectionObserver(function(ents){
+      var vis=ents.filter(function(e){return e.isIntersecting;})
+        .sort(function(a,b){ return (a.boundingClientRect.top-b.boundingClientRect.top)||(a.boundingClientRect.left-b.boundingClientRect.left); });
+      vis.forEach(function(e,k){
+        var el=e.target; io.unobserve(el);
+        el.style.setProperty('--rd', Math.min(k,9));
+        el.classList.add('in');
+        /* animacio utan leszedjuk a reteget, hogy a hover-transzformok szabadon mukodjenek */
+        setTimeout(function(){ el.classList.remove('rv','in'); el.style.removeProperty('--rd'); }, 1100 + Math.min(k,9)*75);
+      });
+    }, {rootMargin:'0px 0px -8% 0px', threshold:0.08});
+
+    /* arm: a lathato ful elemeit elrejti es figyeli.
+       initial=true: minden elem animal (fulvaltas / elso betoltes).
+       initial=false: csak a kepernyo ALATTI uj elemek (adatfrissites utan ne villogjon a lathato resz). */
+    window.__reveal=function(initial){
+      var pane=document.querySelector('.pane.on'); if(!pane) return;
+      var vh=window.innerHeight||800;
+      pane.querySelectorAll(SEL).forEach(function(el){
+        if(el.classList.contains('rv')) return;
+        if(el.offsetParent===null) return;
+        if(!initial){ if(el.dataset.seen) return; var r=el.getBoundingClientRect(); if(r.top < vh){ el.dataset.seen=1; return; } }
+        el.dataset.seen=1;
+        el.classList.add('rv'); el.classList.remove('in');
+        io.observe(el);
+      });
+      /* biztonsagi halo: semmi nem maradhat rejtve */
+      setTimeout(function(){
+        document.querySelectorAll('.rv:not(.in)').forEach(function(el){
+          var r=el.getBoundingClientRect(); if(r.top < (window.innerHeight||800) && r.bottom > 0){ el.classList.add('in'); }
+        });
+      }, 2500);
+    };
+    window.__heroGo=heroGo;
+    function onTab(){ setTimeout(function(){
+      document.querySelectorAll('.pane.on [data-seen]').forEach(function(el){ delete el.dataset.seen; });
+      window.__reveal(true); heroGo(); }, 25); }
+    if(nav) nav.addEventListener('click',function(e){ if(e.target.closest('button[data-pane]')) onTab(); });
+    onTab();
+  }
+
+  /* gorgetes: progress-csik, ragado fulsor arnyeka, hero-parallax */
+  var ticking=false;
+  function onScroll(){
+    var y=window.scrollY||0, max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    prog.style.transform='scaleX('+Math.min(1,y/max)+')';
+    if(nav) nav.classList.toggle('stuck', y>8);
+    if(!reduce){
+      var h=document.querySelector('.pane.on .tz-hero');
+      if(h){ var k=Math.min(y,260); h.style.transform='translate3d(0,'+(k*0.28).toFixed(1)+'px,0)'; h.style.opacity=String(Math.max(0.15,1-k/300)); }
+    }
+    ticking=false;
+  }
+  window.addEventListener('scroll',function(){ if(!ticking){ ticking=true; requestAnimationFrame(onScroll); } },{passive:true});
+  window.addEventListener('resize',onScroll,{passive:true});
+  onScroll();
+
+  /* par-kartyak: egerkoveto fenyfolt */
+  document.addEventListener('pointermove',function(e){
+    var c=e.target.closest && e.target.closest('.tz-p'); if(!c) return;
+    var r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',(e.clientX-r.left)+'px'); c.style.setProperty('--my',(e.clientY-r.top)+'px');
+  },{passive:true});
 })();
 </script>
 
