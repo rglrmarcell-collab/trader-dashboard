@@ -115,7 +115,8 @@ async function readBias(){
     const m = lines[i].h && /^(\d{4}-\d{2}-\d{2})$/.exec(lines[i].t.trim());
     if (m) { day = m[1]; start = i + 1; }
   }
-  const out = { day, fresh: day === today, notrade: null, strength: [], pairs: [], news: [], upcoming: [] };
+  const out = { day, fresh: day === today, notrade: null, strength: [], pairs: [], news: [], upcoming: [],
+                edge: null, focus: "", status: null, degraded: false, degradedWhy: "" };
   if (start < 0 || !out.fresh) return out;
   for (let i = start; i < lines.length; i++) {
     // A Notion a "|" jelet markdownban visszaadhatja backslash-sel escape-elve.
@@ -124,7 +125,7 @@ async function readBias(){
     const t = lines[i].t.split("\\").join("").trim();
     let m;
     if ((m = /^NOTRADE:\s*(\S+)\s*[·|-]?\s*(.*)$/i.exec(t))) {
-      out.notrade = { on: /^igen/i.test(m[1]), why: (m[2] || "").trim() };
+      out.notrade = { on: /^igen/i.test(m[1]), unknown: !/^(igen|nem)/i.test(m[1]), why: (m[2] || "").trim() };
     } else if ((m = /^EROSSEG:\s*(.+)$/i.exec(t))) {
       out.strength = m[1].split(",").map(x => x.trim()).filter(Boolean).slice(0, 8);
     } else if ((m = /^PAR:\s*(.+)$/i.exec(t))) {
@@ -133,12 +134,35 @@ async function readBias(){
     } else if ((m = /^HIR:\s*(.+)$/i.exec(t))) {
       const a = m[1].split("|").map(x => x.trim());
       if (a[0]) out.news.push({ time: a[0], imp: (a[1] || "").toLowerCase(), txt: a[2] || "" });
+    } else if ((m = /^EDGE:\s*(.+)$/i.exec(t))) {
+      // EDGE: 0-100 | rovid cimke  (2026-09-16: az Edge Factor a Tozsde-ful fo csempeje)
+      const a = m[1].split("|").map(x => x.trim());
+      const n = Number(String(a[0]).replace(/[^0-9.\-]/g, ""));
+      if (a[0] !== "" && !Number.isNaN(n)) out.edge = { score: Math.max(0, Math.min(100, Math.round(n))), label: a[1] || "" };
+    } else if ((m = /^FOKUSZ:\s*(.+)$/i.exec(t))) {
+      out.focus = (out.focus ? out.focus + " " : "") + m[1].trim();
+    } else if ((m = /^ALLAPOT:\s*(\S+)\s*[·|-]?\s*(.*)$/i.exec(t))) {
+      out.status = { ok: /^ok/i.test(m[1]), why: (m[2] || "").trim() };
     } else if ((m = /^ELOTTED:\s*(.+)$/i.exec(t))) {
       // Elottunk allo, meg ki nem pipalt teendok. Forras: TickTick, a reggeli futas irja ki.
       const a = m[1].split("|").map(x => x.trim());
       if (a[0]) out.upcoming.push({ when: a[0], what: a[1] || "", tag: (a[2] || "").toLowerCase() });
     }
   }
+  // ADAT NELKULI FUTAS FELISMERESE (2026-09-16, M-071).
+  // A 08:15-os futas FOMC-napon "NOTRADE: nem" + 7x "nincs friss jel" sort irt, es a lap
+  // zold "TRADING NAP"-ot mutatott. Egy adat nelkuli futas NEM friss adat: degradaltnak jeloljuk,
+  // es a frontend ilyenkor soha nem mutat zold bannert.
+  const blank = out.pairs.filter(x => /nincs friss jel|^n\/a\b/i.test(x.why || "")).length;
+  const why = [];
+  if (out.status && !out.status.ok) why.push("a futás maga jelezte: " + (out.status.why || "hiba"));
+  if (out.pairs.length && blank >= Math.ceil(out.pairs.length / 2)) why.push(blank + "/" + out.pairs.length + " pár adat nélkül");
+  if (out.strength.length && out.strength.every(x => /nincs friss/i.test(x))) why.push("deviza-erő adat nélkül");
+  if (out.notrade && out.notrade.unknown) why.push("a futás nem tudta eldönteni, van-e ma tiltó esemény");
+  else if (out.notrade && /nincs friss|nem elerheto|nem elérhető|nincs adat/i.test(out.notrade.why || "")) why.push("a no-trade döntés adat nélkül született");
+  if (!out.notrade) why.push("nincs NOTRADE-sor");
+  if (!out.pairs.length) why.push("nincs pár-sor");
+  if (why.length) { out.degraded = true; out.degradedWhy = why.join("; "); }
   return out;
 }
 
